@@ -21,7 +21,9 @@ class CanvasModel extends DOMWidgetModel {
       _model_module_version: CanvasModel.model_module_version,
       _view_name: CanvasModel.view_name,
       _view_module: CanvasModel.view_module,
-      _view_module_version: CanvasModel.view_module_version
+      _view_module_version: CanvasModel.view_module_version,
+      fill_style: 'black',
+      stroke_style: 'black'
     };
   }
 
@@ -59,6 +61,9 @@ class CanvasView extends DOMWidgetView {
 
   model_events() {
     this.model.on('msg:custom', (event) => {
+      this.ctx.fillStyle = this.model.get('fill_style');
+      this.ctx.strokeStyle = this.model.get('stroke_style');
+
       this.ctx[event.msg](...event.args);
     });
   }
@@ -74,6 +79,8 @@ class CanvasView extends DOMWidgetView {
   }
 
   resize_canvas() {
+    // TODO replay all drawings after resize?
+
     const rect = this.el.getBoundingClientRect();
     this.canvas.setAttribute('width', rect.width);
     this.canvas.setAttribute('height', rect.height);

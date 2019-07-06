@@ -4,8 +4,10 @@
 # Copyright (c) Martin Renou.
 # Distributed under the terms of the Modified BSD License.
 
-from ipywidgets import DOMWidget
+from ipywidgets import DOMWidget, Color
+
 from traitlets import Unicode
+
 from ._frontend import module_name, module_version
 
 
@@ -16,6 +18,9 @@ class Canvas(DOMWidget):
     _view_name = Unicode('CanvasView').tag(sync=True)
     _view_module = Unicode(module_name).tag(sync=True)
     _view_module_version = Unicode(module_version).tag(sync=True)
+
+    fill_style = Color('black').tag(sync=True)
+    stroke_style = Color('black').tag(sync=True)
 
     # Rectangles methods
     def fill_rect(self, x, y, width, height):
@@ -29,6 +34,10 @@ class Canvas(DOMWidget):
     def clear_rect(self, x, y, width, height):
         """Clear the specified rectangular area, making it fully transparent."""
         self._send_canvas_msg('clearRect', x, y, width, height)
+
+    def rect(self, x, y, width, height):
+        """Draw a rectangle whose top-left corner is specified by (x, y) with the specified width and height."""
+        self._send_canvas_msg('rect', x, y, width, height)
 
     # Paths methods
     def begin_path(self):
@@ -60,9 +69,6 @@ class Canvas(DOMWidget):
 
     def bezier_curve_to(self, cp1x, cp1y, cp2x, cp2y, x, y):
         self._send_canvas_msg('bezierCurveTo', cp1x, cp1y, cp2x, cp2y, x, y)
-
-    def rect(self, x, y, width, height):
-        self._send_canvas_msg('rect', x, y, width, height)
 
     def _send_canvas_msg(self, msg_name, *args):
         self.send({'msg': msg_name, 'args': args})
