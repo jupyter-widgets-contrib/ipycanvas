@@ -1,10 +1,6 @@
 
 # ipycanvas
 
-[![Build Status](https://travis-ci.org/martinRenou/ipycanvas.svg?branch=master)](https://travis-ci.org/martinRenou/ipycanvas)
-[![codecov](https://codecov.io/gh/martinRenou/ipycanvas/branch/master/graph/badge.svg)](https://codecov.io/gh/martinRenou/ipycanvas)
-
-
 Interactive widgets library exposing the browser's Canvas API
 
 ## Installation
