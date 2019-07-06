@@ -9,6 +9,8 @@ import {
   MODULE_NAME, MODULE_VERSION
 } from './version';
 
+import './canvas.css';
+
 
 export
 class CanvasModel extends DOMWidgetModel {
@@ -40,6 +42,43 @@ class CanvasModel extends DOMWidgetModel {
 export
 class CanvasView extends DOMWidgetView {
   render() {
-    this.el.innerHTML = 'Hello there!';
+    this.canvas = document.createElement('canvas');
+    this.canvas.classList.add('ipycanvas_canvas');
+
+    this.ctx = this.canvas.getContext('2d');
+
+    this.el.appendChild(this.canvas);
+    this.el.classList.add('ipycanvas');
+
+    this.resize_canvas();
+
+    this.model_events();
+
+    window.addEventListener('resize', () => { this.resize_canvas(); });
   }
+
+  model_events() {
+    this.model.on('msg:custom', (event) => {
+      this.ctx[event.msg](...event.args);
+    });
+  }
+
+  processPhosphorMessage(msg: any) {
+    super.processPhosphorMessage(msg);
+
+    switch (msg.type) {
+    case 'resize':
+      this.resize_canvas();
+      break;
+    }
+  }
+
+  resize_canvas() {
+    const rect = this.el.getBoundingClientRect();
+    this.canvas.setAttribute('width', rect.width);
+    this.canvas.setAttribute('height', rect.height);
+  }
+
+  canvas: any;
+  ctx: any;
 }

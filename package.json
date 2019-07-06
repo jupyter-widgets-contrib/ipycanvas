@@ -44,7 +44,9 @@
   },
   "dependencies": {
     "@jupyter-widgets/base": "^2.0",
-    "acorn": "^6.2.0"
+    "acorn": "^6.2.0",
+    "css-loader": "^3.0.0",
+    "style-loader": "^0.23.1"
   },
   "devDependencies": {
     "@phosphor/application": "^1.6.0",
