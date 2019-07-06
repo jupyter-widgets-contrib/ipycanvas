@@ -3,19 +3,24 @@
 
 Interactive widgets library exposing the browser's Canvas API
 
-## Installation
+## Installation from sources
 
 You can install using `pip`:
 
 ```bash
-pip install ipycanvas
+git clone https://github.com/martinRenou/ipycanvas
+cd ipycanvas
+pip install .
 ```
 
 Or if you use jupyterlab:
 
 ```bash
-pip install ipycanvas
+git clone https://github.com/martinRenou/ipycanvas
+cd ipycanvas
+pip install .
 jupyter labextension install @jupyter-widgets/jupyterlab-manager
+jupyter labextension install .
 ```
 
 If you are using Jupyter Notebook 5.2 or earlier, you may also need to enable
