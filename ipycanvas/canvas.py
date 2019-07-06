@@ -6,7 +6,7 @@
 
 from ipywidgets import Color, DOMWidget
 
-from traitlets import Tuple, Unicode
+from traitlets import Float, Tuple, Unicode
 
 from ._frontend import module_name, module_version
 
