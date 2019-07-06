@@ -29,9 +29,33 @@ class CanvasModel extends DOMWidgetModel {
   }
 
   static serializers: ISerializers = {
-      ...DOMWidgetModel.serializers,
-      // Add any extra serializers here
-    }
+    ...DOMWidgetModel.serializers,
+    // Add any extra serializers here
+  }
+
+  initialize(attributes: any, options: any) {
+    super.initialize(attributes, options);
+
+    this.commands_cache = [];
+
+    this.cache_set_command('fill_style', 'fillStyle');
+    this.cache_set_command('stroke_style', 'strokeStyle');
+    this.cache_set_command('global_alpha', 'globalAlpha');
+
+    this.on('msg:custom', (command) => { this.commands_cache.push(command); });
+
+    this.on('change:fill_style', () => { this.cache_set_command('fill_style', 'fillStyle'); });
+    this.on('change:stroke_style', () => { this.cache_set_command('stroke_style', 'strokeStyle'); });
+    this.on('change:global_alpha', () => { this.cache_set_command('global_alpha', 'globalAlpha'); });
+  }
+
+  cache_set_command(python_name: string, ts_name: string) {
+    this.commands_cache.push({
+      name: 'set',
+      attr: ts_name,
+      value: this.get(python_name)
+    });
+  }
 
   static model_name = 'CanvasModel';
   static model_module = MODULE_NAME;
@@ -39,6 +63,8 @@ class CanvasModel extends DOMWidgetModel {
   static view_name = 'CanvasView';
   static view_module = MODULE_NAME;
   static view_module_version = MODULE_VERSION;
+
+  commands_cache: any;
 }
 
 
@@ -53,22 +79,33 @@ class CanvasView extends DOMWidgetView {
 
     this.ctx = this.canvas.getContext('2d');
 
-    this.ctx.globalAlpha = this.model.get('global_alpha');
-
     this.resize_canvas();
+
+    this.first_draw();
 
     this.model_events();
   }
 
-  model_events() {
-    this.model.on('msg:custom', (event) => {
-      this.ctx.fillStyle = this.model.get('fill_style');
-      this.ctx.strokeStyle = this.model.get('stroke_style');
+  first_draw() {
+    // Replay all the commands that were received until this view was created
+    for (const command of (this.model as CanvasModel).commands_cache) {
+      if (command.name == 'set') {
+        this.ctx[command.attr] = command.value;
+      } else {
+        this.ctx[command.name](...command.args);
+      }
+    }
+  }
 
-      this.ctx[event.msg](...event.args);
+  model_events() {
+    this.model.on('msg:custom', (command) => {
+      this.ctx[command.name](...command.args);
     });
 
     this.model.on('change:size', () => { this.resize_canvas(); });
+
+    this.model.on('change:fill_style', () => { this.ctx.fillStyle = this.model.get('fill_style'); });
+    this.model.on('change:stroke_style', () => { this.ctx.strokeStyle = this.model.get('stroke_style'); });
     this.model.on('change:global_alpha', () => { this.ctx.globalAlpha = this.model.get('global_alpha'); });
   }
 
