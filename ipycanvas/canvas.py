@@ -25,6 +25,11 @@ class Canvas(DOMWidget):
     stroke_style = Color('black').tag(sync=True)
     global_alpha = Float(1.0).tag(sync=True)
 
+    def __init__(self, *args, **kwargs):
+        super(Canvas, self).__init__(*args, **kwargs)
+        self.layout.width = str(self.size[0]) + 'px'
+        self.layout.height = str(self.size[1]) + 'px'
+
     # Rectangles methods
     def fill_rect(self, x, y, width, height):
         """Draw a filled rectangle."""
