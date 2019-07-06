@@ -22,6 +22,7 @@ class CanvasModel extends DOMWidgetModel {
       _view_name: CanvasModel.view_name,
       _view_module: CanvasModel.view_module,
       _view_module_version: CanvasModel.view_module_version,
+      size: [],
       fill_style: 'black',
       stroke_style: 'black'
     };
@@ -55,8 +56,6 @@ class CanvasView extends DOMWidgetView {
     this.resize_canvas();
 
     this.model_events();
-
-    window.addEventListener('resize', () => { this.resize_canvas(); });
   }
 
   model_events() {
@@ -66,24 +65,15 @@ class CanvasView extends DOMWidgetView {
 
       this.ctx[event.msg](...event.args);
     });
-  }
 
-  processPhosphorMessage(msg: any) {
-    super.processPhosphorMessage(msg);
-
-    switch (msg.type) {
-    case 'resize':
-      this.resize_canvas();
-      break;
-    }
+    this.model.on('change;size', () => { this.resize_canvas(); });
   }
 
   resize_canvas() {
-    // TODO replay all drawings after resize?
+    const size = this.model.get('size');
 
-    const rect = this.el.getBoundingClientRect();
-    this.canvas.setAttribute('width', rect.width);
-    this.canvas.setAttribute('height', rect.height);
+    this.canvas.setAttribute('width', size[0]);
+    this.canvas.setAttribute('height', size[1]);
   }
 
   canvas: any;
