@@ -48,10 +48,12 @@ class CanvasView extends DOMWidgetView {
     this.canvas = document.createElement('canvas');
     this.canvas.classList.add('ipycanvas_canvas');
 
-    this.ctx = this.canvas.getContext('2d');
-
     this.el.appendChild(this.canvas);
     this.el.classList.add('ipycanvas');
+
+    this.ctx = this.canvas.getContext('2d');
+
+    this.ctx.globalAlpha = this.model.get('global_alpha');
 
     this.resize_canvas();
 
@@ -66,7 +68,8 @@ class CanvasView extends DOMWidgetView {
       this.ctx[event.msg](...event.args);
     });
 
-    this.model.on('change;size', () => { this.resize_canvas(); });
+    this.model.on('change:size', () => { this.resize_canvas(); });
+    this.model.on('change:global_alpha', () => { this.ctx.globalAlpha = this.model.get('global_alpha'); });
   }
 
   resize_canvas() {

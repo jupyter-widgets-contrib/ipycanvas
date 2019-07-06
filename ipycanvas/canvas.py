@@ -23,6 +23,7 @@ class Canvas(DOMWidget):
 
     fill_style = Color('black').tag(sync=True)
     stroke_style = Color('black').tag(sync=True)
+    global_alpha = Float(1.0).tag(sync=True)
 
     # Rectangles methods
     def fill_rect(self, x, y, width, height):
