@@ -1,0 +1,6 @@
+.DS_Store
+node_modules/
+.jshintrc
+# Ignore any build output from python:
+dist/*.tar.gz
+dist/*.wheel
