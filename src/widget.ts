@@ -9,8 +9,6 @@ import {
   MODULE_NAME, MODULE_VERSION
 } from './version';
 
-import './canvas.css';
-
 
 export
 class CanvasModel extends DOMWidgetModel {
@@ -72,10 +70,13 @@ export
 class CanvasView extends DOMWidgetView {
   render() {
     this.canvas = document.createElement('canvas');
-    this.canvas.classList.add('ipycanvas_canvas');
+    this.canvas.width = '100%';
+    this.canvas.height = '100%';
 
     this.el.appendChild(this.canvas);
-    this.el.classList.add('ipycanvas');
+    this.el.height = '500px';
+    this.el.overflow = 'hidden';
+    this.el.flex = '1 1 auto';
 
     this.ctx = this.canvas.getContext('2d');
 
