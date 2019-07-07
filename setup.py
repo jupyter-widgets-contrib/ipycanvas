@@ -87,6 +87,7 @@ setup_args = dict(
     include_package_data = True,
     install_requires = [
         'ipywidgets>=7.0.0',
+        'traittypes>=0.2.1'
     ],
     extras_require = {
         'examples': [

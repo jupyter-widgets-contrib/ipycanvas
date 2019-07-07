@@ -6,9 +6,60 @@
 
 from ipywidgets import Color, DOMWidget
 
-from traitlets import Float, Tuple, Unicode
+from traitlets import Tuple, Unicode, Float
+from traittypes import Array
+from base64 import b64encode
+import warnings
 
 from ._frontend import module_name, module_version
+
+try:
+    from io import BytesIO as StringIO  # python3
+except:
+    from StringIO import StringIO  # python2
+
+
+try:
+    import numpy as np
+except:
+    pass
+
+warning_printed = False
+
+# Code extracted from maartenbreddels ipyvolume
+def array_to_binary(ar, obj=None, force_contiguous=True):
+    global warning_printed
+
+    if ar is None:
+        return None
+    if ar.dtype != np.uint8:  # JS does not support int64
+        if not warning_printed:
+            print("Forcing dtype to uint8! (Warning printed only once)")
+            warning_printed = True
+        ar = ar.astype(np.uint8)
+    if ar.ndim == 1:
+        ar = ar[np.newaxis, :]
+    if ar.ndim == 2:
+        # extend grayscale to RGBA
+        add_alpha = np.full((ar.shape[0], ar.shape[1], 4), 255, dtype=np.uint8)
+        add_alpha[:, :, :3] = np.repeat(ar[:, :, np.newaxis], repeats=3, axis=2)
+        ar = add_alpha
+    if ar.ndim != 3:
+        raise ValueError("Please supply an RGBA array with shape (width, height, 4).")
+    if ar.shape[2] != 4 and ar.shape[2] == 3:
+        add_alpha = np.full((ar.shape[0], ar.shape[1], 4), 255, dtype=np.uint8)
+        add_alpha[:, :, :3] = ar
+        ar = add_alpha
+    if force_contiguous and not ar.flags["C_CONTIGUOUS"]:  # make sure it's contiguous
+        ar = np.ascontiguousarray(ar, dtype=np.uint8)
+    return {'buffer': memoryview(ar), 'dtype': str(ar.dtype), 'shape': ar.shape}
+
+
+def binary_to_array(value, obj=None):
+    return np.frombuffer(value['data'], dtype=value['dtype']).reshape(value['shape'])
+
+
+ndarray_serialization = dict(to_json=array_to_binary, from_json=binary_to_array)
 
 
 class Canvas(DOMWidget):
@@ -20,6 +71,8 @@ class Canvas(DOMWidget):
     _view_module_version = Unicode(module_version).tag(sync=True)
 
     size = Tuple((700, 500), help='Size of the Canvas, this is not equal to the size of the view').tag(sync=True)
+
+    image = Array(default_value=None, allow_none=True).tag(sync=True, **ndarray_serialization)
 
     fill_style = Color('black').tag(sync=True)
     stroke_style = Color('black').tag(sync=True)

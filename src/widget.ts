@@ -21,8 +21,9 @@ class CanvasModel extends DOMWidgetModel {
       _view_module: CanvasModel.view_module,
       _view_module_version: CanvasModel.view_module_version,
       size: [],
+      image: null,
       fill_style: 'black',
-      stroke_style: 'black'
+      stroke_style: 'black',
     };
   }
 
@@ -103,6 +104,7 @@ class CanvasView extends DOMWidgetView {
       this.ctx[command.name](...command.args);
     });
 
+    this.model.on('change:image', this.image_changed, this);
     this.model.on('change:size', () => { this.resize_canvas(); });
 
     this.model.on('change:fill_style', () => { this.ctx.fillStyle = this.model.get('fill_style'); });
@@ -113,8 +115,24 @@ class CanvasView extends DOMWidgetView {
   resize_canvas() {
     const size = this.model.get('size');
 
-    this.canvas.setAttribute('width', size[0]);
-    this.canvas.setAttribute('height', size[1]);
+    this.canvas.setAttribute('width', size[0] + 'px');
+    this.canvas.setAttribute('height', size[1] + 'px');
+  }
+
+  image_changed() {
+    var val = this.model.get('image')
+    if (val !== null && val.shape.length && val.shape[0] > 0)
+    {
+      if (this.canvas.width != val.shape[1] || this.canvas.height != val.shape[0])
+      {
+        this.model.set('size', [val.shape[1], val.shape[0]]);
+      }
+
+      var buffer = new Uint8ClampedArray(val.buffer.buffer);
+      var imd = new ImageData(buffer, val.shape[1], val.shape[0]);
+      var ctx = this.canvas.getContext("2d");
+      ctx.putImageData(imd, 0, 0);
+    }
   }
 
   canvas: any;
