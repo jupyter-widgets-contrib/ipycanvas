@@ -43,7 +43,8 @@
     "watch:nbextension": "webpack --watch"
   },
   "dependencies": {
-    "@jupyter-widgets/base": "^2.0.1"
+    "@jupyter-widgets/base": "^2.0.1",
+    "lodash": ">=4.17.13"
   },
   "devDependencies": {
     "@phosphor/application": "^1.6.0",
