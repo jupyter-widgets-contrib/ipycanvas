@@ -21,14 +21,11 @@ class CanvasModel extends DOMWidgetModel {
       _view_module: CanvasModel.view_module,
       _view_module_version: CanvasModel.view_module_version,
       size: [],
-      fill_style: 'black',
-      stroke_style: 'black'
     };
   }
 
   static serializers: ISerializers = {
     ...DOMWidgetModel.serializers,
-    // Add any extra serializers here
   }
 
   initialize(attributes: any, options: any) {
@@ -36,23 +33,7 @@ class CanvasModel extends DOMWidgetModel {
 
     this.commandsCache = [];
 
-    this.cacheSetCommand('fill_style', 'fillStyle');
-    this.cacheSetCommand('stroke_style', 'strokeStyle');
-    this.cacheSetCommand('global_alpha', 'globalAlpha');
-
     this.on('msg:custom', (command) => { this.commandsCache.push(command); });
-
-    this.on('change:fill_style', () => { this.cacheSetCommand('fill_style', 'fillStyle'); });
-    this.on('change:stroke_style', () => { this.cacheSetCommand('stroke_style', 'strokeStyle'); });
-    this.on('change:global_alpha', () => { this.cacheSetCommand('global_alpha', 'globalAlpha'); });
-  }
-
-  cacheSetCommand(python_name: string, ts_name: string) {
-    this.commandsCache.push({
-      name: 'set',
-      attr: ts_name,
-      value: this.get(python_name)
-    });
   }
 
   static model_name = 'CanvasModel';
@@ -62,7 +43,7 @@ class CanvasModel extends DOMWidgetModel {
   static view_module = MODULE_NAME;
   static view_module_version = MODULE_VERSION;
 
-  commandsCache: any;
+  commandsCache: Array<any>;
 }
 
 
@@ -89,25 +70,28 @@ class CanvasView extends DOMWidgetView {
 
   firstDraw() {
     // Replay all the commands that were received until this view was created
-    for (const command of (this.model as CanvasModel).commandsCache) {
-      if (command.name == 'set') {
-        this.ctx[command.attr] = command.value;
-      } else {
-        this.ctx[command.name](...command.args);
-      }
+    for (const command of this.model.commandsCache) {
+      this._processCommand(command);
     }
   }
 
   modelEvents() {
-    this.model.on('msg:custom', (command) => {
+    this.model.on('msg:custom', this._processCommand.bind(this));
+  }
+
+  private _processCommand (command: any) {
+    if (command instanceof Array) {
+      for (const subcommand of command) {
+        this._processCommand(subcommand);
+      }
+      return;
+    }
+
+    if (command.name == 'set') {
+      this.ctx[command.attr] = command.value;
+    } else {
       this.ctx[command.name](...command.args);
-    });
-
-    this.model.on('change:size', () => { this.resize_canvas(); });
-
-    this.model.on('change:fill_style', () => { this.ctx.fillStyle = this.model.get('fill_style'); });
-    this.model.on('change:stroke_style', () => { this.ctx.strokeStyle = this.model.get('stroke_style'); });
-    this.model.on('change:global_alpha', () => { this.ctx.globalAlpha = this.model.get('global_alpha'); });
+    }
   }
 
   resize_canvas() {
@@ -119,4 +103,5 @@ class CanvasView extends DOMWidgetView {
 
   canvas: any;
   ctx: any;
+  model: CanvasModel;
 }

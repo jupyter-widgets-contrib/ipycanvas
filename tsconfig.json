@@ -12,6 +12,8 @@
     "rootDir": "src",
     "skipLibCheck": true,
     "sourceMap": true,
+    // This allows us to initialize members in the "initialize" method
+    "strictPropertyInitialization": false,
     "strict": true,
     "target": "es2015"
   },

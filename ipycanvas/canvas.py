@@ -6,9 +6,15 @@
 
 from ipywidgets import Color, DOMWidget
 
-from traitlets import Float, Tuple, Unicode
+from traitlets import Float, Tuple, Unicode, observe
 
 from ._frontend import module_name, module_version
+
+
+def to_camel_case(snake_str):
+    """Turn a snake_case string into a camelCase one."""
+    components = snake_str.split('_')
+    return components[0] + ''.join(x.title() for x in components[1:])
 
 
 class Canvas(DOMWidget):
@@ -21,11 +27,14 @@ class Canvas(DOMWidget):
 
     size = Tuple((700, 500), help='Size of the Canvas, this is not equal to the size of the view').tag(sync=True)
 
-    fill_style = Color('black').tag(sync=True)
-    stroke_style = Color('black').tag(sync=True)
-    global_alpha = Float(1.0).tag(sync=True)
+    fill_style = Color('black')
+    stroke_style = Color('black')
+    global_alpha = Float(1.0)
 
     def __init__(self, *args, **kwargs):
+        self.caching = kwargs.get('caching', False)
+        self.commands_cache = []
+
         super(Canvas, self).__init__(*args, **kwargs)
         self.layout.width = str(self.size[0]) + 'px'
         self.layout.height = str(self.size[1]) + 'px'
@@ -78,5 +87,29 @@ class Canvas(DOMWidget):
     def bezier_curve_to(self, cp1x, cp1y, cp2x, cp2y, x, y):
         self._send_canvas_command('bezierCurveTo', cp1x, cp1y, cp2x, cp2y, x, y)
 
+    def flush(self):
+        if not self.caching:
+            return
+
+        self.send(self.commands_cache)
+
+        self.caching = False
+        self.commands_cache = []
+
+    @observe('fill_style', 'stroke_style', 'global_alpha')
+    def _on_set_attr(self, change):
+        command = {
+            'name': 'set',
+            'attr': to_camel_case(change.name),
+            'value': change.new
+        }
+        self._send_command(command)
+
     def _send_canvas_command(self, name, *args):
-        self.send({'name': name, 'args': args})
+        self._send_command({'name': name, 'args': args})
+
+    def _send_command(self, command):
+        if self.caching:
+            self.commands_cache.append(command)
+        else:
+            self.send(command)
