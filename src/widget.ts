@@ -33,7 +33,14 @@ class CanvasModel extends DOMWidgetModel {
 
     this.commandsCache = [];
 
-    this.on('msg:custom', (command) => { this.commandsCache.push(command); });
+    this.on('msg:custom', (command) => {
+      if (!(command instanceof Array) && command.name == 'clear') {
+        this.commandsCache = [];
+        return;
+      }
+
+      this.commandsCache.push(command);
+    });
   }
 
   static model_name = 'CanvasModel';
@@ -87,11 +94,17 @@ class CanvasView extends DOMWidgetView {
       return;
     }
 
+    if (command.name == 'clear') {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      return;
+    }
+
     if (command.name == 'set') {
       this.ctx[command.attr] = command.value;
-    } else {
-      this.ctx[command.name](...command.args);
+      return;
     }
+
+    this.ctx[command.name](...command.args);
   }
 
   resize_canvas() {

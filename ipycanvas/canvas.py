@@ -33,7 +33,7 @@ class Canvas(DOMWidget):
 
     def __init__(self, *args, **kwargs):
         self.caching = kwargs.get('caching', False)
-        self.commands_cache = []
+        self._commands_cache = []
 
         super(Canvas, self).__init__(*args, **kwargs)
         self.layout.width = str(self.size[0]) + 'px'
@@ -87,14 +87,20 @@ class Canvas(DOMWidget):
     def bezier_curve_to(self, cp1x, cp1y, cp2x, cp2y, x, y):
         self._send_canvas_command('bezierCurveTo', cp1x, cp1y, cp2x, cp2y, x, y)
 
+    def clear(self):
+        """Clear the entire canvas."""
+        self._commands_cache = []
+        self.send({'name': 'clear'})
+
     def flush(self):
+        """Flush all the cached commands."""
         if not self.caching:
             return
 
-        self.send(self.commands_cache)
+        self.send(self._commands_cache)
 
         self.caching = False
-        self.commands_cache = []
+        self._commands_cache = []
 
     @observe('fill_style', 'stroke_style', 'global_alpha')
     def _on_set_attr(self, change):
@@ -110,6 +116,6 @@ class Canvas(DOMWidget):
 
     def _send_command(self, command):
         if self.caching:
-            self.commands_cache.append(command)
+            self._commands_cache.append(command)
         else:
             self.send(command)
