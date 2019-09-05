@@ -34,21 +34,21 @@ class CanvasModel extends DOMWidgetModel {
   initialize(attributes: any, options: any) {
     super.initialize(attributes, options);
 
-    this.commands_cache = [];
+    this.commandsCache = [];
 
-    this.cache_set_command('fill_style', 'fillStyle');
-    this.cache_set_command('stroke_style', 'strokeStyle');
-    this.cache_set_command('global_alpha', 'globalAlpha');
+    this.cacheSetCommand('fill_style', 'fillStyle');
+    this.cacheSetCommand('stroke_style', 'strokeStyle');
+    this.cacheSetCommand('global_alpha', 'globalAlpha');
 
-    this.on('msg:custom', (command) => { this.commands_cache.push(command); });
+    this.on('msg:custom', (command) => { this.commandsCache.push(command); });
 
-    this.on('change:fill_style', () => { this.cache_set_command('fill_style', 'fillStyle'); });
-    this.on('change:stroke_style', () => { this.cache_set_command('stroke_style', 'strokeStyle'); });
-    this.on('change:global_alpha', () => { this.cache_set_command('global_alpha', 'globalAlpha'); });
+    this.on('change:fill_style', () => { this.cacheSetCommand('fill_style', 'fillStyle'); });
+    this.on('change:stroke_style', () => { this.cacheSetCommand('stroke_style', 'strokeStyle'); });
+    this.on('change:global_alpha', () => { this.cacheSetCommand('global_alpha', 'globalAlpha'); });
   }
 
-  cache_set_command(python_name: string, ts_name: string) {
-    this.commands_cache.push({
+  cacheSetCommand(python_name: string, ts_name: string) {
+    this.commandsCache.push({
       name: 'set',
       attr: ts_name,
       value: this.get(python_name)
@@ -62,7 +62,7 @@ class CanvasModel extends DOMWidgetModel {
   static view_module = MODULE_NAME;
   static view_module_version = MODULE_VERSION;
 
-  commands_cache: any;
+  commandsCache: any;
 }
 
 
@@ -82,14 +82,14 @@ class CanvasView extends DOMWidgetView {
 
     this.resize_canvas();
 
-    this.first_draw();
+    this.firstDraw();
 
-    this.model_events();
+    this.modelEvents();
   }
 
-  first_draw() {
+  firstDraw() {
     // Replay all the commands that were received until this view was created
-    for (const command of (this.model as CanvasModel).commands_cache) {
+    for (const command of (this.model as CanvasModel).commandsCache) {
       if (command.name == 'set') {
         this.ctx[command.attr] = command.value;
       } else {
@@ -98,7 +98,7 @@ class CanvasView extends DOMWidgetView {
     }
   }
 
-  model_events() {
+  modelEvents() {
     this.model.on('msg:custom', (command) => {
       this.ctx[command.name](...command.args);
     });
