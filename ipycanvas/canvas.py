@@ -95,13 +95,13 @@ class Canvas(DOMWidget):
         self._send_canvas_command('bezierCurveTo', cp1x, cp1y, cp2x, cp2y, x, y)
 
     # Text methods
-    def fill_text(self, text, x, y, maxWidth=None):
+    def fill_text(self, text, x, y, max_width=None):
         """Fill a given text at the given (x,y) position. Optionally with a maximum width to draw."""
-        self._send_canvas_command('fillText', text, x, y, maxWidth)
+        self._send_canvas_command('fillText', text, x, y, max_width)
 
-    def stroke_text(self, text, x, y, maxWidth=None):
+    def stroke_text(self, text, x, y, max_width=None):
         """Stroke a given text at the given (x,y) position. Optionally with a maximum width to draw."""
-        self._send_canvas_command('strokeText', text, x, y, maxWidth)
+        self._send_canvas_command('strokeText', text, x, y, max_width)
 
     def clear(self):
         """Clear the entire canvas."""
