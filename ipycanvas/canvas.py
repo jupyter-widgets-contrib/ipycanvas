@@ -32,6 +32,9 @@ class Canvas(DOMWidget):
     global_alpha = Float(1.0)
 
     font = Unicode('12px serif')
+    textAlign = Unicode('start')
+    textBaseline = Unicode('alphabetic')
+    direction = Unicode('inherit')
 
     def __init__(self, *args, **kwargs):
         self.caching = kwargs.get('caching', False)
@@ -113,7 +116,7 @@ class Canvas(DOMWidget):
         self.caching = False
         self._commands_cache = []
 
-    @observe('fill_style', 'stroke_style', 'global_alpha')
+    @observe('fill_style', 'stroke_style', 'global_alpha', 'font', 'textAlign', 'textBaseline', 'direction')
     def _on_set_attr(self, change):
         command = {
             'name': 'set',
