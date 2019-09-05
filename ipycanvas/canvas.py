@@ -31,6 +31,8 @@ class Canvas(DOMWidget):
     stroke_style = Color('black')
     global_alpha = Float(1.0)
 
+    font = Unicode('12px serif')
+
     def __init__(self, *args, **kwargs):
         self.caching = kwargs.get('caching', False)
         self._commands_cache = []
@@ -86,6 +88,15 @@ class Canvas(DOMWidget):
 
     def bezier_curve_to(self, cp1x, cp1y, cp2x, cp2y, x, y):
         self._send_canvas_command('bezierCurveTo', cp1x, cp1y, cp2x, cp2y, x, y)
+
+    # Text methods
+    def fill_text(self, text, x, y, maxWidth=None):
+        """Fill a given text at the given (x,y) position. Optionally with a maximum width to draw."""
+        self._send_canvas_command('fillText', text, x, y, maxWidth)
+
+    def stroke_text(self, text, x, y, maxWidth=None):
+        """Stroke a given text at the given (x,y) position. Optionally with a maximum width to draw."""
+        self._send_canvas_command('strokeText', text, x, y, maxWidth)
 
     def clear(self):
         """Clear the entire canvas."""
