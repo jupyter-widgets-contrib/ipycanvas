@@ -4,6 +4,8 @@
 # Copyright (c) Martin Renou.
 # Distributed under the terms of the Modified BSD License.
 
+from contextlib import contextmanager
+
 from ipywidgets import Color, DOMWidget
 
 from traitlets import Float, Tuple, Unicode, observe
@@ -133,3 +135,11 @@ class Canvas(DOMWidget):
             self._commands_cache.append(command)
         else:
             self.send(command)
+
+
+@contextmanager
+def hold_canvas(canvas):
+    """Hold any drawing on the canvas, and perform only one draw command at the end."""
+    canvas.caching = True
+    yield
+    canvas.flush()
