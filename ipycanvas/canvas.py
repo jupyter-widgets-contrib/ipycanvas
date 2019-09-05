@@ -126,7 +126,7 @@ class Canvas(DOMWidget):
         self._send_command(command)
 
     def _send_canvas_command(self, name, *args):
-        self._send_command({'name': name, 'args': args})
+        self._send_command({'name': name, 'args': [arg for arg in args if arg is not None]})
 
     def _send_command(self, command):
         if self.caching:
