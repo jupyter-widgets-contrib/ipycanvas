@@ -10,7 +10,8 @@
   ],
   "files": [
     "lib/**/*.js",
-    "dist/*.js"
+    "dist/*.js",
+    "css/*.css"
   ],
   "homepage": "https://github.com/martinRenou/ipycanvas",
   "bugs": {
@@ -44,7 +45,9 @@
   },
   "dependencies": {
     "@jupyter-widgets/base": "^2.0.1",
-    "lodash": ">=4.17.13"
+    "css-loader": "^3.2.0",
+    "lodash": ">=4.17.13",
+    "style-loader": "^1.0.0"
   },
   "devDependencies": {
     "@phosphor/application": "^1.6.0",
