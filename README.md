@@ -1,7 +1,16 @@
 
 # ipycanvas
 
-Interactive widgets library exposing the browser's Canvas API
+Interactive widgets library exposing the [browser's Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) to Python. There are some API differences though:
+
+- The `Canvas` widget is exposing the [`CanvasRenderingContext2D`](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D) API
+- All the API is written in `snake_case` instead of `camelCase`, so for example `c.fillStyle = 'red'` becomes `c.fill_style = 'red'`
+- The `Canvas` widget exposes a `clear` method, we highly recommand using `c.clear()` instead of `c.clear_rect(0, 0, c.size[0], c.size[1])` for clearing the canvas, it will be much more efficient
+- We provide a `hold_canvas` context manager if you want to perform lots of commands at once
+
+## Example
+
+![Heatmap with NumPy](heatmap.png)
 
 ## Installation
 
