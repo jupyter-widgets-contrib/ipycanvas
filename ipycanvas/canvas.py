@@ -105,8 +105,7 @@ class Canvas(DOMWidget):
 
     def clear(self):
         """Clear the entire canvas."""
-        self._commands_cache = []
-        self.send({'name': 'clear'})
+        self._send_command({'name': 'clear'})
 
     def flush(self):
         """Flush all the cached commands."""
