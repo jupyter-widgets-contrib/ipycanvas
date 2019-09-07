@@ -20,6 +20,12 @@ You can install using `pip`:
 pip install ipycanvas
 ```
 
+Or using `conda`:
+
+```bash
+conda install -c conda-forge ipycanvas
+```
+
 And if you use jupyterlab:
 
 ```bash
