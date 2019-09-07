@@ -1,0 +1,7 @@
+name: ipycanvas
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+  - pip:
+    ipycanvas=0.2.0
