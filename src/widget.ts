@@ -2,7 +2,7 @@
 // Distributed under the terms of the Modified BSD License.
 
 import {
-  DOMWidgetModel, DOMWidgetView, ISerializers
+  DOMWidgetModel, DOMWidgetView, ISerializers, Dict
 } from '@jupyter-widgets/base';
 
 import {
@@ -33,19 +33,61 @@ class CanvasModel extends DOMWidgetModel {
   initialize(attributes: any, options: any) {
     super.initialize(attributes, options);
 
-    this.commandsCache = [];
+    this.canvas = document.createElement('canvas');
+    this.ctx = this.canvas.getContext('2d');
 
-    this.on('msg:custom', (command) => {
-      if (command instanceof Array) {
-        this.commandsCache = this.commandsCache.concat(command);
-      } else {
-        this.commandsCache.push(command);
-      }
+    this.resizeCanvas();
+
+    this.on('change:size', this.resizeCanvas.bind(this));
+    this.on('msg:custom', this.onCommand.bind(this));
+  }
+
+  private onCommand(command: any) {
+    this.processCommand(command);
+
+    this.forEachView((view: CanvasView) => {
+      view.updateCanvas();
     });
   }
 
-  cleanCache(command: any) {
-    this.commandsCache = this.commandsCache.slice(this.commandsCache.indexOf(command) + 1);
+  private processCommand(command: any) {
+    if (command instanceof Array) {
+      for (const subcommand of command) {
+        this.processCommand(subcommand);
+      }
+      return;
+    }
+
+    if (command.name == 'set') {
+      this.ctx[command.attr] = command.value;
+      return;
+    }
+
+    if (command.name == 'clear') {
+      this.forEachView((view: CanvasView) => {
+        view.clear();
+      });
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+      return;
+    }
+
+    this.ctx[command.name](...command.args);
+  }
+
+  private forEachView(callback: (view: CanvasView) => void) {
+    for (const view_id in this.views) {
+      this.views[view_id].then((view: CanvasView) => {
+        callback(view);
+      });
+    }
+  }
+
+  private resizeCanvas() {
+    const size = this.get('size');
+
+    this.canvas.setAttribute('width', size[0]);
+    this.canvas.setAttribute('height', size[1]);
   }
 
   static model_name = 'CanvasModel';
@@ -55,7 +97,9 @@ class CanvasModel extends DOMWidgetModel {
   static view_module = MODULE_NAME;
   static view_module_version = MODULE_VERSION;
 
-  commandsCache: Array<any>;
+  canvas: HTMLCanvasElement;
+  ctx: any;
+  views: Dict<Promise<CanvasView>>;
 }
 
 
@@ -63,61 +107,33 @@ export
 class CanvasView extends DOMWidgetView {
   render() {
     this.canvas = document.createElement('canvas');
-    this.canvas.width = '100%';
-    this.canvas.height = '100%';
 
     this.el.appendChild(this.canvas);
-
     this.ctx = this.canvas.getContext('2d');
 
-    this.resize_canvas();
+    this.resizeCanvas();
+    this.model.on('change:size', this.resizeCanvas.bind(this));
 
-    this.firstDraw();
-
-    this.modelEvents();
+    this.updateCanvas();
   }
 
-  firstDraw() {
-    // Replay all the commands that were received until this view was created
-    for (const command of this.model.commandsCache) {
-      this._processCommand(command);
-    }
+  clear() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  modelEvents() {
-    this.model.on('msg:custom', this._processCommand.bind(this));
+  updateCanvas() {
+    this.ctx.drawImage(this.model.canvas, 0, 0);
   }
 
-  private _processCommand (command: any) {
-    if (command instanceof Array) {
-      for (const subcommand of command) {
-        this._processCommand(subcommand);
-      }
-      return;
-    }
-
-    if (command.name == 'clear') {
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      this.model.cleanCache(command);
-      return;
-    }
-
-    if (command.name == 'set') {
-      this.ctx[command.attr] = command.value;
-      return;
-    }
-
-    this.ctx[command.name](...command.args);
-  }
-
-  resize_canvas() {
+  private resizeCanvas() {
     const size = this.model.get('size');
 
     this.canvas.setAttribute('width', size[0]);
     this.canvas.setAttribute('height', size[1]);
   }
 
-  canvas: any;
+  canvas: HTMLCanvasElement;
   ctx: any;
+
   model: CanvasModel;
 }
