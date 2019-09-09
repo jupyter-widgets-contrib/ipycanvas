@@ -99,6 +99,7 @@ class CanvasModel extends DOMWidgetModel {
 
   canvas: HTMLCanvasElement;
   ctx: any;
+
   views: Dict<Promise<CanvasView>>;
 }
 

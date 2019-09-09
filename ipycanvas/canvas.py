@@ -65,33 +65,65 @@ class Canvas(DOMWidget):
 
     # Paths methods
     def begin_path(self):
+        """Call this method when you want to create a new path."""
         self._send_canvas_command('beginPath')
 
     def close_path(self):
+        """Add a straight line from the current point to the start of the current path.
+
+        If the shape has already been closed or has only one point, this function does nothing.
+        This method doesn't draw anything to the canvas directly. You can render the path using the stroke() or fill() methods.
+        """
         self._send_canvas_command('closePath')
 
     def stroke(self):
+        """Stroke (outlines) the current path with the current stroke style."""
         self._send_canvas_command('stroke')
 
     def fill(self):
+        """Fill the current or given path with the current fillStyle."""
         self._send_canvas_command('fill')
 
     def move_to(self, x, y):
+        """Move the "pen" to the given (x, y) coordinates."""
         self._send_canvas_command('moveTo', x, y)
 
     def line_to(self, x, y):
+        """Add a straight line to the current path by connecting the path's last point to the specified (x, y) coordinates.
+
+        Like other methods that modify the current path, this method does not directly render anything. To
+        draw the path onto the canvas, you can use the fill() or stroke() methods.
+        """
         self._send_canvas_command('lineTo', x, y)
 
-    def arc(self, x, y, radius, start_angle, end_angle, anticlockwise):
+    def arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
+        """Create a circular arc centered at (x, y) with a radius of radius.
+
+        The path starts at startAngle and ends at endAngle, and travels in the direction given by
+        anticlockwise (defaulting to clockwise).
+        """
         self._send_canvas_command('arc', x, y, radius, start_angle, end_angle, anticlockwise)
 
     def arc_to(self, x1, y1, x2, y2, radius):
+        """Add a circular arc to the current path, using the given control points and radius."""
         self._send_canvas_command('arcTo', x1, y1, x2, y2, radius)
 
     def quadratic_curve_to(self, cp1x, cp1y, x, y):
+        """Add a quadratic Bezier curve to the current path.
+
+        It requires two points: the first one is a control point and the second one is the end point.
+        The starting point is the latest point in the current path, which can be changed using move_to()
+        before creating the quadratic Bezier curve.
+        """
         self._send_canvas_command('quadraticCurveTo', cp1x, cp1y, x, y)
 
     def bezier_curve_to(self, cp1x, cp1y, cp2x, cp2y, x, y):
+        """Add a cubic Bezier curve to the current path.
+
+        It requires three points: the first two are control points and the third one is the end point.
+        The starting point is the latest point in the current path, which can be changed using move_to()
+        before creating the Bezier curve.
+        """
         self._send_canvas_command('bezierCurveTo', cp1x, cp1y, cp2x, cp2y, x, y)
 
     # Text methods
