@@ -6,9 +6,9 @@
 
 from contextlib import contextmanager
 
-from ipywidgets import Color, DOMWidget
+from traitlets import Float, Instance, List, Tuple, Unicode, observe
 
-from traitlets import Float, Tuple, Unicode, observe
+from ipywidgets import Color, DOMWidget, widget_serialization
 
 from ._frontend import module_name, module_version
 
@@ -39,6 +39,7 @@ class Canvas(DOMWidget):
     direction = Unicode('inherit')
 
     def __init__(self, *args, **kwargs):
+        """Create a Canvas widget."""
         self.caching = kwargs.get('caching', False)
         self._commands_cache = []
 
@@ -166,6 +167,36 @@ class Canvas(DOMWidget):
             self._commands_cache.append(command)
         else:
             self.send(command)
+
+
+class MultiCanvas(DOMWidget):
+    _model_name = Unicode('MultiCanvasModel').tag(sync=True)
+    _model_module = Unicode(module_name).tag(sync=True)
+    _model_module_version = Unicode(module_version).tag(sync=True)
+    _view_name = Unicode('MultiCanvasView').tag(sync=True)
+    _view_module = Unicode(module_name).tag(sync=True)
+    _view_module_version = Unicode(module_version).tag(sync=True)
+
+    size = Tuple((700, 500), help='Size of the Canvas, this is not equal to the size of the view')
+
+    _canvases = List(Instance(Canvas)).tag(sync=True, **widget_serialization)
+
+    def __init__(self, n_canvases=3, *args, **kwargs):
+        """Create a MultiCanvas widget with n_canvases Canvas widgets."""
+        size = kwargs.get('size', (700, 500))
+
+        super(MultiCanvas, self).__init__(*args, _canvases=[Canvas(size=size) for _ in range(n_canvases)], **kwargs)
+        self.layout.width = str(size[0]) + 'px'
+        self.layout.height = str(size[1]) + 'px'
+
+    def __getitem__(self, key):
+        """Access one of the Canvas instances."""
+        return self._canvases[key]
+
+    @observe('size')
+    def _on_size_change(self, change):
+        for canvas in self._canvases:
+            canvas.size = change.new
 
 
 @contextmanager
