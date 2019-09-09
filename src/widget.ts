@@ -9,8 +9,6 @@ import {
   MODULE_NAME, MODULE_VERSION
 } from './version';
 
-import '../css/ipycanvas.css'
-
 
 export
 class CanvasModel extends DOMWidgetModel {
