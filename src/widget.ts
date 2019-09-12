@@ -2,7 +2,7 @@
 // Distributed under the terms of the Modified BSD License.
 
 import {
-  DOMWidgetModel, DOMWidgetView, ISerializers, Dict
+  DOMWidgetModel, DOMWidgetView, ISerializers, Dict, ViewList, unpack_models
 } from '@jupyter-widgets/base';
 
 import {
@@ -20,7 +20,7 @@ class CanvasModel extends DOMWidgetModel {
       _view_name: CanvasModel.view_name,
       _view_module: CanvasModel.view_module,
       _view_module_version: CanvasModel.view_module_version,
-      size: [],
+      size: [700, 500],
     };
   }
 
@@ -135,4 +135,71 @@ class CanvasView extends DOMWidgetView {
   ctx: any;
 
   model: CanvasModel;
+}
+
+
+export
+class MultiCanvasModel extends DOMWidgetModel {
+  defaults() {
+    return {...super.defaults(),
+      _model_name: MultiCanvasModel.model_name,
+      _model_module: MultiCanvasModel.model_module,
+      _model_module_version: MultiCanvasModel.model_module_version,
+      _view_name: MultiCanvasModel.view_name,
+      _view_module: MultiCanvasModel.view_module,
+      _view_module_version: MultiCanvasModel.view_module_version,
+      _canvases: [],
+    };
+  }
+
+  static serializers: ISerializers = {
+    ...DOMWidgetModel.serializers,
+    _canvases: { deserialize: (unpack_models as any) },
+  }
+
+  static model_name = 'MultiCanvasModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+  static view_name = 'MultiCanvasView';
+  static view_module = MODULE_NAME;
+  static view_module_version = MODULE_VERSION;
+}
+
+
+export
+class MultiCanvasView extends DOMWidgetView {
+  render() {
+    this.container = document.createElement('div');
+    this.container.style.position = 'relative';
+
+    this.el.appendChild(this.container);
+
+    this.canvas_views = new ViewList<CanvasView>(this.createCanvasView, this.removeCanvasView, this);
+    this.updateCanvasViews();
+
+    this.model.on('change:_canvases', this.updateCanvasViews.bind(this));
+  }
+
+  private updateCanvasViews() {
+    this.canvas_views.update(this.model.get('_canvases'));
+  }
+
+  private createCanvasView(canvasModel: CanvasModel, index: number) {
+    // The following ts-ignore is needed due to ipywidgets's implementation
+    // @ts-ignore
+    return this.create_child_view(canvasModel).then((canvasView: CanvasView) => {
+      canvasView.el.style.zIndex = index;
+      canvasView.el.style.position = 'absolute';
+      this.container.appendChild(canvasView.el);
+
+      return canvasView;
+    });
+  }
+
+  private removeCanvasView(canvasView: CanvasView) {
+    this.container.removeChild(canvasView.el);
+  }
+
+  private container: HTMLDivElement;
+  private canvas_views: ViewList<CanvasView>;
 }
