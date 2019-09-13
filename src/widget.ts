@@ -40,37 +40,67 @@ class CanvasModel extends DOMWidgetModel {
     this.on('msg:custom', this.onCommand.bind(this));
   }
 
-  private onCommand(command: any) {
-    this.processCommand(command);
+  private onCommand(command: any, buffers: any) {
+    this.processCommand(command, buffers);
 
     this.forEachView((view: CanvasView) => {
       view.updateCanvas();
     });
   }
 
-  private processCommand(command: any) {
+  private processCommand(command: any, buffers: any) {
     if (command instanceof Array) {
+      let remainingBuffers = buffers;
+
       for (const subcommand of command) {
-        this.processCommand(subcommand);
+        let subbuffers = [];
+        if (subcommand.n_buffers) {
+          subbuffers = remainingBuffers.slice(0, subcommand.n_buffers);
+          remainingBuffers = remainingBuffers.slice(subcommand.n_buffers)
+        }
+        this.processCommand(subcommand, subbuffers);
       }
       return;
     }
 
-    if (command.name == 'set') {
-      this.ctx[command.attr] = command.value;
-      return;
+    switch (command.name) {
+      case 'putImageData':
+        this.putImageData(command.args, buffers);
+        break;
+      case 'set':
+        this.setAttr(command.attr, command.value);
+        break;
+      case 'clear':
+        this.clearCanvas();
+        break;
+      default:
+        this.executeCommand(command.name, command.args);
+        break;
     }
+  }
 
-    if (command.name == 'clear') {
-      this.forEachView((view: CanvasView) => {
-        view.clear();
-      });
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  private putImageData(args: any[], buffers: any) {
+    const [bufferMetadata, dx, dy] = args;
 
-      return;
-    }
+    const data = new Uint8ClampedArray(buffers[0].buffer);
+    const imageData = new ImageData(data, bufferMetadata.shape[1], bufferMetadata.shape[0]);
 
-    this.ctx[command.name](...command.args);
+    this.ctx.putImageData(imageData, dx, dy);
+  }
+
+  private setAttr(attr: string, value: any) {
+    this.ctx[attr] = value;
+  }
+
+  private clearCanvas() {
+    this.forEachView((view: CanvasView) => {
+      view.clear();
+    });
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  private executeCommand(name: string, args: any[]) {
+    this.ctx[name](...args);
   }
 
   private forEachView(callback: (view: CanvasView) => void) {
