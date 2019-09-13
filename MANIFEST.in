@@ -4,6 +4,7 @@ include README.md
 include setupbase.py
 
 include package.json
+include tsconfig.json
 include webpack.config.js
 include ipycanvas/labextension/*.tgz
 
