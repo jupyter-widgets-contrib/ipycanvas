@@ -3,6 +3,4 @@ channels:
   - conda-forge
 dependencies:
   - numpy
-  - pip
-  - pip:
-    - ipycanvas==0.2.1
+  - ipycanvas=0.2.2
