@@ -3,4 +3,5 @@ channels:
   - conda-forge
 dependencies:
   - numpy
+  - pillow
   - ipycanvas=0.2.2

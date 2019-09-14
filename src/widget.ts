@@ -10,6 +10,15 @@ import {
 } from './version';
 
 
+function getContext(canvas: HTMLCanvasElement) {
+  const context = canvas.getContext("2d");
+  if (context === null) {
+    throw 'Could not create 2d context.';
+  }
+  return context;
+}
+
+
 export
 class CanvasModel extends DOMWidgetModel {
   defaults() {
@@ -32,7 +41,7 @@ class CanvasModel extends DOMWidgetModel {
     super.initialize(attributes, options);
 
     this.canvas = document.createElement('canvas');
-    this.ctx = this.canvas.getContext('2d');
+    this.ctx = getContext(this.canvas);
 
     this.resizeCanvas();
 
@@ -82,14 +91,23 @@ class CanvasModel extends DOMWidgetModel {
   private putImageData(args: any[], buffers: any) {
     const [bufferMetadata, dx, dy] = args;
 
-    const data = new Uint8ClampedArray(buffers[0].buffer);
-    const imageData = new ImageData(data, bufferMetadata.shape[1], bufferMetadata.shape[0]);
+    const width = bufferMetadata.shape[1];
+    const height = bufferMetadata.shape[0];
 
-    this.ctx.putImageData(imageData, dx, dy);
+    const data = new Uint8ClampedArray(buffers[0].buffer);
+    const imageData = new ImageData(data, width, height);
+
+    // Draw on a temporary off-screen canvas. This is a workaround for `putImageData` to support transparency.
+    const offscreenCanvas = document.createElement('canvas');
+    offscreenCanvas.width = width;
+    offscreenCanvas.height = height;
+    getContext(offscreenCanvas).putImageData(imageData, 0, 0);
+
+    this.ctx.drawImage(offscreenCanvas, dx, dy);
   }
 
   private setAttr(attr: string, value: any) {
-    this.ctx[attr] = value;
+    (this.ctx as any)[attr] = value;
   }
 
   private clearCanvas() {
@@ -100,7 +118,7 @@ class CanvasModel extends DOMWidgetModel {
   }
 
   private executeCommand(name: string, args: any[]) {
-    this.ctx[name](...args);
+    (this.ctx as any)[name](...args);
   }
 
   private forEachView(callback: (view: CanvasView) => void) {
@@ -126,7 +144,7 @@ class CanvasModel extends DOMWidgetModel {
   static view_module_version = MODULE_VERSION;
 
   canvas: HTMLCanvasElement;
-  ctx: any;
+  ctx: CanvasRenderingContext2D;
 
   views: Dict<Promise<CanvasView>>;
 }
@@ -138,7 +156,7 @@ class CanvasView extends DOMWidgetView {
     this.canvas = document.createElement('canvas');
 
     this.el.appendChild(this.canvas);
-    this.ctx = this.canvas.getContext('2d');
+    this.ctx = getContext(this.canvas);
 
     this.resizeCanvas();
     this.model.on('change:size', this.resizeCanvas.bind(this));
@@ -162,7 +180,7 @@ class CanvasView extends DOMWidgetView {
   }
 
   canvas: HTMLCanvasElement;
-  ctx: any;
+  ctx: CanvasRenderingContext2D;
 
   model: CanvasModel;
 }

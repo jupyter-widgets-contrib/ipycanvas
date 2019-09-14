@@ -9,6 +9,7 @@ Interactive widgets library exposing the [browser's Canvas API](https://develope
 - All the API is written in `snake_case` instead of `camelCase`, so for example `c.fillStyle = 'red'` becomes `c.fill_style = 'red'`
 - The `Canvas` widget exposes a `clear` method, `c.clear()` is a shortcut for `c.clear_rect(0, 0, c.size[0], c.size[1])`
 - We provide a `hold_canvas` context manager if you want to perform lots of commands at once
+- The Web canvas `putImageData` method does not support transparency, our `Canvas.put_image_data` **does** support it!
 
 ## Example
 
