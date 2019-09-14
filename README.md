@@ -11,9 +11,19 @@ Interactive widgets library exposing the [browser's Canvas API](https://develope
 - We provide a `hold_canvas` context manager if you want to perform lots of commands at once
 - The Web canvas `putImageData` method does not support transparency, our `Canvas.put_image_data` **does** support it!
 
-## Example
+## Examples
 
-![Heatmap with NumPy](heatmap.png)
+### Create John Conway's Game Of Life
+![John Conway's Game Of Life](images/ipycanvas_gameoflife.png)
+
+### Draw Particles from IPython
+![Particles](images/ipycanvas_particles.png)
+
+### Custom Sprites
+![Sprites](images/ipycanvas_sprites.png)
+
+### Draw data directly from a NumPy array
+![NumPy](images/ipycanvas_binary.png)
 
 ## Installation
 
