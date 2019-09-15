@@ -143,9 +143,9 @@ class Canvas(DOMWidget):
     def put_image_data(self, image_data, dx, dy):
         """Draw an image on the Canvas.
 
-        `image_data` being a NumPy array defining the image to draw
-        and `x` and `y` the pixel position where to draw.
-        This method is not affected by the canvas transformation matrix.
+        `image_data` being a NumPy array defining the image to draw and `x` and `y` the pixel position where to draw.
+        Unlike the CanvasRenderingContext2D.putImageData method, this method **is** affected by the canvas transformation matrix,
+        and supports transparency.
         """
         shape, image_buffer = array_to_binary(image_data)
         self._send_canvas_command('putImageData', ({'shape': shape}, dx, dy), (image_buffer, ))
