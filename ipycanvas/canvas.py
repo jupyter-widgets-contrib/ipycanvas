@@ -6,7 +6,7 @@
 
 from contextlib import contextmanager
 
-from traitlets import Float, Instance, List, Tuple, Unicode, observe
+from traitlets import Enum, Float, Instance, List, Tuple, Unicode, observe
 
 from ipywidgets import Color, DOMWidget, widget_serialization
 
@@ -39,6 +39,16 @@ class Canvas(DOMWidget):
     textAlign = Unicode('start')
     textBaseline = Unicode('alphabetic')
     direction = Unicode('inherit')
+
+    global_composite_operation = Enum(
+        ['source-over', 'source-in', 'source-out', 'source-atop',
+         'destination-over', 'destination-in', 'destination-out',
+         'destination-atop', 'lighter', 'copy', 'xor', 'multiply',
+         'screen', 'overlay', 'darken', 'lighten', 'color-dodge',
+         'color-burn', 'hard-light', 'soft-light', 'difference',
+         'exclusion', 'hue', 'saturation', 'color', 'luminosity'],
+        default_value='source-over'
+    )
 
     def __init__(self, *args, **kwargs):
         """Create a Canvas widget."""
@@ -218,7 +228,8 @@ class Canvas(DOMWidget):
         self._commands_cache = []
         self._buffers_cache = []
 
-    @observe('fill_style', 'stroke_style', 'global_alpha', 'font', 'textAlign', 'textBaseline', 'direction')
+    @observe('fill_style', 'stroke_style', 'global_alpha', 'font', 'textAlign',
+             'textBaseline', 'direction', 'global_composite_operation')
     def _on_set_attr(self, change):
         command = {
             'name': 'set',
