@@ -160,6 +160,15 @@ class Canvas(DOMWidget):
         shape, image_buffer = array_to_binary(image_data)
         self._send_canvas_command('putImageData', ({'shape': shape}, dx, dy), (image_buffer, ))
 
+    # Clipping
+    def clip(self):
+        """Turn the path currently being built into the current clipping path.
+
+        You can use clip() instead of close_path() to close a path and turn it into a clipping
+        path instead of stroking or filling the path.
+        """
+        self._send_canvas_command('clip')
+
     # Transformation methods
     def save(self):
         """Save the entire state of the canvas."""
