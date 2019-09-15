@@ -150,6 +150,59 @@ class Canvas(DOMWidget):
         shape, image_buffer = array_to_binary(image_data)
         self._send_canvas_command('putImageData', ({'shape': shape}, dx, dy), (image_buffer, ))
 
+    # Transformation methods
+    def save(self):
+        """Save the entire state of the canvas."""
+        self._send_canvas_command('save')
+
+    def restore(self):
+        """Restore the most recently saved canvas state."""
+        self._send_canvas_command('restore')
+
+    def translate(self, x, y):
+        """Move the canvas and its origin on the grid.
+
+        x indicates the horizontal distance to move,
+        and y indicates how far to move the grid vertically.
+        """
+        self._send_canvas_command('translate', (x, y))
+
+    def rotate(self, angle):
+        """Rotate the canvas clockwise around the current origin by the angle number of radians."""
+        self._send_canvas_command('rotate', (angle, ))
+
+    def scale(self, x, y=None):
+        """Scale the canvas units by x horizontally and by y vertically. Both parameters are real numbers.
+
+        Values that are smaller than 1.0 reduce the unit size and values above 1.0 increase the unit size.
+        Values of 1.0 leave the units the same size.
+        """
+        if y is None:
+            y = x
+        self._send_canvas_command('scale', (x, y))
+
+    def transform(self, a, b, c, d, e, f):
+        """Multiply the current transformation matrix with the matrix described by its arguments.
+
+        The transformation matrix is described by [[a, c, e], [b, d, f], [0, 0, 1]].
+        """
+        self._send_canvas_command('transform', (a, b, c, d, e, f))
+
+    def set_transform(self, a, b, c, d, e, f):
+        """Reset the current transform to the identity matrix, and then invokes the transform() method with the same arguments.
+
+        This basically undoes the current transformation, then sets the specified transform, all in one step.
+        """
+        self._send_canvas_command('setTransform', (a, b, c, d, e, f))
+
+    def reset_transform(self):
+        """Reset the current transform to the identity matrix.
+
+        This is the same as calling: set_transform(1, 0, 0, 1, 0, 0).
+        """
+        self._send_canvas_command('resetTransform')
+
+    # Extras
     def clear(self):
         """Clear the entire canvas."""
         self._send_command({'name': 'clear'})
