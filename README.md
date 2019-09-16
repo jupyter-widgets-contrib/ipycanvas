@@ -1,7 +1,9 @@
 
 # ipycanvas
 
+[![Documentation](http://readthedocs.org/projects/ipycanvas/badge/?version=latest)](https://ipycanvas.readthedocs.io/en/latest/?badge=latest)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?filepath=examples)
+
 
 Interactive widgets library exposing the [browser's Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) to Python. There are some API differences though:
 
@@ -10,6 +12,16 @@ Interactive widgets library exposing the [browser's Canvas API](https://develope
 - The `Canvas` widget exposes a `clear` method, `c.clear()` is a shortcut for `c.clear_rect(0, 0, c.size[0], c.size[1])`
 - We provide a `hold_canvas` context manager if you want to perform lots of commands at once
 - The Web canvas `putImageData` method does not support transparency, our `Canvas.put_image_data` **does** support it!
+
+## Try it online!
+
+You can try it online by clicking on this badge:
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?filepath=examples)
+
+## Documentation
+
+You can read the documentation following this link: https://ipycanvas.readthedocs.io/en/latest/
 
 ## Examples
 
