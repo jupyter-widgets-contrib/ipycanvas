@@ -16,12 +16,17 @@ from .binary import array_to_binary
 
 
 def to_camel_case(snake_str):
-    """Turn a snake_case string into a camelCase one."""
     components = snake_str.split('_')
     return components[0] + ''.join(x.title() for x in components[1:])
 
 
 class Canvas(DOMWidget):
+    """Create a Canvas widget.
+
+    Args:
+        size (tuple): The size (in pixels) of the canvas
+    """
+
     _model_name = Unicode('CanvasModel').tag(sync=True)
     _model_module = Unicode(module_name).tag(sync=True)
     _model_module_version = Unicode(module_version).tag(sync=True)
@@ -31,15 +36,33 @@ class Canvas(DOMWidget):
 
     size = Tuple((700, 500), help='Size of the Canvas, this is not equal to the size of the view').tag(sync=True)
 
+    #: (valid HTML color) The color for filling rectangles and paths. Default to ``'black'``.
     fill_style = Color('black')
+
+    #: (valid HTML color) The color for rectangles and paths stroke. Default to ``'black'``.
     stroke_style = Color('black')
+
+    #: (float) Transparency level. Default to ``1.0``.
     global_alpha = Float(1.0)
 
+    #: (str) Font for the text rendering. Default to ``'12px serif'``.
     font = Unicode('12px serif')
-    text_align = Unicode('start')
-    text_baseline = Unicode('alphabetic')
-    direction = Unicode('inherit')
 
+    #: (str) Text alignment, possible values are ``'start'``, ``'end'``, ``'left'``, ``'right'``, and ``'center'``.
+    #: Default to ``'start'``.
+    text_align = Enum(['start', 'end', 'left', 'right', 'center'], default_value='start')
+
+    #: (str) Text baseline, possible values are ``'top'``, ``'hanging'``, ``'middle'``, ``'alphabetic'``, ``'ideographic'``
+    #: and ``'bottom'``.
+    #: Default to ``'alphabetic'``.
+    text_baseline = Enum(['top', 'hanging', 'middle', 'alphabetic', 'ideographic', 'bottom'], default_value='alphabetic')
+
+    #: (str) Text direction, possible values are ``'ltr'``, ``'rtl'``, and ``'inherit'``.
+    #: Default to ``'inherit'``.
+    direction = Enum(['ltr', 'rtl', 'inherit'], default_value='inherit')
+
+    #: (str) Global composite operation, possible values are listed below:
+    #: https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Compositing#globalCompositeOperation
     global_composite_operation = Enum(
         ['source-over', 'source-in', 'source-out', 'source-atop',
          'destination-over', 'destination-in', 'destination-out',
@@ -62,20 +85,16 @@ class Canvas(DOMWidget):
 
     # Rectangles methods
     def fill_rect(self, x, y, width, height):
-        """Draw a filled rectangle."""
+        """Draw a filled rectangle of size ``(width, height)`` at the ``(x, y)`` position."""
         self._send_canvas_command('fillRect', (x, y, width, height))
 
     def stroke_rect(self, x, y, width, height):
-        """Draw a rectangular outline."""
+        """Draw a rectangular outline of size ``(width, height)`` at the ``(x, y)`` position."""
         self._send_canvas_command('strokeRect', (x, y, width, height))
 
     def clear_rect(self, x, y, width, height):
-        """Clear the specified rectangular area, making it fully transparent."""
+        """Clear the specified rectangular area of size ``(width, height)`` at the ``(x, y)`` position, making it fully transparent."""
         self._send_canvas_command('clearRect', (x, y, width, height))
-
-    def rect(self, x, y, width, height):
-        """Draw a rectangle whose top-left corner is specified by (x, y) with the specified width and height."""
-        self._send_canvas_command('rect', (x, y, width, height))
 
     # Paths methods
     def begin_path(self):
@@ -91,35 +110,42 @@ class Canvas(DOMWidget):
         self._send_canvas_command('closePath')
 
     def stroke(self):
-        """Stroke (outlines) the current path with the current stroke style."""
+        """Stroke (outlines) the current path with the current ``stroke_style``."""
         self._send_canvas_command('stroke')
 
     def fill(self):
-        """Fill the current or given path with the current fillStyle."""
+        """Fill the current or given path with the current ``fill_style``."""
         self._send_canvas_command('fill')
 
     def move_to(self, x, y):
-        """Move the "pen" to the given (x, y) coordinates."""
+        """Move the "pen" to the given ``(x, y)`` coordinates."""
         self._send_canvas_command('moveTo', (x, y))
 
     def line_to(self, x, y):
-        """Add a straight line to the current path by connecting the path's last point to the specified (x, y) coordinates.
+        """Add a straight line to the current path by connecting the path's last point to the specified ``(x, y)`` coordinates.
 
         Like other methods that modify the current path, this method does not directly render anything. To
         draw the path onto the canvas, you can use the fill() or stroke() methods.
         """
         self._send_canvas_command('lineTo', (x, y))
 
-    def arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
-        """Create a circular arc centered at (x, y) with a radius of radius.
+    def rect(self, x, y, width, height):
+        """Draw a rectangle of size ``(width, height)`` at the ``(x, y)`` position in the current path."""
+        self._send_canvas_command('rect', (x, y, width, height))
 
-        The path starts at startAngle and ends at endAngle, and travels in the direction given by
-        anticlockwise (defaulting to clockwise).
+    def arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
+        """Create a circular arc centered at ``(x, y)`` with a radius of ``radius``.
+
+        The path starts at ``start_angle`` and ends at ``end_angle``, and travels in the direction given by
+        ``anticlockwise`` (defaulting to clockwise: ``False``).
         """
         self._send_canvas_command('arc', (x, y, radius, start_angle, end_angle, anticlockwise))
 
     def arc_to(self, x1, y1, x2, y2, radius):
-        """Add a circular arc to the current path, using the given control points and radius."""
+        """Add a circular arc to the current path.
+
+        Using the given control points ``(x1, y1)`` and ``(x2, y2)`` and the ``radius``.
+        """
         self._send_canvas_command('arcTo', (x1, y1, x2, y2, radius))
 
     def quadratic_curve_to(self, cp1x, cp1y, x, y):
@@ -142,11 +168,11 @@ class Canvas(DOMWidget):
 
     # Text methods
     def fill_text(self, text, x, y, max_width=None):
-        """Fill a given text at the given (x,y) position. Optionally with a maximum width to draw."""
+        """Fill a given text at the given ``(x, y)`` position. Optionally with a maximum width to draw."""
         self._send_canvas_command('fillText', (text, x, y, max_width))
 
     def stroke_text(self, text, x, y, max_width=None):
-        """Stroke a given text at the given (x,y) position. Optionally with a maximum width to draw."""
+        """Stroke a given text at the given ``(x, y)`` position. Optionally with a maximum width to draw."""
         self._send_canvas_command('strokeText', (text, x, y, max_width))
 
     # Image methods
@@ -264,6 +290,13 @@ class Canvas(DOMWidget):
 
 
 class MultiCanvas(DOMWidget):
+    """Create a MultiCanvas widget with n_canvases Canvas widgets.
+
+    Args:
+        n_canvases (int): The number of canvases to create
+        size (tuple): The size (in pixels) of the canvases
+    """
+
     _model_name = Unicode('MultiCanvasModel').tag(sync=True)
     _model_module = Unicode(module_name).tag(sync=True)
     _model_module_version = Unicode(module_version).tag(sync=True)
@@ -276,7 +309,7 @@ class MultiCanvas(DOMWidget):
     _canvases = List(Instance(Canvas)).tag(sync=True, **widget_serialization)
 
     def __init__(self, n_canvases=3, *args, **kwargs):
-        """Create a MultiCanvas widget with n_canvases Canvas widgets."""
+        """Constructor."""
         size = kwargs.get('size', (700, 500))
 
         super(MultiCanvas, self).__init__(*args, _canvases=[Canvas(size=size) for _ in range(n_canvases)], **kwargs)
@@ -295,7 +328,13 @@ class MultiCanvas(DOMWidget):
 
 @contextmanager
 def hold_canvas(canvas):
-    """Hold any drawing on the canvas, and perform only one draw command at the end."""
+    """Hold any drawing on the canvas, and perform all commands in a single shot at the end.
+
+    This is way more efficient than sending commands one by one.
+
+    Args:
+        canvas (ipycanvas.canvas.Canvas): The canvas widget on which to hold the commands
+    """
     canvas.caching = True
     yield
     canvas.flush()

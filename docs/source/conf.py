@@ -3,10 +3,10 @@ import sphinx_rtd_theme
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
     # 'sphinx.ext.intersphinx',
     # 'sphinx.ext.autosummary',
     # 'sphinx.ext.viewcode',
-    # 'sphinx.ext.napoleon',
     # 'jupyter_sphinx.embed_widgets',
 ]
 
@@ -28,3 +28,5 @@ pygments_style = 'sphinx'
 html_theme = "sphinx_rtd_theme"
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 htmlhelp_basename = 'ipycanvasdoc'
+
+autodoc_member_order = 'bysource'
