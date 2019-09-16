@@ -36,8 +36,8 @@ class Canvas(DOMWidget):
     global_alpha = Float(1.0)
 
     font = Unicode('12px serif')
-    textAlign = Unicode('start')
-    textBaseline = Unicode('alphabetic')
+    text_align = Unicode('start')
+    text_baseline = Unicode('alphabetic')
     direction = Unicode('inherit')
 
     global_composite_operation = Enum(
@@ -237,8 +237,8 @@ class Canvas(DOMWidget):
         self._commands_cache = []
         self._buffers_cache = []
 
-    @observe('fill_style', 'stroke_style', 'global_alpha', 'font', 'textAlign',
-             'textBaseline', 'direction', 'global_composite_operation')
+    @observe('fill_style', 'stroke_style', 'global_alpha', 'font', 'text_align',
+             'text_baseline', 'direction', 'global_composite_operation')
     def _on_set_attr(self, change):
         command = {
             'name': 'set',
