@@ -25,6 +25,7 @@ class Canvas(DOMWidget):
 
     Args:
         size (tuple): The size (in pixels) of the canvas
+        caching (boolean): Whether commands should be cached or not
     """
 
     _model_name = Unicode('CanvasModel').tag(sync=True)
@@ -75,6 +76,7 @@ class Canvas(DOMWidget):
 
     def __init__(self, *args, **kwargs):
         """Create a Canvas widget."""
+        #: Whether commands should be cached or not
         self.caching = kwargs.get('caching', False)
         self._commands_cache = []
         self._buffers_cache = []
@@ -179,9 +181,9 @@ class Canvas(DOMWidget):
     def put_image_data(self, image_data, dx, dy):
         """Draw an image on the Canvas.
 
-        `image_data` being a NumPy array defining the image to draw and `x` and `y` the pixel position where to draw.
-        Unlike the CanvasRenderingContext2D.putImageData method, this method **is** affected by the canvas transformation matrix,
-        and supports transparency.
+        ``image_data`` should be  a NumPy array containing the image to draw and ``dx`` and ``dy`` the pixel position where to
+        draw. Unlike the CanvasRenderingContext2D.putImageData method, this method **is** affected by the canvas transformation
+        matrix, and supports transparency.
         """
         shape, image_buffer = array_to_binary(image_data)
         self._send_canvas_command('putImageData', ({'shape': shape}, dx, dy), (image_buffer, ))
@@ -207,18 +209,19 @@ class Canvas(DOMWidget):
     def translate(self, x, y):
         """Move the canvas and its origin on the grid.
 
-        x indicates the horizontal distance to move,
-        and y indicates how far to move the grid vertically.
+        ``x`` indicates the horizontal distance to move,
+        and ``y`` indicates how far to move the grid vertically.
         """
         self._send_canvas_command('translate', (x, y))
 
     def rotate(self, angle):
-        """Rotate the canvas clockwise around the current origin by the angle number of radians."""
+        """Rotate the canvas clockwise around the current origin by the ``angle`` number of radians."""
         self._send_canvas_command('rotate', (angle, ))
 
     def scale(self, x, y=None):
-        """Scale the canvas units by x horizontally and by y vertically. Both parameters are real numbers.
+        """Scale the canvas units by ``x`` horizontally and by ``y`` vertically. Both parameters are real numbers.
 
+        If ``y`` is not provided, it is defaulted to the same value as ``x``.
         Values that are smaller than 1.0 reduce the unit size and values above 1.0 increase the unit size.
         Values of 1.0 leave the units the same size.
         """
@@ -229,7 +232,8 @@ class Canvas(DOMWidget):
     def transform(self, a, b, c, d, e, f):
         """Multiply the current transformation matrix with the matrix described by its arguments.
 
-        The transformation matrix is described by [[a, c, e], [b, d, f], [0, 0, 1]].
+        The transformation matrix is described by:
+        ``[[a, c, e], [b, d, f], [0, 0, 1]]``.
         """
         self._send_canvas_command('transform', (a, b, c, d, e, f))
 
@@ -249,11 +253,11 @@ class Canvas(DOMWidget):
 
     # Extras
     def clear(self):
-        """Clear the entire canvas."""
+        """Clear the entire canvas. This is the same as calling ``clear_rect(0, 0, canvas.size[0], canvas.size[1])``."""
         self._send_command({'name': 'clear'})
 
     def flush(self):
-        """Flush all the cached commands."""
+        """Flush all the cached commands and clear the cache."""
         if not self.caching:
             return
 
