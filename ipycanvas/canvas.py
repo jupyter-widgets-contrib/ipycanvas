@@ -77,8 +77,13 @@ class Canvas(DOMWidget):
     #: (float) Sets the width of lines drawn in the future, must be a positive number. Default to ``1.0``.
     line_width = Float(1.0)
 
-    #: (str) Sets the appearance of the ends of lines.
+    #: (str) Sets the appearance of the ends of lines, possible values are ``'butt'``, ``'round'`` and ``'square'``.
+    #: Default to ``'butt'``.
     line_cap = Enum(['butt', 'round', 'square'], default_value='butt')
+
+    #: (str) Sets the appearance of the "corners" where lines meet, possible values are ``'round'``, ``'bevel'`` and ``'miter'``.
+    #: Default to ``'miter'``
+    line_join = Enum(['round', 'bevel', 'miter'], default_value='miter')
 
     def __init__(self, *args, **kwargs):
         """Create a Canvas widget."""
@@ -275,7 +280,7 @@ class Canvas(DOMWidget):
 
     @observe('fill_style', 'stroke_style', 'global_alpha', 'font', 'text_align',
              'text_baseline', 'direction', 'global_composite_operation',
-             'line_width', 'line_cap')
+             'line_width', 'line_cap', 'line_join')
     def _on_set_attr(self, change):
         command = {
             'name': 'set',
