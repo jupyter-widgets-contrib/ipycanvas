@@ -85,6 +85,12 @@ class Canvas(DOMWidget):
     #: Default to ``'miter'``
     line_join = Enum(['round', 'bevel', 'miter'], default_value='miter')
 
+    #: (float) Establishes a limit on the miter when two lines join at a sharp angle, to let you control how thick
+    #: the junction becomes. Default to ``10.``.
+    miter_limit = Float(10.)
+
+    _line_dash = List()
+
     def __init__(self, *args, **kwargs):
         """Create a Canvas widget."""
         #: Whether commands should be cached or not
@@ -188,6 +194,19 @@ class Canvas(DOMWidget):
         """Stroke a given text at the given ``(x, y)`` position. Optionally with a maximum width to draw."""
         self._send_canvas_command('strokeText', (text, x, y, max_width))
 
+    # Line methods
+    def get_line_dash(self):
+        """Return the current line dash pattern array containing an even number of non-negative numbers."""
+        return self._line_dash
+
+    def set_line_dash(self, segments):
+        """Set the current line dash pattern."""
+        if len(segments) % 2:
+            self._line_dash = segments + segments
+        else:
+            self._line_dash = segments
+        self._send_canvas_command('setLineDash', (self._line_dash, ))
+
     # Image methods
     def put_image_data(self, image_data, dx, dy):
         """Draw an image on the Canvas.
@@ -280,7 +299,7 @@ class Canvas(DOMWidget):
 
     @observe('fill_style', 'stroke_style', 'global_alpha', 'font', 'text_align',
              'text_baseline', 'direction', 'global_composite_operation',
-             'line_width', 'line_cap', 'line_join')
+             'line_width', 'line_cap', 'line_join', 'miter_limit')
     def _on_set_attr(self, change):
         command = {
             'name': 'set',
