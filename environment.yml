@@ -4,4 +4,4 @@ channels:
 dependencies:
   - numpy
   - pillow
-  - ipycanvas=0.2.2
+  - ipycanvas=0.3.0
