@@ -1,10 +1,4 @@
 """Binary module."""
-
-try:
-    from io import BytesIO as StringIO  # python3
-except:
-    from StringIO import StringIO  # python2
-
 import numpy as np
 
 
