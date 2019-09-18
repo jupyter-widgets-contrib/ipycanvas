@@ -91,6 +91,9 @@ class Canvas(DOMWidget):
 
     _line_dash = List()
 
+    #: (float) Specifies where to start a dash array on a line. Default is ``0.``.
+    line_dash_offset = Float(0.)
+
     def __init__(self, *args, **kwargs):
         """Create a Canvas widget."""
         #: Whether commands should be cached or not
@@ -299,7 +302,7 @@ class Canvas(DOMWidget):
 
     @observe('fill_style', 'stroke_style', 'global_alpha', 'font', 'text_align',
              'text_baseline', 'direction', 'global_composite_operation',
-             'line_width', 'line_cap', 'line_join', 'miter_limit')
+             'line_width', 'line_cap', 'line_join', 'miter_limit', 'line_dash_offset')
     def _on_set_attr(self, change):
         command = {
             'name': 'set',
