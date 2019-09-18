@@ -74,6 +74,26 @@ class Canvas(DOMWidget):
         default_value='source-over'
     )
 
+    #: (float) Sets the width of lines drawn in the future, must be a positive number. Default to ``1.0``.
+    line_width = Float(1.0)
+
+    #: (str) Sets the appearance of the ends of lines, possible values are ``'butt'``, ``'round'`` and ``'square'``.
+    #: Default to ``'butt'``.
+    line_cap = Enum(['butt', 'round', 'square'], default_value='butt')
+
+    #: (str) Sets the appearance of the "corners" where lines meet, possible values are ``'round'``, ``'bevel'`` and ``'miter'``.
+    #: Default to ``'miter'``
+    line_join = Enum(['round', 'bevel', 'miter'], default_value='miter')
+
+    #: (float) Establishes a limit on the miter when two lines join at a sharp angle, to let you control how thick
+    #: the junction becomes. Default to ``10.``.
+    miter_limit = Float(10.)
+
+    _line_dash = List()
+
+    #: (float) Specifies where to start a dash array on a line. Default is ``0.``.
+    line_dash_offset = Float(0.)
+
     def __init__(self, *args, **kwargs):
         """Create a Canvas widget."""
         #: Whether commands should be cached or not
@@ -177,6 +197,19 @@ class Canvas(DOMWidget):
         """Stroke a given text at the given ``(x, y)`` position. Optionally with a maximum width to draw."""
         self._send_canvas_command('strokeText', (text, x, y, max_width))
 
+    # Line methods
+    def get_line_dash(self):
+        """Return the current line dash pattern array containing an even number of non-negative numbers."""
+        return self._line_dash
+
+    def set_line_dash(self, segments):
+        """Set the current line dash pattern."""
+        if len(segments) % 2:
+            self._line_dash = segments + segments
+        else:
+            self._line_dash = segments
+        self._send_canvas_command('setLineDash', (self._line_dash, ))
+
     # Image methods
     def put_image_data(self, image_data, dx, dy):
         """Draw an image on the Canvas.
@@ -268,7 +301,8 @@ class Canvas(DOMWidget):
         self._buffers_cache = []
 
     @observe('fill_style', 'stroke_style', 'global_alpha', 'font', 'text_align',
-             'text_baseline', 'direction', 'global_composite_operation')
+             'text_baseline', 'direction', 'global_composite_operation',
+             'line_width', 'line_cap', 'line_join', 'miter_limit', 'line_dash_offset')
     def _on_set_attr(self, change):
         command = {
             'name': 'set',
