@@ -77,6 +77,9 @@ class Canvas(DOMWidget):
     #: (float) Sets the width of lines drawn in the future, must be a positive number. Default to ``1.0``.
     line_width = Float(1.0)
 
+    #: (str) Sets the appearance of the ends of lines.
+    line_cap = Enum(['butt', 'round', 'square'], default_value='butt')
+
     def __init__(self, *args, **kwargs):
         """Create a Canvas widget."""
         #: Whether commands should be cached or not
@@ -272,7 +275,7 @@ class Canvas(DOMWidget):
 
     @observe('fill_style', 'stroke_style', 'global_alpha', 'font', 'text_align',
              'text_baseline', 'direction', 'global_composite_operation',
-             'line_width')
+             'line_width', 'line_cap')
     def _on_set_attr(self, change):
         command = {
             'name': 'set',
