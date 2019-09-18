@@ -1,1 +1,1 @@
-ipycanvas
+git+https://github.com/martinRenou/ipycanvas@stable
