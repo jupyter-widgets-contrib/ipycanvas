@@ -135,9 +135,12 @@ class Canvas(DOMWidget):
         """Stroke (outlines) the current path with the current ``stroke_style``."""
         self._send_canvas_command('stroke')
 
-    def fill(self):
-        """Fill the current or given path with the current ``fill_style``."""
-        self._send_canvas_command('fill')
+    def fill(self, rule='nonzero'):
+        """Fill the current path with the current ``fill_style`` and given the rule.
+
+        Possible rules are ``nonzero`` and ``evenodd``.
+        """
+        self._send_canvas_command('fill', (rule, ))
 
     def move_to(self, x, y):
         """Move the "pen" to the given ``(x, y)`` coordinates."""
