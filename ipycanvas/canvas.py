@@ -6,6 +6,8 @@
 
 from contextlib import contextmanager
 
+import numpy as np
+
 from traitlets import Enum, Float, Instance, List, Tuple, Unicode, observe
 
 from ipywidgets import Color, DOMWidget, widget_serialization
@@ -223,6 +225,10 @@ class Canvas(DOMWidget):
         """
         shape, image_buffer = array_to_binary(image_data)
         self._send_canvas_command('putImageData', ({'shape': shape}, dx, dy), (image_buffer, ))
+
+    def create_image_data(self, width, height):
+        """Create a NumPy array of shape (width, height, 4) representing a table of pixel colors."""
+        return np.zeros((width, height, 4), dtype=int)
 
     # Clipping
     def clip(self):
