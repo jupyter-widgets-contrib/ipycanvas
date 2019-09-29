@@ -14,12 +14,7 @@ from ipywidgets import Color, DOMWidget, widget_serialization
 
 from ._frontend import module_name, module_version
 
-from .binary import array_to_binary
-
-
-def to_camel_case(snake_str):
-    components = snake_str.split('_')
-    return components[0] + ''.join(x.title() for x in components[1:])
+from .utils import binary_image, populate_args, to_camel_case
 
 
 class Canvas(DOMWidget):
@@ -108,16 +103,45 @@ class Canvas(DOMWidget):
         self.layout.height = str(self.size[1]) + 'px'
 
     # Rectangles methods
-    def fill_rect(self, x, y, width, height):
+    def fill_rect(self, x, y, width, height=None):
         """Draw a filled rectangle of size ``(width, height)`` at the ``(x, y)`` position."""
+        if height is None:
+            height = width
+
         self._send_canvas_command('fillRect', (x, y, width, height))
 
-    def stroke_rect(self, x, y, width, height):
+    def stroke_rect(self, x, y, width, height=None):
         """Draw a rectangular outline of size ``(width, height)`` at the ``(x, y)`` position."""
+        if height is None:
+            height = width
+
         self._send_canvas_command('strokeRect', (x, y, width, height))
 
-    def clear_rect(self, x, y, width, height):
+    def fill_rects(self, x, y, width, height=None):
+        """Draw filled rectangles of size ``(width, height)`` at the ``(x, y)`` position with a given ``fill_style``.
+
+        Where ``x``, ``y``, ``width`` and ``height`` arguments are NumPy arrays, lists or scalar values.
+        If ``height`` is None, it is set to the same value as width.
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(width, args, buffers)
+
+        if height is None:
+            args.append(args[-1])
+        else:
+            populate_args(height, args, buffers)
+
+        self._send_canvas_command('fillRects', args, buffers)
+
+    def clear_rect(self, x, y, width, height=None):
         """Clear the specified rectangular area of size ``(width, height)`` at the ``(x, y)`` position, making it fully transparent."""
+        if height is None:
+            height = width
+
         self._send_canvas_command('clearRect', (x, y, width, height))
 
     # Paths methods
@@ -223,8 +247,8 @@ class Canvas(DOMWidget):
         draw. Unlike the CanvasRenderingContext2D.putImageData method, this method **is** affected by the canvas transformation
         matrix, and supports transparency.
         """
-        shape, image_buffer = array_to_binary(image_data)
-        self._send_canvas_command('putImageData', ({'shape': shape}, dx, dy), (image_buffer, ))
+        image_metadata, image_buffer = binary_image(image_data)
+        self._send_canvas_command('putImageData', (image_metadata, dx, dy), (image_buffer, ))
 
     def create_image_data(self, width, height):
         """Create a NumPy array of shape (width, height, 4) representing a table of pixel colors."""
