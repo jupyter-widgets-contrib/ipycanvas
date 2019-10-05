@@ -5,14 +5,10 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?filepath=examples)
 [![Build Status](https://travis-ci.org/martinRenou/ipycanvas.svg?branch=master)](https://travis-ci.org/martinRenou/ipycanvas)
 
+Interactive Canvas in Jupyter.
 
-Interactive widgets library exposing the [browser's Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) to Python. There are some API differences though:
-
-- The `Canvas` widget is exposing the [`CanvasRenderingContext2D`](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D) API
-- All the API is written in `snake_case` instead of `camelCase`, so for example `c.fillStyle = 'red'` becomes `c.fill_style = 'red'`
-- The `Canvas` widget exposes a `clear` method, `c.clear()` is a shortcut for `c.clear_rect(0, 0, c.size[0], c.size[1])`
-- We provide a `hold_canvas` context manager if you want to perform lots of commands at once
-- The Web canvas `putImageData` method does not support transparency, our `Canvas.put_image_data` **does** support it!
+ipycanvas is an Interactive widgets library exposing the [browser's Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) to Python.
+It allows you to draw simple primitives directly from Python like text, lines, polygons, arcs, images etc.
 
 ## Try it online!
 
