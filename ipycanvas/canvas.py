@@ -309,16 +309,19 @@ class Canvas(DOMWidget):
         self._commands_cache = []
         self._buffers_cache = []
 
-    @observe('fill_style', 'stroke_style', 'global_alpha', 'font', 'text_align',
-             'text_baseline', 'direction', 'global_composite_operation',
-             'line_width', 'line_cap', 'line_join', 'miter_limit', 'line_dash_offset')
-    def _on_set_attr(self, change):
-        command = {
-            'name': 'set',
-            'attr': to_camel_case(change.name),
-            'value': change.new
-        }
-        self._send_command(command)
+    def __setattr__(self, name, value):
+        super(Canvas, self).__setattr__(name, value)
+
+        canvas_attrs = ['fill_style', 'stroke_style', 'global_alpha', 'font', 'text_align',
+                        'text_baseline', 'direction', 'global_composite_operation',
+                        'line_width', 'line_cap', 'line_join', 'miter_limit', 'line_dash_offset']
+        if name in canvas_attrs:
+            command = {
+                'name': 'set',
+                'attr': to_camel_case(name),
+                'value': value
+            }
+            self._send_command(command)
 
     def _send_canvas_command(self, name, args=[], buffers=[]):
         command = {
