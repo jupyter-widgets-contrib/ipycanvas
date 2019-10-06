@@ -15,6 +15,11 @@ You can try ipycanvas, without the need of installing anything on your computer,
 
     installation
 
+.. toctree::
+    :caption: Usage
+    :maxdepth: 2
+
+    usage
 
 .. toctree::
     :caption: API Reference
