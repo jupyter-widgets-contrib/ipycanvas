@@ -7,8 +7,8 @@
 
 Interactive Canvas in Jupyter.
 
-ipycanvas is an Interactive widgets library exposing the [browser's Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) to Python.
-It allows you to draw simple primitives directly from Python like text, lines, polygons, arcs, images etc.
+ipycanvas is a lightweight, fast and stable library exposing the [browser's Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) to Python.
+It allows you to draw simple primitives directly from Python like text, lines, polygons, arcs, images etc. This simple toolset allows you to draw literally anything!
 
 ## Try it online!
 
@@ -33,6 +33,9 @@ You can read the documentation following this link: https://ipycanvas.readthedoc
 
 ### Draw data directly from a NumPy array
 ![NumPy](images/ipycanvas_binary.png)
+
+### Create your own plotting library **fully** in Python:
+![Plotting](images/ipycanvas_scatter.png)
 
 ## Installation
 
