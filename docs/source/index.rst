@@ -19,9 +19,7 @@ You can try ipycanvas, without the need of installing anything on your computer,
     :caption: Usage
     :maxdepth: 2
 
-    create_canvas
-    clear_canvas
-    optimizing_canvas
+    basic_usage
     drawing_shapes
     drawing_text
     drawing_images

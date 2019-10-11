@@ -172,7 +172,7 @@ Styles and colors
 Colors
 ++++++
 
-The ``Canvas`` has two color parameters, one for the strokes, and one for the surfaces.
+The ``Canvas`` has two color attributes, one for the strokes, and one for the surfaces.
 You can also change the global transparency.
 
 - ``stroke_style``: (valid HTML color) The color for rectangles and paths stroke. Default to 'black'.
@@ -198,6 +198,8 @@ You can also change the global transparency.
 
 Lines styles
 ++++++++++++
+
+You can change the following ``Canvas`` attributes in order to change the lines styling:
 
 - ``line_width``: (float) Sets the width of lines drawn in the future, must be a positive number. Default to 1.0.
 - ``line_cap``: (str) Sets the appearance of the ends of lines, possible values are 'butt', 'round' and 'square'. Default to 'butt'.
