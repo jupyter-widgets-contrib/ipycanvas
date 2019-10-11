@@ -55,7 +55,7 @@ Here are the functions used to perform these steps:
 - Draw commands like ``line_to`` and ``arc``
 - ``close_path()``: Adds a straight line to the path, going to the start of the current path.
 - ``stroke()``: Draws the shape by stroking its outline.
-- ``fill()``: Draws a solid shape by filling the path's content area.
+- ``fill(rule)``: Draws a solid shape by filling the path's content area. The given fill rule is applied, possible rules are `nonzero` and `evenodd`.
 
 .. code:: Python
 
@@ -97,6 +97,9 @@ Here are the available draw commands:
 Examples
 ````````
 
+Stroke arcs
+'''''''''''
+
 .. code:: Python
 
     from math import pi
@@ -120,6 +123,9 @@ Examples
 
 .. image:: images/smiley.png
 
+Fill bezier curves
+''''''''''''''''''
+
 .. code:: Python
 
     from ipycanvas import Canvas
@@ -140,3 +146,22 @@ Examples
     canvas
 
 .. image:: images/heart.png
+
+Change the fill rule
+''''''''''''''''''''
+
+.. code:: Python
+
+    from math import pi
+    from ipycanvas import Canvas
+
+    canvas = Canvas(size=(100, 100))
+
+    canvas.begin_path()
+    canvas.arc(50, 50, 30, 0, pi * 2, True)
+    canvas.arc(50, 50, 15, 0, pi * 2, True)
+    canvas.fill('evenodd')
+
+    canvas
+
+.. image:: images/fill_rule.png
