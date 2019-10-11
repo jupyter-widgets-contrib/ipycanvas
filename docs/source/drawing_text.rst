@@ -45,5 +45,3 @@ You can change the text style by changing the following ``Canvas`` attributes:
 
 .. note::
     You can still use ``fill_style`` and ``stroke_style`` for coloring text
-
-Read more about all of this here: https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text
