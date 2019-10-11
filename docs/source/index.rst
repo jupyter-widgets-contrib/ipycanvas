@@ -19,7 +19,12 @@ You can try ipycanvas, without the need of installing anything on your computer,
     :caption: Usage
     :maxdepth: 2
 
-    usage
+    basic_usage
+    drawing_shapes
+    drawing_text
+    drawing_images
+    canvas_state
+    transformations
 
 .. toctree::
     :caption: API Reference
