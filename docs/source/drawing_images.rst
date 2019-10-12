@@ -29,9 +29,9 @@ You can directly draw a NumPy array of pixels on the ``Canvas``, it must be a 3-
 
     x_grid, y_grid = np.meshgrid(x, y)
 
-    red_channel = np.zeros_like(red_channel) + 200
     blue_channel = np.array(np.sin(x_grid**2 + y_grid**2) * 255, dtype=np.int32)
-    green_channel = np.zeros_like(red_channel) + 50
+    red_channel = np.zeros_like(blue_channel) + 200
+    green_channel = np.zeros_like(blue_channel) + 50
 
     image_data = np.stack((red_channel, blue_channel, green_channel), axis=2)
 
