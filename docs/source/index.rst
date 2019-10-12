@@ -1,5 +1,10 @@
-ipycanvas: Jupyter Interactive Widgets library exposing the browser's Canvas API
-================================================================================
+ipycanvas: Interactive Canvas in Jupyter
+========================================
+
+.. image:: images/ipycanvas_logo.svg
+  :height: 300px
+  :width: 300px
+  :align: center
 
 Try it online:
 --------------
