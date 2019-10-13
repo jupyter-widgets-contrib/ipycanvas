@@ -86,6 +86,18 @@ class CanvasModel extends DOMWidgetModel {
       case 'strokeRects':
         this.drawRects(command.args, buffers, 'strokeRect');
         break;
+      case 'fillArc':
+        this.fillArc(command.args, buffers);
+        break;
+      case 'strokeArc':
+        this.strokeArc(command.args, buffers);
+        break;
+      case 'fillArcs':
+        this.drawArcs(command.args, buffers, 'fill');
+        break;
+      case 'strokeArcs':
+        this.drawArcs(command.args, buffers, 'stroke');
+        break;
       case 'set':
         this.setAttr(command.attr, command.value);
         break;
@@ -116,6 +128,58 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.drawImage(offscreenCanvas, dx, dy);
   }
 
+  private fillArc(args: any[], buffers: any) {
+    this.ctx.save();
+
+    this.ctx.beginPath();
+    this.executeCommand('arc', args);
+    this.ctx.closePath();
+
+    this.ctx.fill();
+    this.ctx.restore();
+  }
+
+  private strokeArc(args: any[], buffers: any) {
+    this.ctx.save();
+
+    this.ctx.beginPath();
+    this.executeCommand('arc', args);
+    this.ctx.closePath();
+
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  private drawArcs(args: any[], buffers: any, commandName: string) {
+    const x = getArg(args[0], buffers);
+    const y = getArg(args[1], buffers);
+    const radius = getArg(args[2], buffers);
+    const startAngle = getArg(args[3], buffers);
+    const endAngle = getArg(args[4], buffers);
+    const anticlockwise = getArg(args[5], buffers);
+
+    const numberArcs = Math.min(
+      x.length, y.length, radius.length,
+      startAngle.length, endAngle.length
+    );
+
+    this.ctx.save();
+
+    for (let idx = 0; idx < numberArcs; ++idx) {
+      this.ctx.beginPath();
+      this.ctx.arc(
+        x.getItem(idx), y.getItem(idx), radius.getItem(idx),
+        startAngle.getItem(idx), endAngle.getItem(idx),
+        anticlockwise.getItem(idx)
+      );
+      this.ctx.closePath();
+
+      this.executeCommand(commandName);
+    }
+
+    this.ctx.restore();
+  }
+
   private drawRects(args: any[], buffers: any, commandName: string) {
     const x = getArg(args[0], buffers);
     const y = getArg(args[1], buffers);
@@ -140,7 +204,7 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  private executeCommand(name: string, args: any[]) {
+  private executeCommand(name: string, args: any[] = []) {
     (this.ctx as any)[name](...args);
   }
 

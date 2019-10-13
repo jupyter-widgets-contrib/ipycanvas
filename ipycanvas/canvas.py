@@ -164,6 +164,49 @@ class Canvas(DOMWidget):
 
         self._send_canvas_command('clearRect', (x, y, width, height))
 
+    # Arc methods
+    def fill_arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
+        """Draw a filled arc centered at ``(x, y)`` with a radius of ``radius``."""
+        self._send_canvas_command('fillArc', (x, y, radius, start_angle, end_angle, anticlockwise))
+
+    def stroke_arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
+        """Draw an arc outline centered at ``(x, y)`` with a radius of ``radius``."""
+        self._send_canvas_command('strokeArc', (x, y, radius, start_angle, end_angle, anticlockwise))
+
+    def fill_arcs(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
+        """Draw filled arcs centered at ``(x, y)`` with a radius of ``radius``.
+
+        Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(radius, args, buffers)
+        populate_args(start_angle, args, buffers)
+        populate_args(end_angle, args, buffers)
+        args.append(anticlockwise)
+
+        self._send_canvas_command('fillArcs', args, buffers)
+
+    def stroke_arcs(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
+        """Draw a rectangular outlines centered at ``(x, y)`` with a radius of ``radius``.
+
+        Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(radius, args, buffers)
+        populate_args(start_angle, args, buffers)
+        populate_args(end_angle, args, buffers)
+        args.append(anticlockwise)
+
+        self._send_canvas_command('strokeArcs', args, buffers)
+
     # Paths methods
     def begin_path(self):
         """Call this method when you want to create a new path."""
