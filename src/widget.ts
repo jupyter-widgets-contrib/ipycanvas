@@ -81,7 +81,10 @@ class CanvasModel extends DOMWidgetModel {
         this.putImageData(command.args, buffers);
         break;
       case 'fillRects':
-        this.fillRects(command.args, buffers);
+        this.drawRects(command.args, buffers, 'fillRect');
+        break;
+      case 'strokeRects':
+        this.drawRects(command.args, buffers, 'strokeRect');
         break;
       case 'set':
         this.setAttr(command.attr, command.value);
@@ -113,7 +116,7 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.drawImage(offscreenCanvas, dx, dy);
   }
 
-  private fillRects(args: any[], buffers: any) {
+  private drawRects(args: any[], buffers: any, commandName: string) {
     const x = getArg(args[0], buffers);
     const y = getArg(args[1], buffers);
     const width = getArg(args[2], buffers);
@@ -122,7 +125,7 @@ class CanvasModel extends DOMWidgetModel {
     const numberRects = Math.min(x.length, y.length, width.length, height.length);
 
     for (let idx = 0; idx < numberRects; ++idx) {
-      this.ctx.fillRect(x.getItem(idx), y.getItem(idx), width.getItem(idx), height.getItem(idx));
+      this.executeCommand(commandName, [x.getItem(idx), y.getItem(idx), width.getItem(idx), height.getItem(idx)]);
     }
   }
 
