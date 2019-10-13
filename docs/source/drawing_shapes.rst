@@ -66,6 +66,34 @@ You can also clear a certain canvas rectangle area:
 
 .. image:: images/rects.png
 
+Drawing circles
+---------------
+
+There are four methods that draw circles on the canvas:
+
+- ``fill_arc(x, y, radius, start_angle, end_angle, anticlockwise=False)``: Draw a filled arc centered at ``(x, y)`` with a radius of ``radius``.
+- ``stroke_arc(x, y, radius, start_angle, end_angle, anticlockwise=False)``: Draw an arc outline centered at ``(x, y)`` with a radius of ``radius``.
+- ``fill_arcs(x, y, radius, start_angle, end_angle, anticlockwise=False)``: Draw filled arcs centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+- ``stroke_arcs(x, y, radius, start_angle, end_angle, anticlockwise=False)``: Draw an arc outlines centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+
+.. code:: Python
+
+    from math import pi
+
+    from ipycanvas import Canvas
+
+    canvas = Canvas(size=(200, 200))
+
+    canvas.fill_style = 'red'
+    canvas.stroke_style = 'blue'
+
+    canvas.fill_arc(60, 60, 50, 0, pi)
+    canvas.stroke_arc(60, 60, 40, 0, 2 * pi)
+
+    canvas
+
+.. image:: images/arc.png
+
 Drawing paths
 -------------
 
