@@ -9,6 +9,10 @@ import {
   MODULE_NAME, MODULE_VERSION
 } from './version';
 
+import {
+  getArg
+} from './utils';
+
 
 function getContext(canvas: HTMLCanvasElement) {
   const context = canvas.getContext("2d");
@@ -76,6 +80,9 @@ class CanvasModel extends DOMWidgetModel {
       case 'putImageData':
         this.putImageData(command.args, buffers);
         break;
+      case 'fillRects':
+        this.fillRects(command.args, buffers);
+        break;
       case 'set':
         this.setAttr(command.attr, command.value);
         break;
@@ -104,6 +111,19 @@ class CanvasModel extends DOMWidgetModel {
     getContext(offscreenCanvas).putImageData(imageData, 0, 0);
 
     this.ctx.drawImage(offscreenCanvas, dx, dy);
+  }
+
+  private fillRects(args: any[], buffers: any) {
+    const x = getArg(args[0], buffers);
+    const y = getArg(args[1], buffers);
+    const width = getArg(args[2], buffers);
+    const height = getArg(args[3], buffers);
+
+    const numberRects = Math.min(x.length, y.length, width.length, height.length);
+
+    for (let idx = 0; idx < numberRects; ++idx) {
+      this.ctx.fillRect(x.getItem(idx), y.getItem(idx), width.getItem(idx), height.getItem(idx));
+    }
   }
 
   private setAttr(attr: string, value: any) {

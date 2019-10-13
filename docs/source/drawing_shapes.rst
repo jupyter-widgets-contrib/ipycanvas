@@ -20,9 +20,13 @@ Drawing rectangles
 
 There are three methods that draw rectangles on the canvas:
 
-- ``fill_rect(x, y, width, height)``: Draws a filled rectangle.
-- ``stroke_rect(x, y, width, height)``: Draws a rectangular outline.
-- ``clear_rect(x, y, width, height)``: Clears the specified rectangular area, making it fully transparent.
+- ``fill_rect(x, y, width, height=None)``: Draws a filled rectangle. If ``height`` is None, it is set to the same value as ``width``.
+- ``stroke_rect(x, y, width, height=None)``: Draws a rectangular outline. If ``height`` is None, it is set to the same value as ``width``.
+- ``fill_rects(x, y, width, height)``: Draws filled rectangles. Where ``x``, ``y``, ``width`` and ``height`` are either integers, lists of integers or NumPy arrays. If ``height`` is None, it is set to the same value as ``width``.
+
+You can also clear a certain canvas rectangle area:
+
+- ``clear_rect(x, y, width, height=None)``: Clears the specified rectangular area, making it fully transparent. If ``height`` is None, it is set to the same value as ``width``.
 
 .. code:: Python
 
@@ -37,6 +41,29 @@ There are three methods that draw rectangles on the canvas:
     canvas
 
 .. image:: images/rect.png
+
+``fill_rects`` is a blazingly fast way of drawing up to a million rectangles at once:
+
+.. code:: Python
+
+    import numpy as np
+
+    from ipycanvas import Canvas
+
+    n_particles = 100_000
+
+    x = np.array(np.random.rayleigh(250, n_particles), dtype=np.int32)
+    y = np.array(np.random.rayleigh(250, n_particles), dtype=np.int32)
+    size = np.random.randint(1, 3, n_particles)
+
+    canvas = Canvas(size=(800, 500))
+
+    canvas.fill_style = 'green'
+    canvas.fill_rects(x, y, size)
+
+    canvas
+
+.. image:: images/rects.png
 
 Drawing paths
 -------------
