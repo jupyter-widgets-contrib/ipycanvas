@@ -191,7 +191,7 @@ class Canvas(DOMWidget):
         self._send_canvas_command('fillArcs', args, buffers)
 
     def stroke_arcs(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
-        """Draw a rectangular outlines centered at ``(x, y)`` with a radius of ``radius``.
+        """Draw an arc outlines centered at ``(x, y)`` with a radius of ``radius``.
 
         Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
         """
