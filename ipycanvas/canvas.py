@@ -118,7 +118,7 @@ class Canvas(DOMWidget):
         self._send_canvas_command('strokeRect', (x, y, width, height))
 
     def fill_rects(self, x, y, width, height=None):
-        """Draw filled rectangles of size ``(width, height)`` at the ``(x, y)`` position with a given ``fill_style``.
+        """Draw filled rectangles of sizes ``(width, height)`` at the ``(x, y)`` positions.
 
         Where ``x``, ``y``, ``width`` and ``height`` arguments are NumPy arrays, lists or scalar values.
         If ``height`` is None, it is set to the same value as width.
@@ -136,6 +136,26 @@ class Canvas(DOMWidget):
             populate_args(height, args, buffers)
 
         self._send_canvas_command('fillRects', args, buffers)
+
+    def stroke_rects(self, x, y, width, height=None):
+        """Draw a rectangular outlines of sizes ``(width, height)`` at the ``(x, y)`` positions.
+
+        Where ``x``, ``y``, ``width`` and ``height`` arguments are NumPy arrays, lists or scalar values.
+        If ``height`` is None, it is set to the same value as width.
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(width, args, buffers)
+
+        if height is None:
+            args.append(args[-1])
+        else:
+            populate_args(height, args, buffers)
+
+        self._send_canvas_command('strokeRects', args, buffers)
 
     def clear_rect(self, x, y, width, height=None):
         """Clear the specified rectangular area of size ``(width, height)`` at the ``(x, y)`` position, making it fully transparent."""
