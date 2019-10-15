@@ -10,7 +10,7 @@ import numpy as np
 
 from traitlets import Enum, Float, Instance, List, Tuple, Unicode, observe
 
-from ipywidgets import CallbackDispatcher, Color, DOMWidget, widget_serialization
+from ipywidgets import CallbackDispatcher, Color, DOMWidget, Image, widget_serialization
 
 from ._frontend import module_name, module_version
 
@@ -307,6 +307,18 @@ class Canvas(DOMWidget):
         self._send_canvas_command('setLineDash', (self._line_dash, ))
 
     # Image methods
+    def draw_image(self, image, x, y, width=None, height=None):
+        """Draw an ``image`` on the Canvas at the coordinates (``x``, ``y``) and scale it to (``width``, ``height``)."""
+        if (not isinstance(image, (Canvas, Image))):
+            raise TypeError('The image argument should be an Image widget or a Canvas widget')
+
+        if width is not None and height is None:
+            height = width
+
+        serialized_image = widget_serialization['to_json'](image, None)
+
+        self._send_canvas_command('drawImage', (serialized_image, x, y, width, height))
+
     def put_image_data(self, image_data, dx, dy):
         """Draw an image on the Canvas.
 

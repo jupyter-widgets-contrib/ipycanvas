@@ -6,6 +6,10 @@ import {
 } from '@jupyter-widgets/base';
 
 import {
+  ImageModel
+} from '@jupyter-widgets/controls';
+
+import {
   MODULE_NAME, MODULE_VERSION
 } from './version';
 
@@ -55,15 +59,15 @@ class CanvasModel extends DOMWidgetModel {
     this.send({ event: 'client_ready' }, {});
   }
 
-  private onCommand(command: any, buffers: any) {
-    this.processCommand(command, buffers);
+  private async onCommand(command: any, buffers: any) {
+    await this.processCommand(command, buffers);
 
     this.forEachView((view: CanvasView) => {
       view.updateCanvas();
     });
   }
 
-  private processCommand(command: any, buffers: any) {
+  private async processCommand(command: any, buffers: any) {
     if (command instanceof Array) {
       let remainingBuffers = buffers;
 
@@ -73,15 +77,12 @@ class CanvasModel extends DOMWidgetModel {
           subbuffers = remainingBuffers.slice(0, subcommand.n_buffers);
           remainingBuffers = remainingBuffers.slice(subcommand.n_buffers)
         }
-        this.processCommand(subcommand, subbuffers);
+        await this.processCommand(subcommand, subbuffers);
       }
       return;
     }
 
     switch (command.name) {
-      case 'putImageData':
-        this.putImageData(command.args, buffers);
-        break;
       case 'fillRects':
         this.drawRects(command.args, buffers, 'fillRect');
         break;
@@ -100,6 +101,12 @@ class CanvasModel extends DOMWidgetModel {
       case 'strokeArcs':
         this.drawArcs(command.args, buffers, 'stroke');
         break;
+      case 'drawImage':
+        await this.drawImage(command.args, buffers);
+        break;
+      case 'putImageData':
+        this.putImageData(command.args, buffers);
+        break;
       case 'set':
         this.setAttr(command.attr, command.value);
         break;
@@ -112,22 +119,17 @@ class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  private putImageData(args: any[], buffers: any) {
-    const [bufferMetadata, dx, dy] = args;
+  private drawRects(args: any[], buffers: any, commandName: string) {
+    const x = getArg(args[0], buffers);
+    const y = getArg(args[1], buffers);
+    const width = getArg(args[2], buffers);
+    const height = getArg(args[3], buffers);
 
-    const width = bufferMetadata.shape[1];
-    const height = bufferMetadata.shape[0];
+    const numberRects = Math.min(x.length, y.length, width.length, height.length);
 
-    const data = new Uint8ClampedArray(buffers[0].buffer);
-    const imageData = new ImageData(data, width, height);
-
-    // Draw on a temporary off-screen canvas. This is a workaround for `putImageData` to support transparency.
-    const offscreenCanvas = document.createElement('canvas');
-    offscreenCanvas.width = width;
-    offscreenCanvas.height = height;
-    getContext(offscreenCanvas).putImageData(imageData, 0, 0);
-
-    this.ctx.drawImage(offscreenCanvas, dx, dy);
+    for (let idx = 0; idx < numberRects; ++idx) {
+      this.executeCommand(commandName, [x.getItem(idx), y.getItem(idx), width.getItem(idx), height.getItem(idx)]);
+    }
   }
 
   private fillArc(args: any[], buffers: any) {
@@ -182,17 +184,65 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.restore();
   }
 
-  private drawRects(args: any[], buffers: any, commandName: string) {
-    const x = getArg(args[0], buffers);
-    const y = getArg(args[1], buffers);
-    const width = getArg(args[2], buffers);
-    const height = getArg(args[3], buffers);
+  private async drawImage(args: any[], buffers: any) {
+    const [serializedImage, x, y, width, height] = args;
 
-    const numberRects = Math.min(x.length, y.length, width.length, height.length);
+    const image = await unpack_models(serializedImage, this.widget_manager);
 
-    for (let idx = 0; idx < numberRects; ++idx) {
-      this.executeCommand(commandName, [x.getItem(idx), y.getItem(idx), width.getItem(idx), height.getItem(idx)]);
+    if (image instanceof CanvasModel) {
+      this._drawImage(image.canvas, x, y, width, height);
+      return;
     }
+
+    if (image instanceof ImageModel) {
+      // Create the image manually instead of creating an ImageView
+      let url: string;
+      const format = image.get('format');
+      const value = image.get('value');
+      if (format !== 'url') {
+          const blob = new Blob([value], {type: `image/${format}`});
+          url = URL.createObjectURL(blob);
+      } else {
+          url = (new TextDecoder('utf-8')).decode(value.buffer);
+      }
+
+      const img = new Image();
+      return new Promise((resolve) => {
+        img.onload = () => {
+          this._drawImage(img, x, y, width, height);
+          resolve();
+        };
+        img.src = url;
+      });
+    }
+  }
+
+  private _drawImage(image: HTMLCanvasElement | HTMLImageElement,
+                     x: number, y: number,
+                     width: number | undefined, height: number | undefined) {
+    if (width === undefined || height === undefined) {
+      this.ctx.drawImage(image, x, y);
+    } else {
+      this.ctx.drawImage(image, x, y, width, height);
+    }
+  }
+
+  private putImageData(args: any[], buffers: any) {
+    const [bufferMetadata, dx, dy] = args;
+
+    const width = bufferMetadata.shape[1];
+    const height = bufferMetadata.shape[0];
+
+    const data = new Uint8ClampedArray(buffers[0].buffer);
+    const imageData = new ImageData(data, width, height);
+
+    // Draw on a temporary off-screen canvas. This is a workaround for `putImageData` to support transparency.
+    const offscreenCanvas = document.createElement('canvas');
+    offscreenCanvas.width = width;
+    offscreenCanvas.height = height;
+    getContext(offscreenCanvas).putImageData(imageData, 0, 0);
+
+    this.ctx.drawImage(offscreenCanvas, dx, dy);
   }
 
   private setAttr(attr: string, value: any) {
