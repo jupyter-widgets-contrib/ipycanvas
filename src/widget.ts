@@ -51,6 +51,8 @@ class CanvasModel extends DOMWidgetModel {
 
     this.on('change:size', this.resizeCanvas.bind(this));
     this.on('msg:custom', this.onCommand.bind(this));
+
+    this.send({ event: 'client_ready' }, {});
   }
 
   private onCommand(command: any, buffers: any) {

@@ -10,7 +10,7 @@ import numpy as np
 
 from traitlets import Enum, Float, Instance, List, Tuple, Unicode, observe
 
-from ipywidgets import Color, DOMWidget, widget_serialization
+from ipywidgets import CallbackDispatcher, Color, DOMWidget, widget_serialization
 
 from ._frontend import module_name, module_version
 
@@ -91,6 +91,8 @@ class Canvas(DOMWidget):
     #: (float) Specifies where to start a dash array on a line. Default is ``0.``.
     line_dash_offset = Float(0.)
 
+    _client_ready_callbacks = Instance(CallbackDispatcher, ())
+
     def __init__(self, *args, **kwargs):
         """Create a Canvas widget."""
         #: Whether commands should be cached or not
@@ -101,6 +103,8 @@ class Canvas(DOMWidget):
         super(Canvas, self).__init__(*args, **kwargs)
         self.layout.width = str(self.size[0]) + 'px'
         self.layout.height = str(self.size[1]) + 'px'
+
+        self.on_msg(self._handle_frontend_event)
 
     # Rectangles methods
     def fill_rect(self, x, y, width, height=None):
@@ -396,6 +400,17 @@ class Canvas(DOMWidget):
         self._commands_cache = []
         self._buffers_cache = []
 
+    # Events
+    def on_client_ready(self, callback, remove=False):
+        """Register a callback that will be called when a new client is ready to receive draw commands.
+
+        When a new client connects to the kernel he will get an empty Canvas (because the canvas is
+        almost stateless, the new client does not know what draw commands were previously sent). So
+        this function is useful for replaying your drawing whenever a new client connects and is
+        ready to receive draw commands.
+        """
+        self._client_ready_callbacks.register_callback(callback, remove=remove)
+
     def __setattr__(self, name, value):
         super(Canvas, self).__setattr__(name, value)
 
@@ -424,6 +439,10 @@ class Canvas(DOMWidget):
             self._buffers_cache += buffers
         else:
             self.send(command, buffers)
+
+    def _handle_frontend_event(self, _, content, buffers):
+        if content.get('event', '') == 'client_ready':
+            self._client_ready_callbacks()
 
 
 class MultiCanvas(DOMWidget):
@@ -461,6 +480,16 @@ class MultiCanvas(DOMWidget):
     def _on_size_change(self, change):
         for canvas in self._canvases:
             canvas.size = change.new
+
+    def on_client_ready(self, callback, remove=False):
+        """Register a callback that will be called when a new client is ready to receive draw commands.
+
+        When a new client connects to the kernel he will get an empty Canvas (because the canvas is
+        almost stateless, the new client does not know what draw commands were previously sent). So
+        this function is useful for replaying your drawing whenever a new client connects and is
+        ready to receive draw commands.
+        """
+        self._canvases[-1]._client_ready_callbacks.register_callback(callback, remove=remove)
 
 
 @contextmanager
