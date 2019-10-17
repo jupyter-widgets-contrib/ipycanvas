@@ -6,10 +6,6 @@ import {
 } from '@jupyter-widgets/base';
 
 import {
-  ImageModel
-} from '@jupyter-widgets/controls';
-
-import {
   MODULE_NAME, MODULE_VERSION
 } from './version';
 
@@ -194,7 +190,7 @@ class CanvasModel extends DOMWidgetModel {
       return;
     }
 
-    if (image instanceof ImageModel) {
+    if (image.get('_model_name') == 'ImageModel') {
       // Create the image manually instead of creating an ImageView
       let url: string;
       const format = image.get('format');
