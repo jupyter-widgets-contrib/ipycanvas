@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "@jupyter-widgets/base": "^2.0.1",
+    "@jupyter-widgets/controls": "^1.5.2",
     "lodash": ">=4.17.13"
   },
   "devDependencies": {
