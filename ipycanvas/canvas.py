@@ -478,6 +478,7 @@ class MultiCanvas(DOMWidget):
 
     def __init__(self, n_canvases=3, *args, **kwargs):
         """Constructor."""
+        self.caching = kwargs.get('caching', False)
         size = kwargs.get('size', (700, 500))
 
         super(MultiCanvas, self).__init__(*args, _canvases=[Canvas(size=size) for _ in range(n_canvases)], **kwargs)
@@ -488,10 +489,15 @@ class MultiCanvas(DOMWidget):
         """Access one of the Canvas instances."""
         return self._canvases[key]
 
-    @observe('size')
-    def _on_size_change(self, change):
-        for canvas in self._canvases:
-            canvas.size = change.new
+    def __setattr__(self, name, value):
+        super(MultiCanvas, self).__setattr__(name, value)
+
+        if name == 'caching':
+            for layer in self._canvases:
+                layer.caching = value
+        if name == 'size':
+            for layer in self._canvases:
+                layer.size = value
 
     def on_client_ready(self, callback, remove=False):
         """Register a callback that will be called when a new client is ready to receive draw commands.
@@ -502,6 +508,16 @@ class MultiCanvas(DOMWidget):
         ready to receive draw commands.
         """
         self._canvases[-1]._client_ready_callbacks.register_callback(callback, remove=remove)
+
+    def clear(self):
+        """Clear the Canvas."""
+        for layer in self._canvases:
+            layer.clear()
+
+    def flush(self):
+        """Flush all the cached commands and clear the cache."""
+        for layer in self._canvases:
+            layer.flush()
 
 
 @contextmanager
