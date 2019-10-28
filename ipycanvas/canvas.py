@@ -8,7 +8,7 @@ from contextlib import contextmanager
 
 import numpy as np
 
-from traitlets import Enum, Float, Instance, List, Tuple, Unicode, observe
+from traitlets import Enum, Float, Instance, List, Tuple, Unicode
 
 from ipywidgets import CallbackDispatcher, Color, DOMWidget, Image, widget_serialization
 
@@ -70,6 +70,22 @@ class Canvas(DOMWidget):
          'exclusion', 'hue', 'saturation', 'color', 'luminosity'],
         default_value='source-over'
     )
+
+    #: (float) Indicates the horizontal distance the shadow should extend from the object.
+    #: This value isn't affected by the transformation matrix. The default is 0.
+    shadow_offset_x = Float(0.0)
+
+    #: (float) Indicates the vertical distance the shadow should extend from the object.
+    #: This value isn't affected by the transformation matrix. The default is 0.
+    shadow_offset_y = Float(0.0)
+
+    #: (float) Indicates the size of the blurring effect; this value doesn't correspond to a number of pixels
+    #: and is not affected by the current transformation matrix. The default value is 0.
+    shadow_blur = Float(0.0)
+
+    #: (valid HTML color) A standard CSS color value indicating the color of the shadow effect; by default,
+    #: it is fully-transparent black.
+    shadow_color = Color('rgba(0, 0, 0, 0)')
 
     #: (float) Sets the width of lines drawn in the future, must be a positive number. Default to ``1.0``.
     line_width = Float(1.0)
@@ -428,7 +444,8 @@ class Canvas(DOMWidget):
 
         canvas_attrs = ['fill_style', 'stroke_style', 'global_alpha', 'font', 'text_align',
                         'text_baseline', 'direction', 'global_composite_operation',
-                        'line_width', 'line_cap', 'line_join', 'miter_limit', 'line_dash_offset']
+                        'line_width', 'line_cap', 'line_join', 'miter_limit', 'line_dash_offset',
+                        'shadow_offset_x', 'shadow_offset_y', 'shadow_blur', 'shadow_color']
         if name in canvas_attrs:
             command = {
                 'name': 'set',
