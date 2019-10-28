@@ -252,6 +252,37 @@ You can also change the global transparency.
 
 .. image:: images/colored_rect.png
 
+Shadows
++++++++
+
+You can easily draw shadows by tweaking the following attributes:
+
+- ``shadow_offset_x``: (float) Indicates the horizontal distance the shadow should extend from the object. This value isn't affected by the transformation matrix. The default is ``0``.
+- ``shadow_offset_y``: (float) Indicates the vertical distance the shadow should extend from the object. This value isn't affected by the transformation matrix. The default is ``0``.
+- ``shadow_blur``: (float) Indicates the size of the blurring effect; this value doesn't correspond to a number of pixels and is not affected by the current transformation matrix. The default value is ``0``.
+- ``shadow_color``: (valid HTML color) A standard CSS color value indicating the color of the shadow effect; by default, it is fully-transparent black: ``'rgba(0, 0, 0, 0)'``.
+
+.. code:: Python
+
+    from ipycanvas import Canvas
+
+    canvas = Canvas(size=(200, 200))
+
+    canvas.shadow_color = 'green'
+    canvas.shadow_offset_x = 2
+    canvas.shadow_offset_y = 3
+    canvas.shadow_blur = 3
+
+    canvas.fill_rect(25, 25, 100, 100)
+    canvas.clear_rect(45, 45, 60, 60)
+
+    canvas.shadow_color = 'blue'
+    canvas.stroke_rect(50, 50, 50, 50)
+
+    canvas
+
+.. image:: images/shadows.png
+
 Lines styles
 ++++++++++++
 

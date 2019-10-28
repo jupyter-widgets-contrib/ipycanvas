@@ -44,4 +44,4 @@ You can change the text style by changing the following ``Canvas`` attributes:
 - ``direction``: (str) Directionality. Possible values: ``"ltr"``, ``"rtl"``, ``"inherit"``. The default value is ``"inherit"``.
 
 .. note::
-    You can still use ``fill_style`` and ``stroke_style`` for coloring text
+    You can still use ``fill_style``, ``stroke_style``, ``shadow_color`` etc for coloring text and applying shadows.
