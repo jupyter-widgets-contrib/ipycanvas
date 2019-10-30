@@ -108,6 +108,8 @@ class Canvas(DOMWidget):
     line_dash_offset = Float(0.)
 
     _client_ready_callbacks = Instance(CallbackDispatcher, ())
+    _mouse_move_callbacks = Instance(CallbackDispatcher, ())
+    _click_callbacks = Instance(CallbackDispatcher, ())
 
     def __init__(self, *args, **kwargs):
         """Create a Canvas widget."""
@@ -439,6 +441,14 @@ class Canvas(DOMWidget):
         """
         self._client_ready_callbacks.register_callback(callback, remove=remove)
 
+    def on_mouse_move(self, callback, remove=False):
+        """Register a callback that will be called on mouse mouse_move."""
+        self._mouse_move_callbacks.register_callback(callback, remove=remove)
+
+    def on_click(self, callback, remove=False):
+        """Register a callback that will be called on mouse click."""
+        self._click_callbacks.register_callback(callback, remove=remove)
+
     def __setattr__(self, name, value):
         super(Canvas, self).__setattr__(name, value)
 
@@ -472,6 +482,10 @@ class Canvas(DOMWidget):
     def _handle_frontend_event(self, _, content, buffers):
         if content.get('event', '') == 'client_ready':
             self._client_ready_callbacks()
+        if content.get('event', '') == 'mouse_move':
+            self._mouse_move_callbacks(content['x'], content['y'])
+        if content.get('event', '') == 'click':
+            self._click_callbacks(content['x'], content['y'])
 
 
 class MultiCanvas(DOMWidget):

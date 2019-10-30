@@ -30,6 +30,7 @@ You can try ipycanvas, without the need of installing anything on your computer,
     drawing_images
     canvas_state
     transformations
+    events
     advanced
 
 .. toctree::
