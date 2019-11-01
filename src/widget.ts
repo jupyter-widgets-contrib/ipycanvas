@@ -10,7 +10,7 @@ import {
 } from './version';
 
 import {
-  getArg
+  getArg, toBytes
 } from './utils';
 
 
@@ -34,11 +34,16 @@ class CanvasModel extends DOMWidgetModel {
       _view_module: CanvasModel.view_module,
       _view_module_version: CanvasModel.view_module_version,
       size: [700, 500],
+      sync_image_data: false,
+      image_data: null,
     };
   }
 
   static serializers: ISerializers = {
     ...DOMWidgetModel.serializers,
+    image_data: { serialize: (bytes: Uint8ClampedArray) => {
+      return new DataView(bytes.buffer.slice(0));
+    }}
   }
 
   initialize(attributes: any, options: any) {
@@ -61,6 +66,9 @@ class CanvasModel extends DOMWidgetModel {
     this.forEachView((view: CanvasView) => {
       view.updateCanvas();
     });
+
+    this.trigger('new-frame');
+    this.syncImageData();
   }
 
   private async processCommand(command: any, buffers: any) {
@@ -271,6 +279,17 @@ class CanvasModel extends DOMWidgetModel {
     this.canvas.setAttribute('height', size[1]);
   }
 
+  private async syncImageData() {
+    if (!this.get('sync_image_data')) {
+      return;
+    }
+
+    const bytes = await toBytes(this.canvas);
+
+    this.set('image_data', bytes);
+    this.save_changes();
+  }
+
   static model_name = 'CanvasModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -350,13 +369,56 @@ class MultiCanvasModel extends DOMWidgetModel {
       _view_name: MultiCanvasModel.view_name,
       _view_module: MultiCanvasModel.view_module,
       _view_module_version: MultiCanvasModel.view_module_version,
+      size: [700, 500],
       _canvases: [],
+      sync_image_data: false,
+      image_data: null,
     };
   }
 
   static serializers: ISerializers = {
     ...DOMWidgetModel.serializers,
     _canvases: { deserialize: (unpack_models as any) },
+    image_data: { serialize: (bytes: Uint8ClampedArray) => {
+      return new DataView(bytes.buffer.slice(0));
+    }}
+  }
+
+  initialize(attributes: any, options: any) {
+    super.initialize(attributes, options);
+
+    this.on('change:_canvases', this.updateListeners.bind(this));
+    this.updateListeners();
+  }
+
+  private updateListeners() {
+    // TODO: Remove old listeners
+    for (const canvasModel of this.get('_canvases')) {
+      canvasModel.on('new-frame', this.syncImageData, this);
+    }
+  }
+
+  private async syncImageData() {
+    if (!this.get('sync_image_data')) {
+      return;
+    }
+
+    const [ width, height ] = this.get('size');
+
+    // Draw on a temporary off-screen canvas.
+    const offscreenCanvas = document.createElement('canvas');
+    offscreenCanvas.width = width;
+    offscreenCanvas.height = height;
+    const ctx = getContext(offscreenCanvas);
+
+    for (const canvasModel of this.get('_canvases')) {
+      ctx.drawImage(canvasModel.canvas, 0, 0)
+    }
+
+    const bytes = await toBytes(offscreenCanvas);
+
+    this.set('image_data', bytes);
+    this.save_changes();
   }
 
   static model_name = 'MultiCanvasModel';

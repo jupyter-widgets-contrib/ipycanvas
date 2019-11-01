@@ -8,9 +8,10 @@ from contextlib import contextmanager
 
 import numpy as np
 
-from traitlets import Enum, Float, Instance, List, Tuple, Unicode
+from traitlets import Bool, Bytes, Enum, Float, Instance, List, Tuple, Unicode
 
 from ipywidgets import CallbackDispatcher, Color, DOMWidget, Image, widget_serialization
+from ipywidgets.widgets.trait_types import bytes_serialization
 
 from ._frontend import module_name, module_version
 
@@ -106,6 +107,13 @@ class Canvas(DOMWidget):
 
     #: (float) Specifies where to start a dash array on a line. Default is ``0.``.
     line_dash_offset = Float(0.)
+
+    #: (bool) Specifies if the image should be synchronized from front-end to Python back-end
+    sync_image_data = Bool(False).tag(sync=True)
+
+    #: (bytes) Current image data as bytes (PNG encoded). It is ``None`` by default and will not be
+    #: updated if ``sync_image_data`` is ``False``.
+    image_data = Bytes(default_value=None, allow_none=True, read_only=True).tag(sync=True, **bytes_serialization)
 
     _client_ready_callbacks = Instance(CallbackDispatcher, ())
     _mouse_move_callbacks = Instance(CallbackDispatcher, ())
@@ -430,6 +438,19 @@ class Canvas(DOMWidget):
         self._commands_cache = []
         self._buffers_cache = []
 
+    def to_file(self, filename):
+        """Save the current Canvas image to a PNG file.
+
+        This will raise an exception if there is no image to save (_e.g._ if ``image_data`` is ``None``).
+        """
+        if self.image_data is None:
+            raise RuntimeError('No image data to save')
+        if not filename.endswith('.png') and not filename.endswith('.PNG'):
+            raise RuntimeError('Can only save to a PNG file')
+
+        with open(filename, 'wb') as fobj:
+            fobj.write(self.image_data)
+
     # Events
     def on_client_ready(self, callback, remove=False):
         """Register a callback that will be called when a new client is ready to receive draw commands.
@@ -503,7 +524,14 @@ class MultiCanvas(DOMWidget):
     _view_module = Unicode(module_name).tag(sync=True)
     _view_module_version = Unicode(module_version).tag(sync=True)
 
-    size = Tuple((700, 500), help='Size of the Canvas, this is not equal to the size of the view')
+    size = Tuple((700, 500), help='Size of the Canvas, this is not equal to the size of the view').tag(sync=True)
+
+    #: (bool) Specifies if the image should be synchronized from front-end to Python back-end
+    sync_image_data = Bool(False).tag(sync=True)
+
+    #: (bytes) Current image data as bytes (PNG encoded). It is ``None`` by default and will not be
+    #: updated if ``sync_image_data`` is ``False``.
+    image_data = Bytes(default_value=None, allow_none=True, read_only=True).tag(sync=True, **bytes_serialization)
 
     _canvases = List(Instance(Canvas)).tag(sync=True, **widget_serialization)
 
@@ -549,6 +577,19 @@ class MultiCanvas(DOMWidget):
         """Flush all the cached commands and clear the cache."""
         for layer in self._canvases:
             layer.flush()
+
+    def to_file(self, filename):
+        """Save the current MultiCanvas image to a PNG file.
+
+        This will raise an exception if there is no image to save (_e.g._ if ``image_data`` is ``None``).
+        """
+        if self.image_data is None:
+            raise RuntimeError('No image data to save')
+        if not filename.endswith('.png') and not filename.endswith('.PNG'):
+            raise RuntimeError('Can only save to a PNG file')
+
+        with open(filename, 'wb') as fobj:
+            fobj.write(self.image_data)
 
 
 @contextmanager
