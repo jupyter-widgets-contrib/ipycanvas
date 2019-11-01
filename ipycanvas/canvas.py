@@ -109,6 +109,9 @@ class Canvas(DOMWidget):
 
     _client_ready_callbacks = Instance(CallbackDispatcher, ())
     _mouse_move_callbacks = Instance(CallbackDispatcher, ())
+    _mouse_down_callbacks = Instance(CallbackDispatcher, ())
+    _mouse_up_callbacks = Instance(CallbackDispatcher, ())
+    _mouse_out_callbacks = Instance(CallbackDispatcher, ())
     _click_callbacks = Instance(CallbackDispatcher, ())
 
     def __init__(self, *args, **kwargs):
@@ -445,6 +448,18 @@ class Canvas(DOMWidget):
         """Register a callback that will be called on mouse mouse_move."""
         self._mouse_move_callbacks.register_callback(callback, remove=remove)
 
+    def on_mouse_down(self, callback, remove=False):
+        """Register a callback that will be called on mouse mouse_down."""
+        self._mouse_down_callbacks.register_callback(callback, remove=remove)
+
+    def on_mouse_up(self, callback, remove=False):
+        """Register a callback that will be called on mouse mouse_up."""
+        self._mouse_up_callbacks.register_callback(callback, remove=remove)
+
+    def on_mouse_out(self, callback, remove=False):
+        """Register a callback that will be called on mouse mouse_out."""
+        self._mouse_out_callbacks.register_callback(callback, remove=remove)
+
     def on_click(self, callback, remove=False):
         """Register a callback that will be called on mouse click."""
         self._click_callbacks.register_callback(callback, remove=remove)
@@ -484,8 +499,13 @@ class Canvas(DOMWidget):
             self._client_ready_callbacks()
         if content.get('event', '') == 'mouse_move':
             self._mouse_move_callbacks(content['x'], content['y'])
-        if content.get('event', '') == 'click':
+        if content.get('event', '') == 'mouse_down':
             self._click_callbacks(content['x'], content['y'])
+            self._mouse_down_callbacks(content['x'], content['y'])
+        if content.get('event', '') == 'mouse_up':
+            self._mouse_up_callbacks(content['x'], content['y'])
+        if content.get('event', '') == 'mouse_out':
+            self._mouse_out_callbacks(content['x'], content['y'])
 
 
 class MultiCanvas(DOMWidget):
