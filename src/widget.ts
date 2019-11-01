@@ -315,8 +315,10 @@ class CanvasView extends DOMWidgetView {
     this.resizeCanvas();
     this.model.on('change:size', this.resizeCanvas.bind(this));
 
-    this.canvas.addEventListener('click', { handleEvent: this.onMouseDown.bind(this) });
     this.canvas.addEventListener('mousemove', { handleEvent: this.onMouseMove.bind(this) });
+    this.canvas.addEventListener('mousedown', { handleEvent: this.onMouseDown.bind(this) });
+    this.canvas.addEventListener('mouseup', { handleEvent: this.onMouseUp.bind(this) });
+    this.canvas.addEventListener('mouseout', { handleEvent: this.onMouseOut.bind(this) });
 
     this.updateCanvas();
   }
@@ -337,11 +339,19 @@ class CanvasView extends DOMWidgetView {
   }
 
   private onMouseDown(event: MouseEvent) {
-    this.model.send({ event: 'click', ...this.getMouseCoordinate(event) }, {});
+    this.model.send({ event: 'mouse_down', ...this.getMouseCoordinate(event) }, {});
   }
 
   private onMouseMove(event: MouseEvent) {
     this.model.send({ event: 'mouse_move', ...this.getMouseCoordinate(event) }, {});
+  }
+
+  private onMouseUp(event: MouseEvent) {
+    this.model.send({ event: 'mouse_up', ...this.getMouseCoordinate(event) }, {});
+  }
+
+  private onMouseOut(event: MouseEvent) {
+    this.model.send({ event: 'mouse_out', ...this.getMouseCoordinate(event) }, {});
   }
 
   private getMouseCoordinate(event: MouseEvent) {
