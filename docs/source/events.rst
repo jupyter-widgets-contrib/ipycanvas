@@ -4,7 +4,7 @@ Interactions
 Using built-in events
 ---------------------
 
-There are currently two built-in mouse events: ``click`` and ``mouse_move``.
+The following built-in mouse events are supported: ``mouse_down``, ``mouse_move``, ``mouse_up`` and ``mouse_out``.
 
 .. code:: Python
 
@@ -14,11 +14,11 @@ There are currently two built-in mouse events: ``click`` and ``mouse_move``.
 
     canvas.on_mouse_move(handle_mouse_move)
 
-    def handle_click(x, y):
+    def handle_mouse_down(x, y):
         # Do something else
         pass
 
-    canvas.on_click(handle_click)
+    canvas.on_mouse_down(handle_mouse_down)
 
 .. note::
     Please open an issue or a Pull Request if you want more events to be supported by ipycanvas

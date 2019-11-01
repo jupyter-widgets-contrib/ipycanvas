@@ -320,7 +320,6 @@ class CanvasView extends DOMWidgetView {
   }
 
   private onMouseDown(event: MouseEvent) {
-    this.model.send({ event: 'click', ...this.getMouseCoordinate(event) }, {});
     this.model.send({ event: 'mouse_down', ...this.getMouseCoordinate(event) }, {});
   }
 
