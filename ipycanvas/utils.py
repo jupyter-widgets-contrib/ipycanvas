@@ -1,5 +1,18 @@
 """Binary module."""
+from io import BytesIO
+
+from PIL import Image as PILImage
+
 import numpy as np
+
+
+def image_bytes_to_array(im_bytes):
+    """Turn raw image bytes into a NumPy array."""
+    im_file = BytesIO(im_bytes)
+
+    im = PILImage.open(im_file)
+
+    return np.array(im)
 
 
 def binary_image(ar):
