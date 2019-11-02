@@ -28,6 +28,7 @@ You can try ipycanvas, without the need of installing anything on your computer,
     drawing_shapes
     drawing_text
     drawing_images
+    retrieve_images
     canvas_state
     transformations
     events

@@ -48,37 +48,6 @@ The ``Canvas`` and ``MultiCanvas`` classes have a ``clear`` method which allows 
 
     canvas.clear()
 
-Save Canvas to a file
----------------------
-
-You can dump the current ``Canvas`` or ``MultiCanvas`` image using the ``to_file`` method. You first need to specify that you want the image data to be synchronized between the front-end and the back-end setting the ``sync_image_data`` attribute to ``True``.
-
-.. code:: Python
-
-    from ipycanvas import Canvas
-
-    canvas = Canvas(size=(200, 200), sync_image_data=True)
-
-    # Perform some drawings...
-
-    canvas.to_file('my_file.png')
-
-Note that this won't work if executed in the same Notebook cell. Because the Canvas won't have drawn anything yet. If you want to put all your code in the same Notebook cell, you need to define a callback function that will be called when the Canvas is ready to be dumped to an image file.
-
-.. code:: Python
-
-    from ipycanvas import Canvas
-
-    canvas = Canvas(size=(200, 200), sync_image_data=True)
-
-    # Perform some drawings...
-
-    def save_to_file(*args, **kwargs):
-        canvas.to_file('my_file.png')
-
-    # Listen to changes on the ``image_data`` trait and call ``save_to_file`` when it changes.
-    canvas.observe(save_to_file, 'image_data')
-
 Optimizing drawings
 -------------------
 
