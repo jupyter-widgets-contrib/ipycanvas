@@ -6,7 +6,7 @@ From an Image widget
 
 You can draw from an `Image <https://ipywidgets.readthedocs.io/en/stable/examples/Widget%20List.html#Image>`_ widget directly, this is the less optimized solution but it works perfectly fine if you don't draw more than a hundred images at a time.
 
-- ``draw_image(image, x, y, width=None, height=None)``: Draw an ``image`` on the Canvas at the coordinates (``x``, ``y``) and scale it to (``width``, ``height``). The ``image`` must be an ``Image`` widget or another ``Canvas``.
+- ``draw_image(image, x=0, y=0, width=None, height=None)``: Draw an ``image`` on the Canvas at the coordinates (``x``, ``y``) and scale it to (``width``, ``height``). The ``image`` must be an ``Image`` widget or another ``Canvas``. If ``width``/``height`` is ``None``, the natural image ``width``/``height`` is used.
 
 .. code:: Python
 
@@ -51,7 +51,7 @@ From a NumPy array
 
 You can directly draw a NumPy array of pixels on the ``Canvas``, it must be a 3-D array of integers and the last dimension must be 3 or 4 (rgb or rgba), with values going from ``0`` to ``225``.
 
-- ``put_image_data(image_data, dx, dy)``: Draw an image on the Canvas. ``image_data`` should be  a NumPy array containing the image to draw and ``dx`` and ``dy`` the pixel position where to draw (top left pixel of the image).
+- ``put_image_data(image_data, x=0, y=0)``: Draw an image on the Canvas. ``image_data`` should be  a NumPy array containing the image to draw and ``x`` and ``y`` the pixel position where to draw (top left pixel of the image).
 
 .. code:: python
 
