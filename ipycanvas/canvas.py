@@ -377,7 +377,7 @@ class Canvas(CanvasBase):
         self._send_canvas_command('setLineDash', (self._line_dash, ))
 
     # Image methods
-    def draw_image(self, image, x, y, width=None, height=None):
+    def draw_image(self, image, x=0, y=0, width=None, height=None):
         """Draw an ``image`` on the Canvas at the coordinates (``x``, ``y``) and scale it to (``width``, ``height``)."""
         if (not isinstance(image, (Canvas, Image))):
             raise TypeError('The image argument should be an Image widget or a Canvas widget')
@@ -389,15 +389,15 @@ class Canvas(CanvasBase):
 
         self._send_canvas_command('drawImage', (serialized_image, x, y, width, height))
 
-    def put_image_data(self, image_data, dx=0, dy=0):
+    def put_image_data(self, image_data, x=0, y=0):
         """Draw an image on the Canvas.
 
-        ``image_data`` should be  a NumPy array containing the image to draw and ``dx`` and ``dy`` the pixel position where to
+        ``image_data`` should be  a NumPy array containing the image to draw and ``x`` and ``y`` the pixel position where to
         draw. Unlike the CanvasRenderingContext2D.putImageData method, this method **is** affected by the canvas transformation
         matrix, and supports transparency.
         """
         image_metadata, image_buffer = binary_image(image_data)
-        self._send_canvas_command('putImageData', (image_metadata, dx, dy), (image_buffer, ))
+        self._send_canvas_command('putImageData', (image_metadata, x, y), (image_buffer, ))
 
     def create_image_data(self, width, height):
         """Create a NumPy array of shape (width, height, 4) representing a table of pixel colors."""
