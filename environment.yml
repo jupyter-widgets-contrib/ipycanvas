@@ -5,3 +5,5 @@ dependencies:
   - branca
   - ipycanvas=0.7.0
   - ipyevents
+  - numpy
+  - matplotlib
