@@ -328,6 +328,7 @@ class CanvasView extends DOMWidgetView {
   }
 
   updateCanvas() {
+    this.clear();	
     this.ctx.drawImage(this.model.canvas, 0, 0);
   }
 
