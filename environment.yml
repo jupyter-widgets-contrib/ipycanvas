@@ -4,3 +4,4 @@ channels:
 dependencies:
   - branca
   - ipycanvas=0.4.1
+  - ipyevents
