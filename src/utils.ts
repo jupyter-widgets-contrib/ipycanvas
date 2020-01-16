@@ -103,3 +103,18 @@ async function toBytes(canvas: HTMLCanvasElement) : Promise<Uint8ClampedArray> {
     reader.readAsArrayBuffer(blob);
   });
 }
+
+export
+async function fromBytes(array: Uint8ClampedArray) : Promise<HTMLImageElement> {
+  const blob = new Blob([array]);
+
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+
+    img.onload = () => {
+      resolve(img);
+    }
+
+    img.src = URL.createObjectURL(blob);
+  });
+}
