@@ -10,7 +10,7 @@ import {
 } from './version';
 
 import {
-  getArg, toBytes
+  getArg, toBytes, fromBytes
 } from './utils';
 
 
@@ -20,6 +20,18 @@ function getContext(canvas: HTMLCanvasElement) {
     throw 'Could not create 2d context.';
   }
   return context;
+}
+
+function serializeImageData(array: Uint8ClampedArray) {
+  return new DataView(array.buffer.slice(0));
+}
+
+function deserializeImageData(dataview: DataView | null) {
+  if (dataview === null) {
+    return null;
+  }
+
+  return new Uint8ClampedArray(dataview.buffer);
 }
 
 
@@ -41,9 +53,10 @@ class CanvasModel extends DOMWidgetModel {
 
   static serializers: ISerializers = {
     ...DOMWidgetModel.serializers,
-    image_data: { serialize: (bytes: Uint8ClampedArray) => {
-      return new DataView(bytes.buffer.slice(0));
-    }}
+    image_data: {
+      serialize: serializeImageData,
+      deserialize: deserializeImageData
+    }
   }
 
   initialize(attributes: any, options: any) {
@@ -53,11 +66,22 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx = getContext(this.canvas);
 
     this.resizeCanvas();
+    this.drawImageData();
 
     this.on('change:size', this.resizeCanvas.bind(this));
     this.on('msg:custom', this.onCommand.bind(this));
 
     this.send({ event: 'client_ready' }, {});
+  }
+
+  private async drawImageData() {
+    if (this.get('sync_image_data') && this.get('image_data') !== null) {
+      const img = await fromBytes(this.get('image_data'));
+
+      this.ctx.drawImage(img, 0, 0);
+
+      this.trigger('new-frame');
+    }
   }
 
   private async onCommand(command: any, buffers: any) {
@@ -328,7 +352,7 @@ class CanvasView extends DOMWidgetView {
   }
 
   updateCanvas() {
-    this.clear();	
+    this.clear();
     this.ctx.drawImage(this.model.canvas, 0, 0);
   }
 
