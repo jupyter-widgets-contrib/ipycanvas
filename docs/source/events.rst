@@ -22,6 +22,22 @@ Those methods take a callback function as single argument, this callback functio
 
     canvas.on_mouse_down(handle_mouse_down)
 
+Built-in touch events
+---------------------
+
+The following built-in touch events are supported: ``touch_start``, ``touch_end``, ``touch_move`` and ``touch_cancel``. You can define Python callback functions that will be called whenever those touch events occur, using the ``on_touch_start``, ``on_touch_end``, ``on_touch_move`` and ``on_touch_cancel`` methods.
+
+Those methods take a callback function as single argument, this callback function must take one positional argument which is the list of tuples representing the ``(x, y)`` pixel coordinates where the fingers are located on the canvas.
+
+.. code:: Python
+
+    def handle_touch_move(fingers_locations):
+        # Draw circles where fingers are located
+        for finger_location in fingers_locations:
+            canvas.fill_arc(finger_location[0], finger_location[1], 6, 0, 2 * pi)
+
+    canvas.on_touch_move(handle_touch_move)
+
 .. note::
     Please open an issue or a Pull Request if you want more events to be supported by ipycanvas
 

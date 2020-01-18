@@ -158,10 +158,16 @@ class Canvas(CanvasBase):
     line_dash_offset = Float(0.)
 
     _client_ready_callbacks = Instance(CallbackDispatcher, ())
+
     _mouse_move_callbacks = Instance(CallbackDispatcher, ())
     _mouse_down_callbacks = Instance(CallbackDispatcher, ())
     _mouse_up_callbacks = Instance(CallbackDispatcher, ())
     _mouse_out_callbacks = Instance(CallbackDispatcher, ())
+
+    _touch_start_callbacks = Instance(CallbackDispatcher, ())
+    _touch_end_callbacks = Instance(CallbackDispatcher, ())
+    _touch_move_callbacks = Instance(CallbackDispatcher, ())
+    _touch_cancel_callbacks = Instance(CallbackDispatcher, ())
 
     def __init__(self, *args, **kwargs):
         """Create a Canvas widget."""
@@ -494,20 +500,36 @@ class Canvas(CanvasBase):
         self._client_ready_callbacks.register_callback(callback, remove=remove)
 
     def on_mouse_move(self, callback, remove=False):
-        """Register a callback that will be called on mouse mouse_move."""
+        """Register a callback that will be called on mouse move."""
         self._mouse_move_callbacks.register_callback(callback, remove=remove)
 
     def on_mouse_down(self, callback, remove=False):
-        """Register a callback that will be called on mouse mouse_down."""
+        """Register a callback that will be called on mouse click down."""
         self._mouse_down_callbacks.register_callback(callback, remove=remove)
 
     def on_mouse_up(self, callback, remove=False):
-        """Register a callback that will be called on mouse mouse_up."""
+        """Register a callback that will be called on mouse click up."""
         self._mouse_up_callbacks.register_callback(callback, remove=remove)
 
     def on_mouse_out(self, callback, remove=False):
-        """Register a callback that will be called on mouse mouse_out."""
+        """Register a callback that will be called on mouse out of the canvas."""
         self._mouse_out_callbacks.register_callback(callback, remove=remove)
+
+    def on_touch_start(self, callback, remove=False):
+        """Register a callback that will be called on touch start (new finger on the screen)."""
+        self._touch_start_callbacks.register_callback(callback, remove=remove)
+
+    def on_touch_end(self, callback, remove=False):
+        """Register a callback that will be called on touch end (a finger is not touching the screen anymore)."""
+        self._touch_end_callbacks.register_callback(callback, remove=remove)
+
+    def on_touch_move(self, callback, remove=False):
+        """Register a callback that will be called on touch move (finger moving on the screen)."""
+        self._touch_move_callbacks.register_callback(callback, remove=remove)
+
+    def on_touch_cancel(self, callback, remove=False):
+        """Register a callback that will be called on touch cancel."""
+        self._touch_cancel_callbacks.register_callback(callback, remove=remove)
 
     def __setattr__(self, name, value):
         super(Canvas, self).__setattr__(name, value)
@@ -542,6 +564,7 @@ class Canvas(CanvasBase):
     def _handle_frontend_event(self, _, content, buffers):
         if content.get('event', '') == 'client_ready':
             self._client_ready_callbacks()
+
         if content.get('event', '') == 'mouse_move':
             self._mouse_move_callbacks(content['x'], content['y'])
         if content.get('event', '') == 'mouse_down':
@@ -550,6 +573,15 @@ class Canvas(CanvasBase):
             self._mouse_up_callbacks(content['x'], content['y'])
         if content.get('event', '') == 'mouse_out':
             self._mouse_out_callbacks(content['x'], content['y'])
+
+        if content.get('event', '') == 'touch_start':
+            self._touch_start_callbacks([(touch['x'], touch['y']) for touch in content['touches']])
+        if content.get('event', '') == 'touch_end':
+            self._touch_end_callbacks([(touch['x'], touch['y']) for touch in content['touches']])
+        if content.get('event', '') == 'touch_move':
+            self._touch_move_callbacks([(touch['x'], touch['y']) for touch in content['touches']])
+        if content.get('event', '') == 'touch_cancel':
+            self._touch_cancel_callbacks([(touch['x'], touch['y']) for touch in content['touches']])
 
 
 class MultiCanvas(CanvasBase):

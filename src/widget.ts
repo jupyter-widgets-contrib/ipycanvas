@@ -343,6 +343,10 @@ class CanvasView extends DOMWidgetView {
     this.canvas.addEventListener('mousedown', { handleEvent: this.onMouseDown.bind(this) });
     this.canvas.addEventListener('mouseup', { handleEvent: this.onMouseUp.bind(this) });
     this.canvas.addEventListener('mouseout', { handleEvent: this.onMouseOut.bind(this) });
+    this.canvas.addEventListener('touchstart', { handleEvent: this.onTouchStart.bind(this) });
+    this.canvas.addEventListener('touchend', { handleEvent: this.onTouchEnd.bind(this) });
+    this.canvas.addEventListener('touchmove', { handleEvent: this.onTouchMove.bind(this) });
+    this.canvas.addEventListener('touchcancel', { handleEvent: this.onTouchCancel.bind(this) });
 
     this.updateCanvas();
   }
@@ -363,23 +367,43 @@ class CanvasView extends DOMWidgetView {
     this.canvas.setAttribute('height', size[1]);
   }
 
-  private onMouseDown(event: MouseEvent) {
-    this.model.send({ event: 'mouse_down', ...this.getMouseCoordinate(event) }, {});
+  private onMouseMove(event: MouseEvent) {
+    this.model.send({ event: 'mouse_move', ...this.getCoordinates(event) }, {});
   }
 
-  private onMouseMove(event: MouseEvent) {
-    this.model.send({ event: 'mouse_move', ...this.getMouseCoordinate(event) }, {});
+  private onMouseDown(event: MouseEvent) {
+    this.model.send({ event: 'mouse_down', ...this.getCoordinates(event) }, {});
   }
 
   private onMouseUp(event: MouseEvent) {
-    this.model.send({ event: 'mouse_up', ...this.getMouseCoordinate(event) }, {});
+    this.model.send({ event: 'mouse_up', ...this.getCoordinates(event) }, {});
   }
 
   private onMouseOut(event: MouseEvent) {
-    this.model.send({ event: 'mouse_out', ...this.getMouseCoordinate(event) }, {});
+    this.model.send({ event: 'mouse_out', ...this.getCoordinates(event) }, {});
   }
 
-  private getMouseCoordinate(event: MouseEvent) {
+  private onTouchStart(event: TouchEvent) {
+    const touches: Touch[] = Array.from(event.touches);
+    this.model.send({ event: 'touch_start', touches: touches.map(this.getCoordinates.bind(this)) }, {});
+  }
+
+  private onTouchEnd(event: TouchEvent) {
+    const touches: Touch[] = Array.from(event.touches);
+    this.model.send({ event: 'touch_end', touches: touches.map(this.getCoordinates.bind(this)) }, {});
+  }
+
+  private onTouchMove(event: TouchEvent) {
+    const touches: Touch[] = Array.from(event.touches);
+    this.model.send({ event: 'touch_move', touches: touches.map(this.getCoordinates.bind(this)) }, {});
+  }
+
+  private onTouchCancel(event: TouchEvent) {
+    const touches: Touch[] = Array.from(event.touches);
+    this.model.send({ event: 'touch_cancel', touches: touches.map(this.getCoordinates.bind(this)) }, {});
+  }
+
+  private getCoordinates(event: MouseEvent | Touch) {
     const rect = this.canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
