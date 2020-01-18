@@ -3,5 +3,5 @@ channels:
   - conda-forge
 dependencies:
   - branca
-  - ipycanvas=0.4.1
+  - ipycanvas=0.4.2
   - ipyevents
