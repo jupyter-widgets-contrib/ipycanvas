@@ -33,7 +33,7 @@ You can also clear a certain canvas rectangle area:
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(200, 200))
+    canvas = Canvas(width=200, height=200)
 
     canvas.fill_rect(25, 25, 100, 100)
     canvas.clear_rect(45, 45, 60, 60)
@@ -57,7 +57,7 @@ You can also clear a certain canvas rectangle area:
     y = np.array(np.random.rayleigh(250, n_particles), dtype=np.int32)
     size = np.random.randint(1, 3, n_particles)
 
-    canvas = Canvas(size=(800, 500))
+    canvas = Canvas(width=800, height=500)
 
     canvas.fill_style = 'green'
     canvas.fill_rects(x, y, size)
@@ -82,7 +82,7 @@ There are four methods that draw circles on the canvas:
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(200, 200))
+    canvas = Canvas(width=200, height=200)
 
     canvas.fill_style = 'red'
     canvas.stroke_style = 'blue'
@@ -117,7 +117,7 @@ Here are the functions used to perform these steps:
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(100, 100))
+    canvas = Canvas(width=100, height=100)
 
     # Draw simple triangle shape
     canvas.begin_path()
@@ -162,7 +162,7 @@ Stroke arcs
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(200, 200))
+    canvas = Canvas(width=200, height=200)
 
     # Draw smiley face
     canvas.begin_path()
@@ -186,7 +186,7 @@ Fill bezier curves
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(200, 200))
+    canvas = Canvas(width=200, height=200)
 
     # Cubic curves example
     canvas.begin_path()
@@ -211,7 +211,7 @@ Change the fill rule
     from math import pi
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(100, 100))
+    canvas = Canvas(width=100, height=100)
 
     canvas.begin_path()
     canvas.arc(50, 50, 30, 0, pi * 2, True)
@@ -239,7 +239,7 @@ You can also change the global transparency.
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(200, 200))
+    canvas = Canvas(width=200, height=200)
 
     canvas.fill_style = 'red'
     canvas.stroke_style = 'blue'
@@ -266,7 +266,7 @@ You can easily draw shadows by tweaking the following attributes:
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(200, 200))
+    canvas = Canvas(width=200, height=200)
 
     canvas.shadow_color = 'green'
     canvas.shadow_offset_x = 2
@@ -305,7 +305,7 @@ Sets the width of lines drawn in the future.
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(400, 280))
+    canvas = Canvas(width=400, height=280)
     canvas.scale(2)
 
     for i in range(10):
@@ -332,7 +332,7 @@ Sets the appearance of the ends of lines.
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(320, 360))
+    canvas = Canvas(width=320, height=360)
 
     # Possible line_cap values
     line_caps = ['butt', 'round', 'square']
@@ -377,7 +377,7 @@ Sets the appearance of the "corners" where lines meet.
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(320, 360))
+    canvas = Canvas(width=320, height=360)
 
     # Possible line_join values
     line_joins = ['round', 'bevel', 'miter']
@@ -419,7 +419,7 @@ Sets the current line dash pattern.
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(400, 280))
+    canvas = Canvas(width=400, height=280)
     canvas.scale(2)
 
     line_dashes = [

@@ -17,7 +17,7 @@ You can draw from an `Image <https://ipywidgets.readthedocs.io/en/stable/example
     sprite1 = Image.from_file('sprites/smoke_texture0.png')
     sprite2 = Image.from_file('sprites/smoke_texture1.png')
 
-    canvas = Canvas(size=(300, 300))
+    canvas = Canvas(width=300, height=300)
 
     canvas.fill_style = '#a9cafc'
     canvas.fill_rect(0, 0, 300, 300)
@@ -36,7 +36,7 @@ You can draw from another ``Canvas`` widget. This is the fastest way of drawing 
 
 .. code:: Python
 
-    canvas2 = Canvas(size=(600, 300))
+    canvas2 = Canvas(width=600, height=300)
 
     # Here ``canvas`` is the canvas from the previous example
     canvas2.draw_image(canvas, 0, 0)
@@ -70,7 +70,7 @@ You can directly draw a NumPy array of pixels on the ``Canvas``, it must be a 3-
 
     image_data = np.stack((red_channel, blue_channel, green_channel), axis=2)
 
-    canvas = Canvas(size=(image_data.shape[0], image_data.shape[1]))
+    canvas = Canvas(width=image_data.shape[0], height=image_data.shape[1])
     canvas.put_image_data(image_data, 0, 0)
 
     canvas
@@ -92,13 +92,13 @@ Drawing from another ``Canvas`` is by far the fastest of the three solutions pre
     from ipycanvas import Canvas, hold_canvas
 
     # Create temporary Canvases
-    canvas_sprite1 = Canvas(size=(100, 100))
+    canvas_sprite1 = Canvas(width=100, height=100)
     canvas_sprite1.draw_image(Image.from_file('sprites/smoke_texture0.png'), 0, 0)
 
-    canvas_sprite2 = Canvas(size=(100, 100))
+    canvas_sprite2 = Canvas(width=100, height=100)
     canvas_sprite2.draw_image(Image.from_file('sprites/smoke_texture1.png'), 0, 0)
 
-    canvas_sprite3 = Canvas(size=(100, 100))
+    canvas_sprite3 = Canvas(width=100, height=100)
     canvas_sprite3.draw_image(Image.from_file('sprites/smoke_texture2.png'), 0, 0)
 
     sprites = [canvas_sprite1, canvas_sprite2, canvas_sprite3]
@@ -110,7 +110,7 @@ Drawing from another ``Canvas`` is by far the fastest of the three solutions pre
 
 .. code:: Python
 
-    canvas = Canvas(size=(800, 600))
+    canvas = Canvas(width=800, height=600)
 
     with hold_canvas(canvas):
         for _ in range(2_000):

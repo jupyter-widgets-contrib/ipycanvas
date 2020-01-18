@@ -17,7 +17,7 @@ You can dump the current ``Canvas`` or ``MultiCanvas`` image to a PNG file using
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(200, 200), sync_image_data=True)
+    canvas = Canvas(width=200, height=200, sync_image_data=True)
 
     # Perform some drawings...
 
@@ -29,7 +29,7 @@ Note that this won't work if executed in the same Notebook cell. Because the Can
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(200, 200), sync_image_data=True)
+    canvas = Canvas(width=200, height=200, sync_image_data=True)
 
     # Perform some drawings...
 
@@ -48,7 +48,7 @@ You can get the image data of the ``Canvas`` or ``MultiCanvas`` using the ``get_
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(200, 200), sync_image_data=True)
+    canvas = Canvas(width=200, height=200, sync_image_data=True)
 
     # Perform some drawings...
 
@@ -61,7 +61,7 @@ Note that this won't work if executed in the same Notebook cell. Because the Can
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(200, 200), sync_image_data=True)
+    canvas = Canvas(width=200, height=200, sync_image_data=True)
 
     # Perform some drawings...
 

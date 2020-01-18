@@ -4,13 +4,13 @@ Basic usage
 Create Canvas
 -------------
 
-You need to provide the size of the ``Canvas`` (width, height) in the constructor.
+You can provide the width and height of the ``Canvas`` in pixels in the constructor.
 
 .. code:: Python
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(200, 200))
+    canvas = Canvas(width=200, height=200)
     canvas
 
 You can also create a multi-layer canvas. This is useful when you have a background
@@ -21,7 +21,7 @@ that does not need to update much while other objects moves a lot on the screen.
     from ipycanvas import MultiCanvas
 
     # Create a multi-layer canvas with 4 layers
-    multi_canvas = MultiCanvas(4, size=(200, 200))
+    multi_canvas = MultiCanvas(4, width=200, height=200)
     multi_canvas[0] #  Access first layer (background)
     multi_canvas[3] #  Access last layer
     multi_canvas
@@ -33,6 +33,16 @@ that does not need to update much while other objects moves a lot on the screen.
     - observe some of its attributes and call functions when they change
     - link some of its attributes to other widget attributes
 
+Resize Canvas
+-------------
+
+You can dynamically resize the ``Canvas`` and ``MultiCanvas``, note that this will clear the canvas.
+
+.. code:: Python
+
+    canvas.width = 300
+    canvas.height = 600
+
 Clear Canvas
 ------------
 
@@ -42,7 +52,7 @@ The ``Canvas`` and ``MultiCanvas`` classes have a ``clear`` method which allows 
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(200, 200))
+    canvas = Canvas(width=200, height=200)
 
     # Perform some drawings...
 
@@ -65,7 +75,7 @@ send them in a single batch at the end.
 
     from ipycanvas import Canvas, hold_canvas
 
-    canvas = Canvas(size=(200, 200))
+    canvas = Canvas(width=200, height=200)
 
     with hold_canvas(canvas):
         # Perform drawings...
