@@ -512,7 +512,15 @@ class MultiCanvasView extends DOMWidgetView {
     // @ts-ignore
     return this.create_child_view(canvasModel).then((canvasView: CanvasView) => {
       canvasView.el.style.zIndex = index;
-      canvasView.el.style.position = 'absolute';
+
+      if (index == 0) {
+        // This will enforce the container to respect the children size.
+        canvasView.el.style.position = 'relative';
+        canvasView.el.style.float = 'left';
+      } else {
+        canvasView.el.style.position = 'absolute';
+      }
+
       this.container.appendChild(canvasView.el);
 
       return canvasView;
