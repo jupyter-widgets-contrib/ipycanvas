@@ -177,8 +177,6 @@ class Canvas(CanvasBase):
         self._buffers_cache = []
 
         super(Canvas, self).__init__(*args, **kwargs)
-        self.layout.width = str(self.size[0]) + 'px'
-        self.layout.height = str(self.size[1]) + 'px'
 
         self.on_msg(self._handle_frontend_event)
 
@@ -603,8 +601,6 @@ class MultiCanvas(CanvasBase):
         size = kwargs.get('size', (700, 500))
 
         super(MultiCanvas, self).__init__(*args, _canvases=[Canvas(size=size) for _ in range(n_canvases)], **kwargs)
-        self.layout.width = str(size[0]) + 'px'
-        self.layout.height = str(size[1]) + 'px'
 
     def __getitem__(self, key):
         """Access one of the Canvas instances."""
