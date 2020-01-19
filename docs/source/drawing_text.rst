@@ -13,7 +13,7 @@ There are two methods that draw text on the canvas:
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(400, 50))
+    canvas = Canvas(width=400, height=50)
 
     canvas.font = '32px serif'
     canvas.fill_text('Drawing from Python is cool!', 10, 32)
@@ -25,7 +25,7 @@ There are two methods that draw text on the canvas:
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(400, 50))
+    canvas = Canvas(width=400, height=50)
 
     canvas.font = '32px serif'
     canvas.stroke_text('Hello There!', 10, 32)

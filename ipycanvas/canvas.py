@@ -4,11 +4,12 @@
 # Copyright (c) Martin Renou.
 # Distributed under the terms of the Modified BSD License.
 
+import warnings
 from contextlib import contextmanager
 
 import numpy as np
 
-from traitlets import Bool, Bytes, Enum, Float, Instance, List, Tuple, Unicode
+from traitlets import Bool, Bytes, CInt, Enum, Float, Instance, List, Unicode
 
 from ipywidgets import CallbackDispatcher, Color, DOMWidget, Image, widget_serialization
 from ipywidgets.widgets.trait_types import bytes_serialization
@@ -18,13 +19,14 @@ from ._frontend import module_name, module_version
 from .utils import binary_image, populate_args, to_camel_case, image_bytes_to_array
 
 
-class CanvasBase(DOMWidget):
+class _CanvasBase(DOMWidget):
     _model_module = Unicode(module_name).tag(sync=True)
     _model_module_version = Unicode(module_version).tag(sync=True)
     _view_module = Unicode(module_name).tag(sync=True)
     _view_module_version = Unicode(module_version).tag(sync=True)
 
-    size = Tuple((700, 500), help='Size of the Canvas, this is not equal to the size of the view').tag(sync=True)
+    width = CInt(700).tag(sync=True)
+    height = CInt(500).tag(sync=True)
 
     #: (bool) Specifies if the image should be synchronized from front-end to Python back-end
     sync_image_data = Bool(False).tag(sync=True)
@@ -62,9 +64,9 @@ class CanvasBase(DOMWidget):
         y = int(y)
 
         if width is None:
-            width = self.size[0] - x
+            width = self.width - x
         if height is None:
-            height = self.size[1] - y
+            height = self.height - y
 
         width = int(width)
         height = int(height)
@@ -72,12 +74,27 @@ class CanvasBase(DOMWidget):
         image_data = image_bytes_to_array(self.image_data)
         return image_data[y:y + height, x:x + width]
 
+    @property
+    def size(self):
+        """Get the canvas size."""
+        return (self.width, self.height)
 
-class Canvas(CanvasBase):
+    @size.setter
+    def size(self, value):
+        """Set the size of the canvas, this is deprecated, use width and height attributes instead."""
+        warnings.warn(
+            'size is deprecated and will be removed in a future release, please use width and height instead.',
+            DeprecationWarning
+        )
+        (self.width, self.height) = value
+
+
+class Canvas(_CanvasBase):
     """Create a Canvas widget.
 
     Args:
-        size (tuple): The size (in pixels) of the canvas
+        width (int): The width (in pixels) of the canvas
+        height (int): The height (in pixels) of the canvas
         caching (boolean): Whether commands should be cached or not
     """
 
@@ -175,6 +192,19 @@ class Canvas(CanvasBase):
         self.caching = kwargs.get('caching', False)
         self._commands_cache = []
         self._buffers_cache = []
+
+        if 'size' in kwargs:
+            size = kwargs['size']
+
+            kwargs['width'] = size[0]
+            kwargs['height'] = size[1]
+
+            del kwargs['size']
+
+            warnings.warn(
+                'size is deprecated and will be removed in a future release, please use width and height instead.',
+                DeprecationWarning
+            )
 
         super(Canvas, self).__init__(*args, **kwargs)
 
@@ -472,7 +502,7 @@ class Canvas(CanvasBase):
 
     # Extras
     def clear(self):
-        """Clear the entire canvas. This is the same as calling ``clear_rect(0, 0, canvas.size[0], canvas.size[1])``."""
+        """Clear the entire canvas. This is the same as calling ``clear_rect(0, 0, canvas.width, canvas.height)``."""
         self._send_command({'name': 'clear'})
 
     def flush(self):
@@ -582,12 +612,13 @@ class Canvas(CanvasBase):
             self._touch_cancel_callbacks([(touch['x'], touch['y']) for touch in content['touches']])
 
 
-class MultiCanvas(CanvasBase):
+class MultiCanvas(_CanvasBase):
     """Create a MultiCanvas widget with n_canvases Canvas widgets.
 
     Args:
         n_canvases (int): The number of canvases to create
-        size (tuple): The size (in pixels) of the canvases
+        width (int): The width (in pixels) of the canvases
+        height (int): The height (in pixels) of the canvases
     """
 
     _model_name = Unicode('MultiCanvasModel').tag(sync=True)
@@ -597,10 +628,7 @@ class MultiCanvas(CanvasBase):
 
     def __init__(self, n_canvases=3, *args, **kwargs):
         """Constructor."""
-        self.caching = kwargs.get('caching', False)
-        size = kwargs.get('size', (700, 500))
-
-        super(MultiCanvas, self).__init__(*args, _canvases=[Canvas(size=size) for _ in range(n_canvases)], **kwargs)
+        super(MultiCanvas, self).__init__(_canvases=[Canvas(*args, **kwargs) for _ in range(n_canvases)])
 
     def __getitem__(self, key):
         """Access one of the Canvas instances."""
@@ -609,12 +637,9 @@ class MultiCanvas(CanvasBase):
     def __setattr__(self, name, value):
         super(MultiCanvas, self).__setattr__(name, value)
 
-        if name == 'caching':
+        if name in ('caching', 'width', 'height'):
             for layer in self._canvases:
-                layer.caching = value
-        if name == 'size':
-            for layer in self._canvases:
-                layer.size = value
+                setattr(layer, name, value)
 
     def on_client_ready(self, callback, remove=False):
         """Register a callback that will be called when a new client is ready to receive draw commands.

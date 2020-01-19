@@ -45,7 +45,8 @@ class CanvasModel extends DOMWidgetModel {
       _view_name: CanvasModel.view_name,
       _view_module: CanvasModel.view_module,
       _view_module_version: CanvasModel.view_module_version,
-      size: [700, 500],
+      width: 700,
+      height: 500,
       sync_image_data: false,
       image_data: null,
     };
@@ -68,7 +69,7 @@ class CanvasModel extends DOMWidgetModel {
     this.resizeCanvas();
     this.drawImageData();
 
-    this.on('change:size', this.resizeCanvas.bind(this));
+    this.on_some_change(['width', 'height'], this.resizeCanvas, this);
     this.on('msg:custom', this.onCommand.bind(this));
 
     this.send({ event: 'client_ready' }, {});
@@ -297,10 +298,8 @@ class CanvasModel extends DOMWidgetModel {
   }
 
   private resizeCanvas() {
-    const size = this.get('size');
-
-    this.canvas.setAttribute('width', size[0]);
-    this.canvas.setAttribute('height', size[1]);
+    this.canvas.setAttribute('width', this.get('width'));
+    this.canvas.setAttribute('height', this.get('height'));
   }
 
   private async syncImageData() {
@@ -337,7 +336,7 @@ class CanvasView extends DOMWidgetView {
     this.ctx = getContext(this.canvas);
 
     this.resizeCanvas();
-    this.model.on('change:size', this.resizeCanvas.bind(this));
+    this.model.on_some_change(['width', 'height'], this.resizeCanvas, this);
 
     this.canvas.addEventListener('mousemove', { handleEvent: this.onMouseMove.bind(this) });
     this.canvas.addEventListener('mousedown', { handleEvent: this.onMouseDown.bind(this) });
@@ -361,10 +360,8 @@ class CanvasView extends DOMWidgetView {
   }
 
   private resizeCanvas() {
-    const size = this.model.get('size');
-
-    this.canvas.setAttribute('width', size[0]);
-    this.canvas.setAttribute('height', size[1]);
+    this.canvas.setAttribute('width', this.model.get('width'));
+    this.canvas.setAttribute('height', this.model.get('height'));
   }
 
   private onMouseMove(event: MouseEvent) {
@@ -428,7 +425,6 @@ class MultiCanvasModel extends DOMWidgetModel {
       _view_name: MultiCanvasModel.view_name,
       _view_module: MultiCanvasModel.view_module,
       _view_module_version: MultiCanvasModel.view_module_version,
-      size: [700, 500],
       _canvases: [],
       sync_image_data: false,
       image_data: null,
@@ -462,12 +458,10 @@ class MultiCanvasModel extends DOMWidgetModel {
       return;
     }
 
-    const [ width, height ] = this.get('size');
-
     // Draw on a temporary off-screen canvas.
     const offscreenCanvas = document.createElement('canvas');
-    offscreenCanvas.width = width;
-    offscreenCanvas.height = height;
+    offscreenCanvas.width = this.get('width');
+    offscreenCanvas.height = this.get('height');
     const ctx = getContext(offscreenCanvas);
 
     for (const canvasModel of this.get('_canvases')) {

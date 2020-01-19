@@ -16,7 +16,7 @@ A way to work around this is to perform your drawings in a callback that gets ca
 
     from ipycanvas import Canvas
 
-    canvas = Canvas(size=(100, 50))
+    canvas = Canvas(width=100, height=50)
 
     def perform_drawings():
         canvas.font = '32px serif'
