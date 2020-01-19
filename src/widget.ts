@@ -70,13 +70,14 @@ class CanvasModel extends DOMWidgetModel {
     this.drawImageData();
 
     this.on_some_change(['width', 'height'], this.resizeCanvas, this);
+    this.on('change:sync_image_data', this.syncImageData.bind(this));
     this.on('msg:custom', this.onCommand.bind(this));
 
     this.send({ event: 'client_ready' }, {});
   }
 
   private async drawImageData() {
-    if (this.get('sync_image_data') && this.get('image_data') !== null) {
+    if (this.get('image_data') !== null) {
       const img = await fromBytes(this.get('image_data'));
 
       this.ctx.drawImage(img, 0, 0);
@@ -443,6 +444,7 @@ class MultiCanvasModel extends DOMWidgetModel {
     super.initialize(attributes, options);
 
     this.on('change:_canvases', this.updateListeners.bind(this));
+    this.on('change:sync_image_data', this.syncImageData.bind(this));
     this.updateListeners();
   }
 
@@ -465,7 +467,13 @@ class MultiCanvasModel extends DOMWidgetModel {
     const ctx = getContext(offscreenCanvas);
 
     for (const canvasModel of this.get('_canvases')) {
-      ctx.drawImage(canvasModel.canvas, 0, 0)
+      ctx.drawImage(canvasModel.canvas, 0, 0);
+
+      // Also update the sub-canvas image-data
+      const bytes = await toBytes(canvasModel.canvas);
+
+      canvasModel.set('image_data', bytes);
+      canvasModel.save_changes();
     }
 
     const bytes = await toBytes(offscreenCanvas);
