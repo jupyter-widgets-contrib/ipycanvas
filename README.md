@@ -6,7 +6,7 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?filepath=examples)
 [![Build Status](https://travis-ci.org/martinRenou/ipycanvas.svg?branch=master)](https://travis-ci.org/martinRenou/ipycanvas)
 
-ipycanvas is a lightweight, fast and stable library exposing the [browser's Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) to Python.
+ipycanvas is a lightweight, fast and stable library exposing the [browser's Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) to IPython.
 It allows you to draw simple primitives directly from Python like text, lines, polygons, arcs, images etc. This simple toolset allows you to draw literally anything!
 
 ## Try it online!
@@ -17,7 +17,7 @@ You can try it online by clicking on this badge:
 
 ## Documentation
 
-You can read the documentation following this link: https://ipycanvas.readthedocs.io/en/latest/
+You can read the documentation following this link: https://ipycanvas.readthedocs.io
 
 ## Examples
 
@@ -53,35 +53,6 @@ conda install -c conda-forge ipycanvas
 And if you use jupyterlab:
 
 ```bash
+conda install -c conda-forge nodejs
 jupyter labextension install @jupyter-widgets/jupyterlab-manager ipycanvas
-```
-
-If you are using Jupyter Notebook 5.2 or earlier, you may also need to enable
-the nbextension:
-```bash
-jupyter nbextension enable --py [--sys-prefix|--user|--system] ipycanvas
-```
-
-## Installation from sources
-
-You can install using `pip`:
-
-```bash
-git clone https://github.com/martinRenou/ipycanvas
-cd ipycanvas
-pip install .
-```
-
-And if you use jupyterlab:
-
-```bash
-jupyter labextension install @jupyter-widgets/jupyterlab-manager
-jupyter labextension install .
-```
-
-And you use the classical Jupyter:
-
-```bash
-jupyter nbextension install --py --symlink --sys-prefix ipycanvas
-jupyter nbextension enable --py --sys-prefix ipycanvas
 ```

@@ -6,7 +6,6 @@ Using pip
 .. code:: bash
 
     pip install ipycanvas
-    jupyter nbextension enable --py --sys-prefix ipycanvas  # can be skipped for notebook 5.3 and above
 
 Using conda
 ===========
@@ -18,7 +17,14 @@ Using conda
 JupyterLab extension
 ====================
 
-If you have JupyterLab, you will also need to install the JupyterLab extension:
+If you have JupyterLab, you will also need to install the JupyterLab extension. In order to install the JupyterLab extension,
+you will need ``npm`` to be installed. You can easily install ``npm`` with conda:
+
+.. code:: bash
+
+    conda install -c conda-forge nodejs
+
+Then you can install the JupyterLab extension:
 
 .. code:: bash
 
@@ -34,6 +40,10 @@ For a development installation (requires npm):
     git clone https://github.com/martinRenou/ipycanvas.git
     cd ipycanvas
     pip install -e .
+
+    # If you are developing on the classic Jupyter Notebook
     jupyter nbextension install --py --symlink --sys-prefix ipycanvas
     jupyter nbextension enable --py --sys-prefix ipycanvas
-    jupyter labextension install @jupyter-widgets/jupyterlab-manager .  # If you are developing on JupyterLab
+
+    # If you are developing on JupyterLab
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager .
