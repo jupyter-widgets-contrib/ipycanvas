@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-import sphinx_rtd_theme
-
 extensions = [
-    'sphinx_rtd_theme',
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon'
 ]
@@ -22,16 +19,20 @@ pygments_style = 'sphinx'
 
 # Output file base name for HTML help builder.
 html_logo = "./images/ipycanvas_logo.svg"
-html_theme = "sphinx_rtd_theme"
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_favicon = "./images/ipycanvas_logo.ico"
+html_theme = "pandas_sphinx_theme"
 htmlhelp_basename = 'ipycanvasdoc'
 
 html_theme_options = dict(
-    style_nav_header_background='#0d6a0a'
+    github_url='https://github.com/martinRenou/ipycanvas'
 )
 
 html_js_files = [
     'goatcounter.js'
+]
+
+html_css_files = [
+    'custom.css'
 ]
 
 autodoc_member_order = 'bysource'
