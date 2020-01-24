@@ -1,9 +1,6 @@
 Drawing text
 ============
 
-Drawing text
-------------
-
 There are two methods that draw text on the canvas:
 
 - ``fill_text(text, x, y, max_width=None)``: Fills a given ``text`` at the given (``x``, ``y``) position. Optionally with a maximum width to draw.

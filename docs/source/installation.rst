@@ -1,21 +1,24 @@
 .. _installation:
 
+Installation
+============
+
 Using pip
-=========
+---------
 
 .. code:: bash
 
     pip install ipycanvas
 
 Using conda
-===========
+-----------
 
 .. code:: bash
 
     conda install -c conda-forge ipycanvas
 
 JupyterLab extension
-====================
+--------------------
 
 If you have JupyterLab, you will also need to install the JupyterLab extension. In order to install the JupyterLab extension,
 you will need ``npm`` to be installed. You can easily install ``npm`` with conda:
@@ -31,7 +34,7 @@ Then you can install the JupyterLab extension:
     jupyter labextension install @jupyter-widgets/jupyterlab-manager ipycanvas
 
 Development installation
-========================
+------------------------
 
 For a development installation (requires npm):
 
