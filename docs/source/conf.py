@@ -30,4 +30,8 @@ html_theme_options = dict(
     style_nav_header_background='#0d6a0a'
 )
 
+html_js_files = [
+    'goatcounter.js'
+]
+
 autodoc_member_order = 'bysource'
