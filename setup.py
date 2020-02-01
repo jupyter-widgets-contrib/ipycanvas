@@ -87,7 +87,8 @@ setup_args = dict(
     install_requires = [
         'ipywidgets>=7.5.0',
         'pillow>=6.0',
-        'numpy'
+        'numpy',
+        'gast>=0.3,<0.4'
     ],
     extras_require = {
         'examples': [
