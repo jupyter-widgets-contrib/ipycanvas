@@ -1,3 +1,5 @@
+from textwrap import dedent
+
 import pytest
 
 from ipycanvas.animation import py2js, Py2JSSyntaxError
@@ -78,6 +80,26 @@ def test_binary():
 def test_ternary():
     code = '3 if value else 4'
     assert py2js(code) == '(value ? 3 : 4)'
+
+
+def test_if():
+    code = dedent("""
+        if t < 0.3:
+            canvas.fill_rect(0, 0, 20, 20)
+        else:
+            canvas.fill_rect(20, 20, 20, 20)
+        """)
+    assert py2js(code) == """if ((t < 0.3)) {
+canvas.fill_rect(0, 0, 20, 20);
+} else {
+canvas.fill_rect(20, 20, 20, 20);
+}
+"""
+
+
+def test_call():
+    code = 'canvas.fill_rect(20, 32, compute_size(t), compute_size(t))'
+    assert py2js(code) == 'canvas.fill_rect(20, 32, compute_size(t), compute_size(t))'
 
 
 def test_compare():

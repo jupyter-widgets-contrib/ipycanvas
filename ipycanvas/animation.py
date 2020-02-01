@@ -163,37 +163,21 @@ class Py2JSVisitor(ast.NodeVisitor):
 
     def visit_Name(self, node):
         """Turn a Python name expression into JavaScript code."""
-        if sys.version_info[0] == 2:
-            if node.id == 'False':
-                return 'false'
-            if node.id == 'True':
-                return 'true'
-            if node.id == 'None':
-                return 'null'
-
         return node.id
 
     def visit_Call(self, node):
         """Turn a Python call expression into JavaScript code."""
-        if isinstance(node.func, ast.Name):
-            func_name = node.func.id
-
-        if isinstance(node.func, ast.Attribute):
-            func_name = node.func.attr
-
         args = ', '.join([self.visit(arg) for arg in node.args])
 
-        return '{func_name}({args})'.format(func_name=func_name, args=args)
+        return '{func_name}({args})'.format(func_name=self.visit(node.func), args=args)
 
     # def visit_Assign(self, node):
     """Turn a Python assignment expression into JavaScript code."""
-    # TODO Put var in front of the target is not in the scope yet, and if it's a Name
+    # TODO Put var in front of the target if not in the scope yet, and if it's a Name
 
     def visit_Attribute(self, node):
         """Turn a Python attribute expression into JavaScript code."""
-        value = self.visit(node.value)
-
-        return '{}.{}'.format(value, node.attr)
+        return '{}.{}'.format(self.visit(node.value), node.attr)
 
 
 def py2js(value):
@@ -215,4 +199,4 @@ def py2js(value):
 
         return ';\n'.join([Py2JSVisitor().visit(node) for node in func.body])
 
-    raise RuntimeError('py2vega only supports a code string or function as input')
+    raise RuntimeError('py2js only supports a code string or function as input')
