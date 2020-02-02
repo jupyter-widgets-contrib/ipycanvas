@@ -18,6 +18,8 @@ from ._frontend import module_name, module_version
 
 from .utils import binary_image, populate_args, to_camel_case, image_bytes_to_array
 
+from .animation import Animation
+
 
 class _CanvasBase(DOMWidget):
     _model_module = Unicode(module_name).tag(sync=True)
@@ -173,6 +175,9 @@ class Canvas(_CanvasBase):
 
     #: (float) Specifies where to start a dash array on a line. Default is ``0.``.
     line_dash_offset = Float(0.)
+
+    #: (ipycanvas.animation.Animation) Custom animation.
+    animation = Instance(Animation, default_value=None, allow_none=True).tag(sync=True, **widget_serialization)
 
     _client_ready_callbacks = Instance(CallbackDispatcher, ())
 

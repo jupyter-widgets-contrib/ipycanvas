@@ -2,7 +2,7 @@
 // Distributed under the terms of the Modified BSD License.
 
 import {
-  DOMWidgetModel, DOMWidgetView, ISerializers, Dict, ViewList, unpack_models
+  DOMWidgetModel, DOMWidgetView, WidgetModel, WidgetView, ISerializers, Dict, ViewList, unpack_models
 } from '@jupyter-widgets/base';
 
 import {
@@ -36,6 +36,93 @@ function deserializeImageData(dataview: DataView | null) {
 
 
 export
+class AnimationModel extends WidgetModel {
+  defaults() {
+    return {...super.defaults(),
+      _model_name: AnimationModel.model_name,
+      _model_module: AnimationModel.model_module,
+      _model_module_version: AnimationModel.model_module_version,
+      _view_name: AnimationModel.view_name,
+      _view_module: AnimationModel.view_module,
+      _view_module_version: AnimationModel.view_module_version,
+      _draw: '',
+      duration: 0,
+      data: {},
+    };
+  }
+
+  initialize(attributes: any, options: any) {
+    super.initialize(attributes, options);
+
+    this.on('change:_draw', this.updateFunction.bind(this));
+    this.updateFunction();
+  }
+
+  updateFunction() {
+    this.draw = new Function('canvas', 't', 'data', this.get('_draw'));
+  }
+
+  get duration() : number {
+    return this.get('duration');
+  }
+
+  get data() : any {
+    return this.get('data');
+  }
+
+  static model_name = 'AnimationModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+  static view_name = 'AnimationView';
+  static view_module = MODULE_NAME;
+  static view_module_version = MODULE_VERSION;
+
+  draw: Function;
+}
+
+
+export
+class AnimationView extends WidgetView {
+  initialize(parameters: any) {
+    super.initialize(parameters);
+
+    this.canvas = this.options.canvas;
+
+    this.data = this.model.data;
+    this.t = 0;
+  }
+
+  start() {
+    this.startTime = new Date().getTime();
+
+    this.draw();
+  }
+
+  draw() {
+    this.t = new Date().getTime() - this.startTime;
+
+    this.model.draw(this.canvas.ctx, this.t, this.data);
+
+    this.canvas.updateViews();
+
+    if (this.infinite || this.t <= this.model.duration) {
+      window.requestAnimationFrame(this.draw.bind(this));
+    }
+  }
+
+  canvas: CanvasModel;
+  t: number;
+  data: any;
+
+  private startTime: number;
+
+  readonly infinite: boolean = this.model.duration == 0;
+
+  model: AnimationModel;
+}
+
+
+export
 class CanvasModel extends DOMWidgetModel {
   defaults() {
     return {...super.defaults(),
@@ -49,11 +136,13 @@ class CanvasModel extends DOMWidgetModel {
       height: 500,
       sync_image_data: false,
       image_data: null,
+      animation: null,
     };
   }
 
   static serializers: ISerializers = {
     ...DOMWidgetModel.serializers,
+    animation: { deserialize: (unpack_models as any) },
     image_data: {
       serialize: serializeImageData,
       deserialize: deserializeImageData
@@ -71,6 +160,7 @@ class CanvasModel extends DOMWidgetModel {
 
     this.on_some_change(['width', 'height'], this.resizeCanvas, this);
     this.on('change:sync_image_data', this.syncImageData.bind(this));
+    this.on('change:animation', this.updateAnimation.bind(this));
     this.on('msg:custom', this.onCommand.bind(this));
 
     this.send({ event: 'client_ready' }, {});
@@ -298,6 +388,12 @@ class CanvasModel extends DOMWidgetModel {
     }
   }
 
+  updateViews() {
+    this.forEachView((view: CanvasView) => {
+      view.updateCanvas();
+    });
+  }
+
   private resizeCanvas() {
     this.canvas.setAttribute('width', this.get('width'));
     this.canvas.setAttribute('height', this.get('height'));
@@ -312,6 +408,19 @@ class CanvasModel extends DOMWidgetModel {
 
     this.set('image_data', bytes);
     this.save_changes();
+  }
+
+  private updateAnimation() {
+    const animation = this.get('animation');
+    if (animation === null) {
+      return;
+    }
+
+    // @ts-ignore
+    return this.widget_manager.create_view(animation, { canvas: this }).then((animationView: AnimationView) => {
+      animationView.start();
+      console.log('started animation');
+    });
   }
 
   static model_name = 'CanvasModel';
