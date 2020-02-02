@@ -171,9 +171,11 @@ class Py2JSVisitor(ast.NodeVisitor):
 
         return '{func_name}({args})'.format(func_name=self.visit(node.func), args=args)
 
-    # def visit_Assign(self, node):
-    """Turn a Python assignment expression into JavaScript code."""
-    # TODO Put var in front of the target if not in the scope yet, and if it's a Name
+    def visit_Assign(self, node):
+        """Turn a Python assignment expression into JavaScript code."""
+        # TODO Put var in front of the target if not in the scope yet, and if it's a Name?
+        targets = ' = '.join(self.visit(target) for target in node.targets)
+        return '{} = {}'.format(targets, self.visit(node.value))
 
     def visit_Attribute(self, node):
         """Turn a Python attribute expression into JavaScript code."""

@@ -114,3 +114,8 @@ def test_compare():
 
     # code = '\'chevrolet\' not in value'
     # assert py2js(code) == '(indexof(value, \'chevrolet\') == -1)'
+
+
+def test_assign():
+    code = "canvas.fill_style = 'red'"
+    assert py2js(code) == "canvas.fill_style = 'red'"
