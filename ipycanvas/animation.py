@@ -186,6 +186,18 @@ class Py2JSVisitor(ast.NodeVisitor):
         """Turn a Python attribute expression into JavaScript code."""
         return '{}.{}'.format(self.visit(node.value), node.attr)
 
+    def visit_Subscript(self, node):
+        """Turn a Python Subscript node into JavaScript code."""
+        value = self.visit(node.value)
+
+        if isinstance(node.slice, ast.Index):
+            return '{value}[{index}]'.format(
+                value=value,
+                index=self.visit(node.slice.value)
+            )
+
+        raise Py2JSSyntaxError('Unsupported {} node'.format(node.slice.__class__.__name__))
+
 
 def py2js(value):
     """Convert Python code or Python function to JavaScript code."""

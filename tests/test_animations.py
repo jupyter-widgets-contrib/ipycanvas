@@ -102,6 +102,14 @@ def test_call():
     assert py2js(code) == 'canvas.fill_rect(20, 32, compute_size(t), compute_size(t))'
 
 
+def test_subscript():
+    code = "data['test'] = 36"
+    assert py2js(code) == "data['test'] = 36"
+
+    code = "data[0] = 35"
+    assert py2js(code) == "data[0] = 35"
+
+
 def test_compare():
     code = '3 < value <= 4'
     assert py2js(code) == '(3 < value <= 4)'
