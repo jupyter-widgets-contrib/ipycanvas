@@ -97,6 +97,17 @@ canvas.fill_rect(20, 20, 20, 20);
 """
 
 
+def test_while():
+    code = dedent("""
+        while t < 0.3:
+            canvas.fill_rect(0, 0, 20, 20)
+        """)
+    assert py2js(code) == """while ((t < 0.3)) {
+canvas.fill_rect(0, 0, 20, 20);
+}
+"""
+
+
 def test_call():
     code = 'canvas.fill_rect(20, 32, compute_size(t), compute_size(t))'
     assert py2js(code) == 'canvas.fill_rect(20, 32, compute_size(t), compute_size(t))'

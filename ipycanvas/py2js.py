@@ -151,6 +151,16 @@ class Py2JSVisitor(ast.NodeVisitor):
             self.visit(node.orelse)
         )
 
+    def visit_While(self, node):
+        """Turn a Python while loop into JavaScript code."""
+        if len(node.orelse):
+            raise Py2JSSyntaxError('Unsupported "else" statement node on a "while" loop')
+
+        return 'while ({}) {{\n{}\n}}\n'.format(
+            self.visit(node.test),
+            '\n'.join(['{};'.format(self.visit(subnode)) for subnode in node.body])
+        )
+
     def visit_Compare(self, node):
         """Turn a Python compare expression into JavaScript code."""
         left_operand = node.left
