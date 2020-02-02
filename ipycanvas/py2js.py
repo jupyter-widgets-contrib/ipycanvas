@@ -20,6 +20,15 @@ OPERATOR_MAPPING = {
     ast.Mod: '%'
 }
 
+MODULES = {
+    'math': {
+        'cos': 'Math.cos',
+        'sin': 'Math.sin',
+        'tan': 'Math.tan',
+        'pi': 'Math.PI',
+    },
+}
+
 
 class Py2JSSyntaxError(SyntaxError):
     def __init__(self, message):
@@ -188,7 +197,17 @@ class Py2JSVisitor(ast.NodeVisitor):
 
     def visit_Attribute(self, node):
         """Turn a Python attribute expression into JavaScript code."""
-        return '{}.{}'.format(self.visit(node.value), node.attr)
+        attr = node.attr
+
+        if isinstance(node.value, ast.Name):
+            name = node.value.id
+
+            # If it's a known module
+            if name in MODULES:
+                if attr in MODULES[name]:
+                    return MODULES[name][attr]
+
+        return '{}.{}'.format(self.visit(node.value), attr)
 
     def visit_Subscript(self, node):
         """Turn a Python Subscript node into JavaScript code."""

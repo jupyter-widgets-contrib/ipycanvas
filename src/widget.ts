@@ -419,7 +419,6 @@ class CanvasModel extends DOMWidgetModel {
     // @ts-ignore
     return this.widget_manager.create_view(animation, { canvas: this }).then((animationView: AnimationView) => {
       animationView.start();
-      console.log('started animation');
     });
   }
 
