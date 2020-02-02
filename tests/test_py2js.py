@@ -2,7 +2,7 @@ from textwrap import dedent
 
 import pytest
 
-from ipycanvas.animation import py2js, Py2JSSyntaxError
+from ipycanvas.py2js import py2js, Py2JSSyntaxError
 
 
 def test_nameconstant():
