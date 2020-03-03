@@ -1,6 +1,6 @@
 {
   "name": "ipycanvas",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Interactive widgets library exposing the browser's Canvas API",
   "keywords": [
     "jupyter",
