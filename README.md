@@ -41,20 +41,8 @@ conda install -c conda-forge nodejs
 jupyter labextension install @jupyter-widgets/jupyterlab-manager ipycanvas
 ```
 
-## For a development installation (requires npm)
-```bash
-$git clone https://github.com/martinRenou/ipycanvas
-$ cd ipycanvas
-$ pip install -e .
-$ jupyter nbextension install --py --symlink --sys-prefix ipycanvas
-$ jupyter nbextension enable --py --sys-prefix ipycanvas
-$ jupyter labextension install @jupyter-widgets/jupyterlab-manager
-$ jupyter labextension install js
-```
-When actively developing your extension, build Jupyter Lab with the command:
-```bash
-$ jupyter lab --watch
-```
+ An development installation guide, can be found [here](https://ipycanvas.readthedocs.io/en/latest/installation.html#development-installation)
+
 ## Examples
 
 ### Create John Conway's Game Of Life
