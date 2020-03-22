@@ -41,6 +41,8 @@ conda install -c conda-forge nodejs
 jupyter labextension install @jupyter-widgets/jupyterlab-manager ipycanvas
 ```
 
+ An development installation guide, can be found [here](https://ipycanvas.readthedocs.io/en/latest/installation.html#development-installation)
+
 ## Examples
 
 ### Create John Conway's Game Of Life
