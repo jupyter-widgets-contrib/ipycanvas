@@ -49,7 +49,7 @@ You can draw from another ``Canvas`` widget. This is the fastest way of drawing 
 From a NumPy array
 ------------------
 
-You can directly draw a NumPy array of pixels on the ``Canvas``, it must be a 3-D array of integers and the last dimension must be 3 or 4 (rgb or rgba), with values going from ``0`` to ``225``.
+You can directly draw a NumPy array of pixels on the ``Canvas``, it must be a 3-D array of integers and the last dimension must be 3 or 4 (rgb or rgba), with values going from ``0`` to ``255``.
 
 - ``put_image_data(image_data, x=0, y=0)``: Draw an image on the Canvas. ``image_data`` should be  a NumPy array containing the image to draw and ``x`` and ``y`` the pixel position where to draw (top left pixel of the image).
 
