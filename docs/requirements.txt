@@ -1,2 +1,2 @@
 ipycanvas
-git+https://github.com/pandas-dev/pandas-sphinx-theme.git@master
+git+https://github.com/pandas-dev/pydata-sphinx-theme@master
