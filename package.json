@@ -10,7 +10,9 @@
   ],
   "files": [
     "lib/**/*.js",
-    "dist/*.js"
+    "lib/**/*.d.ts",
+    "dist/*.js",
+    "dist/*.d.ts"
   ],
   "homepage": "https://github.com/martinRenou/ipycanvas",
   "bugs": {
