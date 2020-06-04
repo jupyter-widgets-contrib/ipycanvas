@@ -360,7 +360,7 @@ class CanvasView extends DOMWidgetView {
     this.ctx.drawImage(this.model.canvas, 0, 0);
   }
 
-  private resizeCanvas() {
+  protected resizeCanvas() {
     this.canvas.setAttribute('width', this.model.get('width'));
     this.canvas.setAttribute('height', this.model.get('height'));
   }
@@ -401,7 +401,7 @@ class CanvasView extends DOMWidgetView {
     this.model.send({ event: 'touch_cancel', touches: touches.map(this.getCoordinates.bind(this)) }, {});
   }
 
-  private getCoordinates(event: MouseEvent | Touch) {
+  protected getCoordinates(event: MouseEvent | Touch) {
     const rect = this.canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
