@@ -34,7 +34,7 @@
     "build:labextension": "npm run clean:labextension && mkdirp ipycanvas/labextension && cd ipycanvas/labextension && npm pack ../..",
     "build:lib": "tsc",
     "build:nbextension": "webpack -p",
-    "build:all": "npm run build:labextension && npm run build:nbextension",
+    "build:all": "npm run build:lib && npm run build:labextension && npm run build:nbextension",
     "clean": "npm run clean:lib && npm run clean:nbextension",
     "clean:lib": "rimraf lib",
     "clean:labextension": "rimraf ipycanvas/labextension",
