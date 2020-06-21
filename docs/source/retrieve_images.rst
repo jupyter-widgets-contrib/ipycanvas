@@ -31,13 +31,13 @@ Note that this won't work if executed in the same Notebook cell. Because the Can
 
     canvas = Canvas(width=200, height=200, sync_image_data=True)
 
-    # Perform some drawings...
-
     def save_to_file(*args, **kwargs):
         canvas.to_file('my_file.png')
 
     # Listen to changes on the ``image_data`` trait and call ``save_to_file`` when it changes.
     canvas.observe(save_to_file, 'image_data')
+
+    # Perform some drawings...
 
 Get image data as a NumPy array
 -------------------------------
@@ -63,11 +63,11 @@ Note that this won't work if executed in the same Notebook cell. Because the Can
 
     canvas = Canvas(width=200, height=200, sync_image_data=True)
 
-    # Perform some drawings...
-
     def get_array(*args, **kwargs):
         arr = canvas.get_image_data()
         # Do something with arr
 
     # Listen to changes on the ``image_data`` trait and call ``get_array`` when it changes.
     canvas.observe(get_array, 'image_data')
+
+    # Perform some drawings...
