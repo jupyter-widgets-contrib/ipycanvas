@@ -20,7 +20,7 @@ pygments_style = 'sphinx'
 # Output file base name for HTML help builder.
 html_logo = "./images/ipycanvas_logo.svg"
 html_favicon = "./images/ipycanvas_logo.ico"
-html_theme = "pandas_sphinx_theme"
+html_theme = "pydata_sphinx_theme"
 htmlhelp_basename = 'ipycanvasdoc'
 
 html_theme_options = dict(
