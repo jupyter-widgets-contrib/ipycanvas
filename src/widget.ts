@@ -6,6 +6,10 @@ import {
 } from '@jupyter-widgets/base';
 
 import {
+  RoughCanvas
+} from 'roughjs/bin/canvas';
+
+import {
   MODULE_NAME, MODULE_VERSION
 } from './version';
 
@@ -125,11 +129,20 @@ class CanvasModel extends DOMWidgetModel {
       case 'strokeArc':
         this.strokeArc(command.args, buffers);
         break;
+      case 'fillCircle':
+        this.fillCircle(command.args, buffers);
+        break;
+      case 'strokeCircle':
+        this.strokeCircle(command.args, buffers);
+        break;
       case 'fillArcs':
         this.drawArcs(command.args, buffers, 'fill');
         break;
       case 'strokeArcs':
         this.drawArcs(command.args, buffers, 'stroke');
+        break;
+      case 'strokeLine':
+        this.strokeLine(command.args, buffers);
         break;
       case 'drawImage':
         await this.drawImage(command.args, buffers);
@@ -178,6 +191,40 @@ class CanvasModel extends DOMWidgetModel {
 
     this.ctx.beginPath();
     this.executeCommand('arc', args);
+    this.ctx.closePath();
+
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  protected fillCircle(args: any[], buffers: any) {
+    this.ctx.save();
+
+    this.ctx.beginPath();
+    this.ctx.arc(args[0], args[1], args[2], 0, 2 * Math.PI);
+    this.ctx.closePath();
+
+    this.ctx.fill();
+    this.ctx.restore();
+  }
+
+  protected strokeCircle(args: any[], buffers: any) {
+    this.ctx.save();
+
+    this.ctx.beginPath();
+    this.ctx.arc(args[0], args[1], args[2], 0, 2 * Math.PI);
+    this.ctx.closePath();
+
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  protected strokeLine(args: any[], buffers: any) {
+    this.ctx.save();
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(args[0], args[1]);
+    this.ctx.lineTo(args[2], args[3]);
     this.ctx.closePath();
 
     this.ctx.stroke();
@@ -275,7 +322,7 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.drawImage(offscreenCanvas, dx, dy);
   }
 
-  private setAttr(attr: string, value: any) {
+  protected setAttr(attr: string, value: any) {
     (this.ctx as any)[attr] = value;
   }
 
@@ -286,7 +333,7 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  private executeCommand(name: string, args: any[] = []) {
+  protected executeCommand(name: string, args: any[] = []) {
     (this.ctx as any)[name](...args);
   }
 
@@ -325,6 +372,84 @@ class CanvasModel extends DOMWidgetModel {
   ctx: CanvasRenderingContext2D;
 
   views: Dict<Promise<CanvasView>>;
+}
+
+
+export
+class SketchyCanvasModel extends CanvasModel {
+  defaults() {
+    return {...super.defaults(),
+      _model_name: SketchyCanvasModel.model_name,
+    };
+  }
+
+  initialize(attributes: any, options: any) {
+    super.initialize(attributes, options);
+
+    this.roughCanvas = new RoughCanvas(this.canvas);
+  }
+
+  protected fillCircle(args: any[], buffers: any) {
+    this.roughCanvas.circle(args[0], args[1], args[2], this.getRoughFillStyle());
+  }
+
+  protected strokeCircle(args: any[], buffers: any) {
+    this.roughCanvas.circle(args[0], args[1], args[2], this.getRoughStrokeStyle());
+  }
+
+  protected strokeLine(args: any[], buffers: any) {
+    this.roughCanvas.line(args[0], args[1], args[2], args[3], this.getRoughStrokeStyle());
+  }
+
+  protected executeCommand(name: string, args: any[] = []) {
+    switch (name) {
+      case 'fillRect':
+        this.roughCanvas.rectangle(args[0], args[1], args[2], args[3], this.getRoughFillStyle());
+        break;
+      case 'strokeRect':
+        this.roughCanvas.rectangle(args[0], args[1], args[2], args[3], this.getRoughStrokeStyle());
+        break;
+      default:
+        super.executeCommand(name, args);
+        break;
+    }
+  }
+
+  protected setAttr(attr: string, value: any) {
+    switch (attr) {
+      case 'sketchyFillStyle':
+        this.sketchyFillStyle = value;
+        break;
+      default:
+        super.setAttr(attr, value);
+        break;
+    }
+  }
+
+  private getRoughFillStyle() {
+    const fill = this.ctx.fillStyle as string;
+    const lineWidth = this.ctx.lineWidth;
+
+    return {
+      fill, fillStyle: this.sketchyFillStyle,
+      fillWeight: lineWidth / 2.,
+      hachureGap: lineWidth * 4.,
+      strokeWidth: 0.001, // This is to ensure there is no stroke
+    };
+  }
+
+  private getRoughStrokeStyle() {
+    const stroke = this.ctx.strokeStyle as string;
+    const lineWidth = this.ctx.lineWidth;
+
+    return { stroke, strokeWidth: lineWidth };
+  }
+
+  static model_name = 'SketchyCanvasModel';
+
+  roughCanvas: RoughCanvas;
+
+  sketchyFillStyle: string = 'hachure';
 }
 
 

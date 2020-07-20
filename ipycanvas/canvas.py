@@ -274,12 +274,20 @@ class Canvas(_CanvasBase):
 
     # Arc methods
     def fill_arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
-        """Draw a filled arc centered at ``(x, y)`` with a radius of ``radius``."""
+        """Draw a filled arc centered at ``(x, y)`` with a radius of ``radius`` from ``start_angle`` to ``end_angle``."""
         self._send_canvas_command('fillArc', (x, y, radius, start_angle, end_angle, anticlockwise))
+
+    def fill_circle(self, x, y, radius):
+        """Draw a filled circle centered at ``(x, y)`` with a radius of ``radius``."""
+        self._send_canvas_command('fillCircle', (x, y, radius))
 
     def stroke_arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Draw an arc outline centered at ``(x, y)`` with a radius of ``radius``."""
         self._send_canvas_command('strokeArc', (x, y, radius, start_angle, end_angle, anticlockwise))
+
+    def stroke_circle(self, x, y, radius):
+        """Draw a circle centered at ``(x, y)`` with a radius of ``radius``."""
+        self._send_canvas_command('strokeCircle', (x, y, radius))
 
     def fill_arcs(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Draw filled arcs centered at ``(x, y)`` with a radius of ``radius``.
@@ -314,6 +322,11 @@ class Canvas(_CanvasBase):
         args.append(anticlockwise)
 
         self._send_canvas_command('strokeArcs', args, buffers)
+
+    # Lines methods
+    def stroke_line(self, x1, y1, x2, y2):
+        """Draw a line from ``(x1, y1)`` to ``(x2, y2)``."""
+        self._send_canvas_command('strokeLine', (x1, y1, x2, y2))
 
     # Paths methods
     def begin_path(self):
@@ -612,6 +625,37 @@ class Canvas(_CanvasBase):
             self._touch_cancel_callbacks([(touch['x'], touch['y']) for touch in content['touches']])
 
 
+class SketchyCanvas(Canvas):
+    """Create a SketchyCanvas widget. It gives a hand-drawn-like style to your drawings.
+
+    Args:
+        width (int): The width (in pixels) of the canvas
+        height (int): The height (in pixels) of the canvas
+        caching (boolean): Whether commands should be cached or not
+    """
+
+    _model_name = Unicode('SketchyCanvasModel').tag(sync=True)
+    _view_name = Unicode('CanvasView').tag(sync=True)
+
+    #: (str) Sets the appearance of the filling, possible values are ``'hachure'``, ``'solid'``, ``'zigzag'``,
+    #: ``'cross-hatch'``, ``'dots'``, ``'sunburst'``, ``'dashed'``, ``'zigzag-line'``.
+    #: Default to ``'hachure'``.
+    sketchy_fill_style = Enum(['hachure', 'solid', 'zigzag', 'cross-hatch', 'dots', 'sunburst', 'dashed', 'zigzag-line'], default_value='hachure')
+
+    def __setattr__(self, name, value):
+        super(SketchyCanvas, self).__setattr__(name, value)
+
+        sketchy_canvas_attrs = ['sketchy_fill_style']
+
+        if name in sketchy_canvas_attrs:
+            command = {
+                'name': 'set',
+                'attr': to_camel_case(name),
+                'value': value
+            }
+            self._send_command(command)
+
+
 class MultiCanvas(_CanvasBase):
     """Create a MultiCanvas widget with n_canvases Canvas widgets.
 
@@ -663,6 +707,22 @@ class MultiCanvas(_CanvasBase):
         """Flush all the cached commands and clear the cache."""
         for layer in self._canvases:
             layer.flush()
+
+
+class MultiSketchyCanvas(MultiCanvas):
+    """Create a MultiSketchyCanvas widget with n_canvases SketchyCanvas widgets.
+
+    Args:
+        n_canvases (int): The number of sketchy canvases to create
+        width (int): The width (in pixels) of the canvases
+        height (int): The height (in pixels) of the canvases
+    """
+
+    _canvases = List(Instance(SketchyCanvas)).tag(sync=True, **widget_serialization)
+
+    def __init__(self, n_canvases=3, *args, **kwargs):
+        """Constructor."""
+        super(MultiCanvas, self).__init__(*args, _canvases=[SketchyCanvas() for _ in range(n_canvases)], **kwargs)
 
 
 @contextmanager
