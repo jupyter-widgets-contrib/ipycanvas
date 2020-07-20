@@ -423,6 +423,9 @@ class SketchyCanvasModel extends CanvasModel {
       case 'roughness':
         this.roughness = value;
         break;
+      case 'bowing':
+        this.bowing = value;
+        break;
       default:
         super.setAttr(attr, value);
         break;
@@ -439,7 +442,8 @@ class SketchyCanvasModel extends CanvasModel {
       fillWeight: lineWidth / 2.,
       hachureGap: lineWidth * 4.,
       strokeWidth: 0.001, // This is to ensure there is no stroke,
-      roughness: this.roughness
+      roughness: this.roughness,
+      bowing: this.bowing,
     };
   }
 
@@ -450,7 +454,8 @@ class SketchyCanvasModel extends CanvasModel {
     return {
       stroke,
       strokeWidth: lineWidth,
-      roughness: this.roughness
+      roughness: this.roughness,
+      bowing: this.bowing,
     };
   }
 
@@ -460,6 +465,7 @@ class SketchyCanvasModel extends CanvasModel {
 
   sketchyFillStyle: string = 'hachure';
   roughness: number = 1.;
+  bowing: number = 1.;
 }
 
 

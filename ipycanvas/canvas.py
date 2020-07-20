@@ -647,10 +647,16 @@ class SketchyCanvas(Canvas):
     #: Default to ``'1'``.
     roughness = Float(1)
 
+    #: (float) Numerical value indicating how curvy the lines are when drawing a sketch. A value of 0 will cause straight lines.
+    #: Default to ``'1'``.
+    bowing = Float(1)
+
     def __setattr__(self, name, value):
         super(SketchyCanvas, self).__setattr__(name, value)
 
-        sketchy_canvas_attrs = ['sketchy_fill_style', 'roughness']
+        sketchy_canvas_attrs = [
+            'sketchy_fill_style', 'roughness', 'bowing'
+        ]
 
         if name in sketchy_canvas_attrs:
             command = {
