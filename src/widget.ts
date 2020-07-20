@@ -420,6 +420,9 @@ class SketchyCanvasModel extends CanvasModel {
       case 'sketchyFillStyle':
         this.sketchyFillStyle = value;
         break;
+      case 'roughness':
+        this.roughness = value;
+        break;
       default:
         super.setAttr(attr, value);
         break;
@@ -431,10 +434,12 @@ class SketchyCanvasModel extends CanvasModel {
     const lineWidth = this.ctx.lineWidth;
 
     return {
-      fill, fillStyle: this.sketchyFillStyle,
+      fill,
+      fillStyle: this.sketchyFillStyle,
       fillWeight: lineWidth / 2.,
       hachureGap: lineWidth * 4.,
-      strokeWidth: 0.001, // This is to ensure there is no stroke
+      strokeWidth: 0.001, // This is to ensure there is no stroke,
+      roughness: this.roughness
     };
   }
 
@@ -442,7 +447,11 @@ class SketchyCanvasModel extends CanvasModel {
     const stroke = this.ctx.strokeStyle as string;
     const lineWidth = this.ctx.lineWidth;
 
-    return { stroke, strokeWidth: lineWidth };
+    return {
+      stroke,
+      strokeWidth: lineWidth,
+      roughness: this.roughness
+    };
   }
 
   static model_name = 'SketchyCanvasModel';
@@ -450,6 +459,7 @@ class SketchyCanvasModel extends CanvasModel {
   roughCanvas: RoughCanvas;
 
   sketchyFillStyle: string = 'hachure';
+  roughness: number = 1.;
 }
 
 

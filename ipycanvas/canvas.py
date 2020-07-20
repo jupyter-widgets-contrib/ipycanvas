@@ -642,10 +642,15 @@ class SketchyCanvas(Canvas):
     #: Default to ``'hachure'``.
     sketchy_fill_style = Enum(['hachure', 'solid', 'zigzag', 'cross-hatch', 'dots', 'sunburst', 'dashed', 'zigzag-line'], default_value='hachure')
 
+    #: (float) Numerical value indicating how rough the drawing is. A rectangle with the roughness of 0 would be a perfect rectangle.
+    #: There is no upper limit to this value, but a value over 10 is mostly useless.
+    #: Default to ``'1'``.
+    roughness = Float(1)
+
     def __setattr__(self, name, value):
         super(SketchyCanvas, self).__setattr__(name, value)
 
-        sketchy_canvas_attrs = ['sketchy_fill_style']
+        sketchy_canvas_attrs = ['sketchy_fill_style', 'roughness']
 
         if name in sketchy_canvas_attrs:
             command = {
