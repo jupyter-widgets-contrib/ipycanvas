@@ -175,25 +175,28 @@ class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  private fillArc(args: any[], buffers: any) {
+  protected fillArc(args: any[], buffers: any) {
     this.ctx.save();
 
     this.ctx.beginPath();
+    // this.moveTo(args[0], args[1]);  // Move to center
+    // this.lineTo(?);  // Line to beginning of the arc
     this.executeCommand('arc', args);
-    this.ctx.closePath();
-
+    // this.lineTo(args[0], args[1]);  // Line to center
     this.ctx.fill();
+
+    this.ctx.closePath();
     this.ctx.restore();
   }
 
-  private strokeArc(args: any[], buffers: any) {
+  protected strokeArc(args: any[], buffers: any) {
     this.ctx.save();
 
     this.ctx.beginPath();
     this.executeCommand('arc', args);
-    this.ctx.closePath();
-
     this.ctx.stroke();
+
+    this.ctx.closePath();
     this.ctx.restore();
   }
 
@@ -202,9 +205,9 @@ class CanvasModel extends DOMWidgetModel {
 
     this.ctx.beginPath();
     this.ctx.arc(args[0], args[1], args[2], 0, 2 * Math.PI);
-    this.ctx.closePath();
-
     this.ctx.fill();
+
+    this.ctx.closePath();
     this.ctx.restore();
   }
 
@@ -213,9 +216,9 @@ class CanvasModel extends DOMWidgetModel {
 
     this.ctx.beginPath();
     this.ctx.arc(args[0], args[1], args[2], 0, 2 * Math.PI);
-    this.ctx.closePath();
-
     this.ctx.stroke();
+
+    this.ctx.closePath();
     this.ctx.restore();
   }
 
@@ -225,40 +228,39 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.beginPath();
     this.ctx.moveTo(args[0], args[1]);
     this.ctx.lineTo(args[2], args[3]);
-    this.ctx.closePath();
-
     this.ctx.stroke();
+
+    this.ctx.closePath();
     this.ctx.restore();
   }
 
   private drawArcs(args: any[], buffers: any, commandName: string) {
-    const x = getArg(args[0], buffers);
-    const y = getArg(args[1], buffers);
-    const radius = getArg(args[2], buffers);
-    const startAngle = getArg(args[3], buffers);
-    const endAngle = getArg(args[4], buffers);
-    const anticlockwise = getArg(args[5], buffers);
+    // Notes: limit as much as possible the save/restore calls
 
-    const numberArcs = Math.min(
-      x.length, y.length, radius.length,
-      startAngle.length, endAngle.length
-    );
+    // const x = getArg(args[0], buffers);
+    // const y = getArg(args[1], buffers);
+    // const radius = getArg(args[2], buffers);
+    // const startAngle = getArg(args[3], buffers);
+    // const endAngle = getArg(args[4], buffers);
+    // const anticlockwise = getArg(args[5], buffers);
 
-    this.ctx.save();
+    // const numberArcs = Math.min(
+    //   x.length, y.length, radius.length,
+    //   startAngle.length, endAngle.length
+    // );
 
-    for (let idx = 0; idx < numberArcs; ++idx) {
-      this.ctx.beginPath();
-      this.ctx.arc(
-        x.getItem(idx), y.getItem(idx), radius.getItem(idx),
-        startAngle.getItem(idx), endAngle.getItem(idx),
-        anticlockwise.getItem(idx)
-      );
-      this.ctx.closePath();
+    // for (let idx = 0; idx < numberArcs; ++idx) {
+    //   // TODO Make use of fillArc and strokeArc here, the path creation is wrong
+    //   this.ctx.beginPath();
+    //   this.ctx.arc(
+    //     x.getItem(idx), y.getItem(idx), radius.getItem(idx),
+    //     startAngle.getItem(idx), endAngle.getItem(idx),
+    //     anticlockwise.getItem(idx)
+    //   );
+    //   this.executeCommand(commandName);
 
-      this.executeCommand(commandName);
-    }
-
-    this.ctx.restore();
+    //   this.ctx.closePath();
+    // }
   }
 
   private async drawImage(args: any[], buffers: any) {
@@ -401,6 +403,26 @@ class SketchyCanvasModel extends CanvasModel {
     this.roughCanvas.line(args[0], args[1], args[2], args[3], this.getRoughStrokeStyle());
   }
 
+  protected fillArc(args: any[], buffers: any) {
+    const ellipseSize = 2. * args[2];
+
+    // The following is needed because roughjs does not allow a clockwise draw
+    const start = args[5] ? args[4] : args[3];
+    const end = args[5] ? args[3] + 2. * Math.PI : args[4];
+
+    this.roughCanvas.arc(args[0], args[1], ellipseSize, ellipseSize, start, end, true, this.getRoughFillStyle());
+  }
+
+  protected strokeArc(args: any[], buffers: any) {
+    const ellipseSize = 2. * args[2];
+
+    // The following is needed because roughjs does not allow a clockwise draw
+    const start = args[5] ? args[4] : args[3];
+    const end = args[5] ? args[3] + 2. * Math.PI : args[4];
+
+    this.roughCanvas.arc(args[0], args[1], ellipseSize, ellipseSize, start, end, false, this.getRoughStrokeStyle());
+  }
+
   protected executeCommand(name: string, args: any[] = []) {
     switch (name) {
       case 'fillRect':
@@ -441,6 +463,7 @@ class SketchyCanvasModel extends CanvasModel {
       fillStyle: this.sketchyFillStyle,
       fillWeight: lineWidth / 2.,
       hachureGap: lineWidth * 4.,
+      curveStepCount: 18,
       strokeWidth: 0.001, // This is to ensure there is no stroke,
       roughness: this.roughness,
       bowing: this.bowing,
@@ -456,6 +479,7 @@ class SketchyCanvasModel extends CanvasModel {
       strokeWidth: lineWidth,
       roughness: this.roughness,
       bowing: this.bowing,
+      curveStepCount: 18,
     };
   }
 
