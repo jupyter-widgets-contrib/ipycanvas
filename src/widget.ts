@@ -331,28 +331,25 @@ class CanvasModel extends DOMWidgetModel {
 export
 class CanvasView extends DOMWidgetView {
   render() {
-    this.canvas = document.createElement('canvas');
-
-    this.el.appendChild(this.canvas);
-    this.ctx = getContext(this.canvas);
+    this.ctx = getContext(this.el);
 
     this.resizeCanvas();
     this.model.on_some_change(['width', 'height'], this.resizeCanvas, this);
 
-    this.canvas.addEventListener('mousemove', { handleEvent: this.onMouseMove.bind(this) });
-    this.canvas.addEventListener('mousedown', { handleEvent: this.onMouseDown.bind(this) });
-    this.canvas.addEventListener('mouseup', { handleEvent: this.onMouseUp.bind(this) });
-    this.canvas.addEventListener('mouseout', { handleEvent: this.onMouseOut.bind(this) });
-    this.canvas.addEventListener('touchstart', { handleEvent: this.onTouchStart.bind(this) });
-    this.canvas.addEventListener('touchend', { handleEvent: this.onTouchEnd.bind(this) });
-    this.canvas.addEventListener('touchmove', { handleEvent: this.onTouchMove.bind(this) });
-    this.canvas.addEventListener('touchcancel', { handleEvent: this.onTouchCancel.bind(this) });
+    this.el.addEventListener('mousemove', { handleEvent: this.onMouseMove.bind(this) });
+    this.el.addEventListener('mousedown', { handleEvent: this.onMouseDown.bind(this) });
+    this.el.addEventListener('mouseup', { handleEvent: this.onMouseUp.bind(this) });
+    this.el.addEventListener('mouseout', { handleEvent: this.onMouseOut.bind(this) });
+    this.el.addEventListener('touchstart', { handleEvent: this.onTouchStart.bind(this) });
+    this.el.addEventListener('touchend', { handleEvent: this.onTouchEnd.bind(this) });
+    this.el.addEventListener('touchmove', { handleEvent: this.onTouchMove.bind(this) });
+    this.el.addEventListener('touchcancel', { handleEvent: this.onTouchCancel.bind(this) });
 
     this.updateCanvas();
   }
 
   clear() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.clearRect(0, 0, this.el.width, this.el.height);
   }
 
   updateCanvas() {
@@ -361,8 +358,8 @@ class CanvasView extends DOMWidgetView {
   }
 
   protected resizeCanvas() {
-    this.canvas.setAttribute('width', this.model.get('width'));
-    this.canvas.setAttribute('height', this.model.get('height'));
+    this.el.setAttribute('width', this.model.get('width'));
+    this.el.setAttribute('height', this.model.get('height'));
   }
 
   private onMouseMove(event: MouseEvent) {
@@ -402,14 +399,18 @@ class CanvasView extends DOMWidgetView {
   }
 
   protected getCoordinates(event: MouseEvent | Touch) {
-    const rect = this.canvas.getBoundingClientRect();
+    const rect = this.el.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
     return { x, y };
   }
 
-  canvas: HTMLCanvasElement;
+  get tagName(): string {
+    return 'canvas';
+  }
+
+  el: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
 
   model: CanvasModel;
@@ -513,17 +514,20 @@ class MultiCanvasView extends DOMWidgetView {
     // The following ts-ignore is needed due to ipywidgets's implementation
     // @ts-ignore
     return this.create_child_view(canvasModel).then((canvasView: CanvasView) => {
-      canvasView.el.style.zIndex = index;
+      const canvasContainer = document.createElement('div');
+
+      canvasContainer.style.zIndex = index.toString();
 
       if (index == 0) {
         // This will enforce the container to respect the children size.
-        canvasView.el.style.position = 'relative';
-        canvasView.el.style.float = 'left';
+        canvasContainer.style.position = 'relative';
+        canvasContainer.style.float = 'left';
       } else {
-        canvasView.el.style.position = 'absolute';
+        canvasContainer.style.position = 'absolute';
       }
 
-      this.container.appendChild(canvasView.el);
+      canvasContainer.appendChild(canvasView.el);
+      this.container.appendChild(canvasContainer);
 
       return canvasView;
     });
