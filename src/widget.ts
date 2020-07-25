@@ -400,8 +400,9 @@ class CanvasView extends DOMWidgetView {
 
   protected getCoordinates(event: MouseEvent | Touch) {
     const rect = this.el.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+
+    const x = this.el.width * (event.clientX - rect.left) / rect.width;
+    const y = this.el.height * (event.clientY - rect.top) / rect.height;
 
     return { x, y };
   }
