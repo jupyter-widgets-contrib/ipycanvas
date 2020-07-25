@@ -36,12 +36,46 @@ that does not need to update much while other objects moves a lot on the screen.
 Resize Canvas
 -------------
 
-You can dynamically resize the ``Canvas`` and ``MultiCanvas``, note that this will clear the canvas.
+The ``Canvas`` and ``MultiCanvas`` have two sizes: the size of the color buffer in pixels, and the actual size
+displayed on the screen.
+
+Color buffer size
+^^^^^^^^^^^^^^^^^
+
+The color buffer size can dynamically be updated through the ``width`` and ``height`` properties (value in pixels), note that this will clear the canvas.
 
 .. code:: Python
 
     canvas.width = 300
     canvas.height = 600
+
+Screen size
+^^^^^^^^^^^
+
+The size on the screen can be updated through the ``layout`` property, which comes from ipywidgets (see https://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Styling.html#The-layout-attribute). The ``layout`` property is an object which contains CSS properties for the canvas.
+
+The default value for the ``width`` and ``height`` of the layout is "auto", this means the canvas will take the same screen size as the actual color buffer size: a ``Canvas`` of
+size ``800x600`` will take ``800x600`` pixels on the screen.
+
+.. code:: Python
+
+    canvas.layout.width = 'auto'
+    canvas.layout.height = 'auto'
+
+In order to get a "responsive" ``Canvas`` which takes as much space as available while still respecting the aspect ratio, you will need to set the ``width``
+property to ``100%``, the ``height`` will automatically get computed:
+
+.. code:: Python
+
+    canvas.layout.width = '100%'
+    canvas.layout.height = 'auto'
+
+One can also set the screen size value in pixels:
+
+.. code:: Python
+
+    canvas.layout.width = '200px'
+    canvas.layout.height = '500px'
 
 Clear Canvas
 ------------
@@ -63,9 +97,9 @@ Optimizing drawings
 
 By default, the Python ``Canvas`` object sends all the drawings commands like ``fill_rect``
 and ``arc`` one by one through the widgets communication layer. This communication is limited
-to 1000 commands/s and it can be extremely slow to send commands one after the other. 
+to 1000 commands/s and it can be extremely slow to send commands one after the other.
 You can increase this limit via internal Jupyter `parameters <https://github.com/martinRenou/ipycanvas/issues/102>`_,
-however this is not recommended as it can lead to instability. Instead we provide a ``hold_canvas`` 
+however this is not recommended as it can lead to instability. Instead we provide a ``hold_canvas``
 context manager which allows you to hold all the commands and send them in a single batch at the end. For
 optimal performance you should try to use ``hold_canvas`` as much as possible.
 
