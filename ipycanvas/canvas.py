@@ -413,8 +413,8 @@ class Canvas(_CanvasBase):
     # Image methods
     def draw_image(self, image, x=0, y=0, width=None, height=None):
         """Draw an ``image`` on the Canvas at the coordinates (``x``, ``y``) and scale it to (``width``, ``height``)."""
-        if (not isinstance(image, (Canvas, Image))):
-            raise TypeError('The image argument should be an Image widget or a Canvas widget')
+        if (not isinstance(image, (Canvas, MultiCanvas, Image))):
+            raise TypeError('The image argument should be an Image, a Canvas or a MultiCanvas widget')
 
         if width is not None and height is None:
             height = width

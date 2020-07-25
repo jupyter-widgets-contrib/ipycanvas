@@ -2,7 +2,7 @@
 // Distributed under the terms of the Modified BSD License.
 
 import {
-  DOMWidgetModel, DOMWidgetView, ISerializers, Dict, ViewList, unpack_models
+  DOMWidgetModel, DOMWidgetView, ISerializers, Dict, unpack_models
 } from '@jupyter-widgets/base';
 
 import {
@@ -219,7 +219,7 @@ class CanvasModel extends DOMWidgetModel {
 
     const image = await unpack_models(serializedImage, this.widget_manager);
 
-    if (image instanceof CanvasModel) {
+    if (image instanceof CanvasModel || image instanceof MultiCanvasModel) {
       this._drawImage(image.canvas, x, y, width, height);
       return;
     }
@@ -431,6 +431,8 @@ class MultiCanvasModel extends DOMWidgetModel {
       _canvases: [],
       sync_image_data: false,
       image_data: null,
+      width: 700,
+      height: 500,
     };
   }
 
@@ -445,16 +447,48 @@ class MultiCanvasModel extends DOMWidgetModel {
   initialize(attributes: any, options: any) {
     super.initialize(attributes, options);
 
-    this.on('change:_canvases', this.updateListeners.bind(this));
+    this.canvas = document.createElement('canvas');
+    this.ctx = getContext(this.canvas);
+
+    this.resizeCanvas();
+
+    this.on_some_change(['width', 'height'], this.resizeCanvas, this);
+    this.on('change:_canvases', this.updateCanvasModels.bind(this));
     this.on('change:sync_image_data', this.syncImageData.bind(this));
-    this.updateListeners();
+
+    this.updateCanvasModels();
   }
 
-  private updateListeners() {
+  get canvasModels(): CanvasModel[] {
+    return this.get('_canvases');
+  }
+
+  private updateCanvasModels() {
     // TODO: Remove old listeners
-    for (const canvasModel of this.get('_canvases')) {
-      canvasModel.on('new-frame', this.syncImageData, this);
+    for (const canvasModel of this.canvasModels) {
+      canvasModel.on('new-frame', this.updateCanvas, this);
     }
+
+    this.updateCanvas();
+  }
+
+  private updateCanvas() {
+    this.ctx.clearRect(0, 0, this.get('width'), this.get('height'));
+
+    for (const canvasModel of this.canvasModels) {
+      this.ctx.drawImage(canvasModel.canvas, 0, 0);
+    }
+
+    this.forEachView((view: MultiCanvasView) => {
+      view.updateCanvas();
+    });
+
+    this.syncImageData();
+  }
+
+  private resizeCanvas() {
+    this.canvas.setAttribute('width', this.get('width'));
+    this.canvas.setAttribute('height', this.get('height'));
   }
 
   private async syncImageData() {
@@ -462,27 +496,24 @@ class MultiCanvasModel extends DOMWidgetModel {
       return;
     }
 
-    // Draw on a temporary off-screen canvas.
-    const offscreenCanvas = document.createElement('canvas');
-    offscreenCanvas.width = this.get('width');
-    offscreenCanvas.height = this.get('height');
-    const ctx = getContext(offscreenCanvas);
-
-    for (const canvasModel of this.get('_canvases')) {
-      ctx.drawImage(canvasModel.canvas, 0, 0);
-
-      // Also update the sub-canvas image-data
-      const bytes = await toBytes(canvasModel.canvas);
-
-      canvasModel.set('image_data', bytes);
-      canvasModel.save_changes();
-    }
-
-    const bytes = await toBytes(offscreenCanvas);
+    const bytes = await toBytes(this.canvas);
 
     this.set('image_data', bytes);
     this.save_changes();
   }
+
+  private forEachView(callback: (view: MultiCanvasView) => void) {
+    for (const view_id in this.views) {
+      this.views[view_id].then((view: MultiCanvasView) => {
+        callback(view);
+      });
+    }
+  }
+
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+
+  views: Dict<Promise<MultiCanvasView>>;
 
   static model_name = 'MultiCanvasModel';
   static model_module = MODULE_NAME;
@@ -496,48 +527,34 @@ class MultiCanvasModel extends DOMWidgetModel {
 export
 class MultiCanvasView extends DOMWidgetView {
   render() {
-    this.container = document.createElement('div');
-    this.container.style.position = 'relative';
+    this.ctx = getContext(this.el);
 
-    this.el.appendChild(this.container);
+    this.resizeCanvas();
+    this.model.on_some_change(['width', 'height'], this.resizeCanvas, this);
 
-    this.canvas_views = new ViewList<CanvasView>(this.createCanvasView, this.removeCanvasView, this);
-    this.updateCanvasViews();
-
-    this.model.on('change:_canvases', this.updateCanvasViews.bind(this));
+    this.updateCanvas();
   }
 
-  private updateCanvasViews() {
-    this.canvas_views.update(this.model.get('_canvases'));
+  clear() {
+    this.ctx.clearRect(0, 0, this.el.width, this.el.height);
   }
 
-  private createCanvasView(canvasModel: CanvasModel, index: number) {
-    // The following ts-ignore is needed due to ipywidgets's implementation
-    // @ts-ignore
-    return this.create_child_view(canvasModel).then((canvasView: CanvasView) => {
-      const canvasContainer = document.createElement('div');
-
-      canvasContainer.style.zIndex = index.toString();
-
-      if (index == 0) {
-        // This will enforce the container to respect the children size.
-        canvasContainer.style.position = 'relative';
-        canvasContainer.style.float = 'left';
-      } else {
-        canvasContainer.style.position = 'absolute';
-      }
-
-      canvasContainer.appendChild(canvasView.el);
-      this.container.appendChild(canvasContainer);
-
-      return canvasView;
-    });
+  updateCanvas() {
+    this.clear();
+    this.ctx.drawImage(this.model.canvas, 0, 0);
   }
 
-  private removeCanvasView(canvasView: CanvasView) {
-    this.container.removeChild(canvasView.el);
+  private resizeCanvas() {
+    this.el.setAttribute('width', this.model.get('width'));
+    this.el.setAttribute('height', this.model.get('height'));
   }
 
-  private container: HTMLDivElement;
-  private canvas_views: ViewList<CanvasView>;
+  get tagName(): string {
+    return 'canvas';
+  }
+
+  el: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+
+  model: MultiCanvasModel;
 }
