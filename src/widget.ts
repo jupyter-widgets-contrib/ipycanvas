@@ -219,7 +219,7 @@ class CanvasModel extends DOMWidgetModel {
 
     const image = await unpack_models(serializedImage, this.widget_manager);
 
-    if (image instanceof CanvasModel) {
+    if (image instanceof CanvasModel || image instanceof MultiCanvasModel) {
       this._drawImage(image.canvas, x, y, width, height);
       return;
     }
