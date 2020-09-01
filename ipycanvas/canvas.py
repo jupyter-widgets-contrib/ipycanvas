@@ -625,8 +625,8 @@ class Canvas(_CanvasBase):
             self._touch_cancel_callbacks([(touch['x'], touch['y']) for touch in content['touches']])
 
 
-class SketchyCanvas(Canvas):
-    """Create a SketchyCanvas widget. It gives a hand-drawn-like style to your drawings.
+class RoughCanvas(Canvas):
+    """Create a RoughCanvas widget. It gives a hand-drawn-like style to your drawings.
 
     Args:
         width (int): The width (in pixels) of the canvas
@@ -634,13 +634,13 @@ class SketchyCanvas(Canvas):
         caching (boolean): Whether commands should be cached or not
     """
 
-    _model_name = Unicode('SketchyCanvasModel').tag(sync=True)
+    _model_name = Unicode('RoughCanvasModel').tag(sync=True)
     _view_name = Unicode('CanvasView').tag(sync=True)
 
     #: (str) Sets the appearance of the filling, possible values are ``'hachure'``, ``'solid'``, ``'zigzag'``,
     #: ``'cross-hatch'``, ``'dots'``, ``'sunburst'``, ``'dashed'``, ``'zigzag-line'``.
     #: Default to ``'hachure'``.
-    sketchy_fill_style = Enum(['hachure', 'solid', 'zigzag', 'cross-hatch', 'dots', 'sunburst', 'dashed', 'zigzag-line'], default_value='hachure')
+    rough_fill_style = Enum(['hachure', 'solid', 'zigzag', 'cross-hatch', 'dots', 'sunburst', 'dashed', 'zigzag-line'], default_value='hachure')
 
     #: (float) Numerical value indicating how rough the drawing is. A rectangle with the roughness of 0 would be a perfect rectangle.
     #: There is no upper limit to this value, but a value over 10 is mostly useless.
@@ -652,13 +652,13 @@ class SketchyCanvas(Canvas):
     bowing = Float(1)
 
     def __setattr__(self, name, value):
-        super(SketchyCanvas, self).__setattr__(name, value)
+        super(RoughCanvas, self).__setattr__(name, value)
 
-        sketchy_canvas_attrs = [
-            'sketchy_fill_style', 'roughness', 'bowing'
+        rough_canvas_attrs = [
+            'rough_fill_style', 'roughness', 'bowing'
         ]
 
-        if name in sketchy_canvas_attrs:
+        if name in rough_canvas_attrs:
             command = {
                 'name': 'set',
                 'attr': to_camel_case(name),
@@ -720,20 +720,20 @@ class MultiCanvas(_CanvasBase):
             layer.flush()
 
 
-class MultiSketchyCanvas(MultiCanvas):
-    """Create a MultiSketchyCanvas widget with n_canvases SketchyCanvas widgets.
+class MultiRoughCanvas(MultiCanvas):
+    """Create a MultiRoughCanvas widget with n_canvases RoughCanvas widgets.
 
     Args:
-        n_canvases (int): The number of sketchy canvases to create
+        n_canvases (int): The number of rough canvases to create
         width (int): The width (in pixels) of the canvases
         height (int): The height (in pixels) of the canvases
     """
 
-    _canvases = List(Instance(SketchyCanvas)).tag(sync=True, **widget_serialization)
+    _canvases = List(Instance(RoughCanvas)).tag(sync=True, **widget_serialization)
 
     def __init__(self, n_canvases=3, *args, **kwargs):
         """Constructor."""
-        super(MultiCanvas, self).__init__(*args, _canvases=[SketchyCanvas() for _ in range(n_canvases)], **kwargs)
+        super(MultiCanvas, self).__init__(*args, _canvases=[RoughCanvas() for _ in range(n_canvases)], **kwargs)
 
 
 @contextmanager

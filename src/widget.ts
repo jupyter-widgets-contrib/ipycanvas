@@ -371,10 +371,10 @@ class CanvasModel extends DOMWidgetModel {
 
 
 export
-class SketchyCanvasModel extends CanvasModel {
+class RoughCanvasModel extends CanvasModel {
   defaults() {
     return {...super.defaults(),
-      _model_name: SketchyCanvasModel.model_name,
+      _model_name: RoughCanvasModel.model_name,
     };
   }
 
@@ -426,8 +426,8 @@ class SketchyCanvasModel extends CanvasModel {
 
   protected setAttr(attr: string, value: any) {
     switch (attr) {
-      case 'sketchyFillStyle':
-        this.sketchyFillStyle = value;
+      case 'roughFillStyle':
+        this.roughFillStyle = value;
         break;
       case 'roughness':
         this.roughness = value;
@@ -447,7 +447,7 @@ class SketchyCanvasModel extends CanvasModel {
 
     return {
       fill,
-      fillStyle: this.sketchyFillStyle,
+      fillStyle: this.roughFillStyle,
       fillWeight: lineWidth / 2.,
       hachureGap: lineWidth * 4.,
       curveStepCount: 18,
@@ -470,11 +470,11 @@ class SketchyCanvasModel extends CanvasModel {
     };
   }
 
-  static model_name = 'SketchyCanvasModel';
+  static model_name = 'RoughCanvasModel';
 
   roughCanvas: RoughCanvas;
 
-  sketchyFillStyle: string = 'hachure';
+  roughFillStyle: string = 'hachure';
   roughness: number = 1.;
   bowing: number = 1.;
 }
