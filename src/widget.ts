@@ -414,7 +414,7 @@ class CanvasView extends DOMWidgetView {
   el: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
 
-  model: CanvasModel;
+  model: CanvasModel | MultiCanvasModel;
 }
 
 
@@ -525,36 +525,6 @@ class MultiCanvasModel extends DOMWidgetModel {
 
 
 export
-class MultiCanvasView extends DOMWidgetView {
-  render() {
-    this.ctx = getContext(this.el);
-
-    this.resizeCanvas();
-    this.model.on_some_change(['width', 'height'], this.resizeCanvas, this);
-
-    this.updateCanvas();
-  }
-
-  clear() {
-    this.ctx.clearRect(0, 0, this.el.width, this.el.height);
-  }
-
-  updateCanvas() {
-    this.clear();
-    this.ctx.drawImage(this.model.canvas, 0, 0);
-  }
-
-  private resizeCanvas() {
-    this.el.setAttribute('width', this.model.get('width'));
-    this.el.setAttribute('height', this.model.get('height'));
-  }
-
-  get tagName(): string {
-    return 'canvas';
-  }
-
-  el: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-
+class MultiCanvasView extends CanvasView {
   model: MultiCanvasModel;
 }
