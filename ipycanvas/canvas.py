@@ -630,6 +630,9 @@ class MultiCanvas(_CanvasBase):
         """Constructor."""
         super(MultiCanvas, self).__init__(*args, _canvases=[Canvas() for _ in range(n_canvases)], **kwargs)
 
+        # The latest canvas receives events (interaction layer)
+        self.on_msg(self._canvases[-1]._handle_frontend_event)
+
     def __getitem__(self, key):
         """Access one of the Canvas instances."""
         return self._canvases[key]
