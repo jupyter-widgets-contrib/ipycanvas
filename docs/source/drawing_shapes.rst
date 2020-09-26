@@ -66,15 +66,21 @@ You can also clear a certain canvas rectangle area:
 
 .. image:: images/rects.png
 
-Drawing circles
----------------
+Drawing arcs and circles
+------------------------
 
-There are four methods that draw circles on the canvas:
+There are methods that draw arcs/circles on the canvas:
 
 - ``fill_arc(x, y, radius, start_angle, end_angle, anticlockwise=False)``: Draw a filled arc centered at ``(x, y)`` with a radius of ``radius``.
 - ``stroke_arc(x, y, radius, start_angle, end_angle, anticlockwise=False)``: Draw an arc outline centered at ``(x, y)`` with a radius of ``radius``.
 - ``fill_arcs(x, y, radius, start_angle, end_angle, anticlockwise=False)``: Draw filled arcs centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
 - ``stroke_arcs(x, y, radius, start_angle, end_angle, anticlockwise=False)``: Draw an arc outlines centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+
+- ``fill_circle(x, y, radius)``: Draw a filled circle centered at ``(x, y)`` with a radius of ``radius``.
+- ``stroke_circle(x, y, radius)``: Draw an circle outline centered at ``(x, y)`` with a radius of ``radius``.
+- ``fill_circles(x, y, radius)``: Draw filled circles centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` are NumPy arrays, lists or scalar values.
+- ``stroke_circles(x, y, radius)``: Draw a circle outlines centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` are NumPy arrays, lists or scalar values.
+
 
 .. code:: Python
 
@@ -88,7 +94,7 @@ There are four methods that draw circles on the canvas:
     canvas.stroke_style = 'blue'
 
     canvas.fill_arc(60, 60, 50, 0, pi)
-    canvas.stroke_arc(60, 60, 40, 0, 2 * pi)
+    canvas.stroke_circle(60, 60, 40)
 
     canvas
 
