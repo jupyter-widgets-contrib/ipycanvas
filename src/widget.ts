@@ -118,17 +118,17 @@ class CanvasModel extends DOMWidgetModel {
 
     const args: any[] = command.args;
     switch (command.name) {
-      case 'fillRects':
-        this.drawRects(command.args, buffers, this.fillRect);
-        break;
-      case 'strokeRects':
-        this.drawRects(command.args, buffers, this.strokeRect);
-        break;
       case 'fillRect':
         this.fillRect(args[0], args[1], args[2], args[3]);
         break;
       case 'strokeRect':
         this.strokeRect(args[0], args[1], args[2], args[3]);
+        break;
+      case 'fillRects':
+        this.drawRects(command.args, buffers, this.fillRect.bind(this));
+        break;
+      case 'strokeRects':
+        this.drawRects(command.args, buffers, this.strokeRect.bind(this));
         break;
       case 'fillArc':
         this.fillArc(args[0], args[1], args[2], args[3], args[4], args[5]);
@@ -136,17 +136,23 @@ class CanvasModel extends DOMWidgetModel {
       case 'strokeArc':
         this.strokeArc(args[0], args[1], args[2], args[3], args[4], args[5]);
         break;
+      case 'fillArcs':
+        this.drawArcs(command.args, buffers, this.fillArc.bind(this));
+        break;
+      case 'strokeArcs':
+        this.drawArcs(command.args, buffers, this.strokeArc.bind(this));
+        break;
       case 'fillCircle':
         this.fillCircle(args[0], args[1], args[2]);
         break;
       case 'strokeCircle':
         this.strokeCircle(args[0], args[1], args[2]);
         break;
-      case 'fillArcs':
-        this.drawArcs(command.args, buffers, this.fillArc);
+      case 'fillCircles':
+        this.drawCircles(command.args, buffers, this.fillCircle.bind(this));
         break;
-      case 'strokeArcs':
-        this.drawArcs(command.args, buffers, this.strokeArc);
+      case 'strokeCircles':
+        this.drawCircles(command.args, buffers, this.strokeCircle.bind(this));
         break;
       case 'strokeLine':
         this.strokeLine(command.args, buffers);
@@ -169,6 +175,14 @@ class CanvasModel extends DOMWidgetModel {
     }
   }
 
+  protected fillRect(x: number, y: number, width: number, height: number) {
+    this.ctx.fillRect(x, y, width, height);
+  }
+
+  protected strokeRect(x: number, y: number, width: number, height: number) {
+    this.ctx.strokeRect(x, y, width, height);
+  }
+
   private drawRects(args: any[], buffers: any, callback: (x: number, y: number, width: number, height: number) => void) {
     const x = getArg(args[0], buffers);
     const y = getArg(args[1], buffers);
@@ -182,12 +196,23 @@ class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  protected fillRect(x: number, y: number, width: number, height: number) {
-    this.ctx.fillRect(x, y, width, height);
+  protected fillArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {
+    this.ctx.beginPath();
+    this.ctx.moveTo(x, y);  // Move to center
+    this.ctx.lineTo(x + radius * Math.cos(startAngle), y + radius * Math.sin(startAngle));  // Line to beginning of the arc
+    this.ctx.arc(x, y, radius, startAngle, endAngle, anticlockwise);
+    this.ctx.lineTo(x, y);  // Line to center
+    this.ctx.fill();
+
+    this.ctx.closePath();
   }
 
-  protected strokeRect(x: number, y: number, width: number, height: number) {
-    this.ctx.strokeRect(x, y, width, height);
+  protected strokeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, radius, startAngle, endAngle, anticlockwise);
+    this.ctx.stroke();
+
+    this.ctx.closePath();
   }
 
   private drawArcs(args: any[], buffers: any, callback: (x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) => void) {
@@ -212,25 +237,6 @@ class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  protected fillArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {
-    this.ctx.beginPath();
-    this.ctx.moveTo(x, y);  // Move to center
-    this.ctx.lineTo(x + radius * Math.cos(startAngle), y + radius * Math.sin(startAngle));  // Line to beginning of the arc
-    this.ctx.arc(x, y, radius, startAngle, endAngle, anticlockwise);
-    this.ctx.lineTo(x, y);  // Line to center
-    this.ctx.fill();
-
-    this.ctx.closePath();
-  }
-
-  protected strokeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {
-    this.ctx.beginPath();
-    this.ctx.arc(x, y, radius, startAngle, endAngle, anticlockwise);
-    this.ctx.stroke();
-
-    this.ctx.closePath();
-  }
-
   protected fillCircle(x: number, y: number, radius: number) {
     this.ctx.beginPath();
     this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
@@ -245,6 +251,18 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.stroke();
 
     this.ctx.closePath();
+  }
+
+  private drawCircles(args: any[], buffers: any, callback: (x: number, y: number, radius: number) => void) {
+    const x = getArg(args[0], buffers);
+    const y = getArg(args[1], buffers);
+    const radius = getArg(args[2], buffers);
+
+    const numberCircles = Math.min(x.length, y.length, radius.length);
+
+    for (let idx = 0; idx < numberCircles; ++idx) {
+      callback(x.getItem(idx), y.getItem(idx), radius.getItem(idx))
+    }
   }
 
   protected strokeLine(args: any[], buffers: any) {

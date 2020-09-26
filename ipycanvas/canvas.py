@@ -323,6 +323,34 @@ class Canvas(_CanvasBase):
 
         self._send_canvas_command('strokeArcs', args, buffers)
 
+    def fill_circles(self, x, y, radius):
+        """Draw filled circles centered at ``(x, y)`` with a radius of ``radius``.
+
+        Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(radius, args, buffers)
+
+        self._send_canvas_command('fillCircles', args, buffers)
+
+    def stroke_circles(self, x, y, radius):
+        """Draw a circle outlines centered at ``(x, y)`` with a radius of ``radius``.
+
+        Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(radius, args, buffers)
+
+        self._send_canvas_command('strokeCircles', args, buffers)
+
     # Lines methods
     def stroke_line(self, x1, y1, x2, y2):
         """Draw a line from ``(x1, y1)`` to ``(x2, y2)``."""
