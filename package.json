@@ -1,6 +1,6 @@
 {
   "name": "ipycanvas",
-  "version": "0.5.1",
+  "version": "0.6.1",
   "description": "Interactive widgets library exposing the browser's Canvas API",
   "keywords": [
     "jupyter",
@@ -39,7 +39,7 @@
     "clean:lib": "rimraf lib",
     "clean:labextension": "rimraf ipycanvas/labextension",
     "clean:nbextension": "rimraf ipycanvas/nbextension/static/index.js",
-    "prepack": "npm run build:lib",
+    "prepack": "npm run build",
     "watch": "npm-run-all -p watch:*",
     "watch:lib": "tsc -w",
     "watch:nbextension": "webpack --watch"
