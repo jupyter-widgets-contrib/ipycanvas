@@ -2,8 +2,12 @@
 // Distributed under the terms of the Modified BSD License.
 
 import {
-  DOMWidgetModel, DOMWidgetView, ISerializers, Dict, unpack_models
+  DOMWidgetModel, DOMWidgetView, WidgetModel, ISerializers, Dict, unpack_models
 } from '@jupyter-widgets/base';
+
+import {
+  RoughCanvas
+} from 'roughjs/bin/canvas';
 
 import {
   MODULE_NAME, MODULE_VERSION
@@ -32,6 +36,37 @@ function deserializeImageData(dataview: DataView | null) {
   }
 
   return new Uint8ClampedArray(dataview.buffer);
+}
+
+
+export
+class Path2DModel extends WidgetModel {
+  defaults() {
+    return {...super.defaults(),
+      _model_name: Path2DModel.model_name,
+      _model_module: Path2DModel.model_module,
+      _model_module_version: Path2DModel.model_module_version,
+      _view_name: Path2DModel.view_name,
+      _view_module: Path2DModel.view_module,
+      _view_module_version: Path2DModel.view_module_version,
+      value: '',
+    };
+  }
+
+  initialize(attributes: any, options: any) {
+    super.initialize(attributes, options);
+
+    this.value = new Path2D(this.get('value'));
+  }
+
+  value: Path2D;
+
+  static model_name = 'Path2DModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+  static view_name = 'Path2DView';
+  static view_module = MODULE_NAME;
+  static view_module_version = MODULE_VERSION;
 }
 
 
@@ -112,24 +147,49 @@ class CanvasModel extends DOMWidgetModel {
       return;
     }
 
+    const args: any[] = command.args;
     switch (command.name) {
+      case 'fillRect':
+        this.fillRect(args[0], args[1], args[2], args[3]);
+        break;
+      case 'strokeRect':
+        this.strokeRect(args[0], args[1], args[2], args[3]);
+        break;
       case 'fillRects':
-        this.drawRects(command.args, buffers, 'fillRect');
+        this.drawRects(command.args, buffers, this.fillRect.bind(this));
         break;
       case 'strokeRects':
-        this.drawRects(command.args, buffers, 'strokeRect');
+        this.drawRects(command.args, buffers, this.strokeRect.bind(this));
         break;
       case 'fillArc':
-        this.fillArc(command.args, buffers);
+        this.fillArc(args[0], args[1], args[2], args[3], args[4], args[5]);
         break;
       case 'strokeArc':
-        this.strokeArc(command.args, buffers);
+        this.strokeArc(args[0], args[1], args[2], args[3], args[4], args[5]);
         break;
       case 'fillArcs':
-        this.drawArcs(command.args, buffers, 'fill');
+        this.drawArcs(command.args, buffers, this.fillArc.bind(this));
         break;
       case 'strokeArcs':
-        this.drawArcs(command.args, buffers, 'stroke');
+        this.drawArcs(command.args, buffers, this.strokeArc.bind(this));
+        break;
+      case 'fillCircle':
+        this.fillCircle(args[0], args[1], args[2]);
+        break;
+      case 'strokeCircle':
+        this.strokeCircle(args[0], args[1], args[2]);
+        break;
+      case 'fillCircles':
+        this.drawCircles(command.args, buffers, this.fillCircle.bind(this));
+        break;
+      case 'strokeCircles':
+        this.drawCircles(command.args, buffers, this.strokeCircle.bind(this));
+        break;
+      case 'strokeLine':
+        this.strokeLine(command.args, buffers);
+        break;
+      case 'fillPath':
+        await this.fillPath(command.args, buffers);
         break;
       case 'drawImage':
         await this.drawImage(command.args, buffers);
@@ -149,7 +209,15 @@ class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  private drawRects(args: any[], buffers: any, commandName: string) {
+  protected fillRect(x: number, y: number, width: number, height: number) {
+    this.ctx.fillRect(x, y, width, height);
+  }
+
+  protected strokeRect(x: number, y: number, width: number, height: number) {
+    this.ctx.strokeRect(x, y, width, height);
+  }
+
+  private drawRects(args: any[], buffers: any, callback: (x: number, y: number, width: number, height: number) => void) {
     const x = getArg(args[0], buffers);
     const y = getArg(args[1], buffers);
     const width = getArg(args[2], buffers);
@@ -158,33 +226,32 @@ class CanvasModel extends DOMWidgetModel {
     const numberRects = Math.min(x.length, y.length, width.length, height.length);
 
     for (let idx = 0; idx < numberRects; ++idx) {
-      this.executeCommand(commandName, [x.getItem(idx), y.getItem(idx), width.getItem(idx), height.getItem(idx)]);
+      callback(x.getItem(idx), y.getItem(idx), width.getItem(idx), height.getItem(idx));
     }
   }
 
-  private fillArc(args: any[], buffers: any) {
-    this.ctx.save();
-
+  protected fillArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {
     this.ctx.beginPath();
-    this.executeCommand('arc', args);
-    this.ctx.closePath();
 
+    this.ctx.moveTo(x, y);  // Move to center
+    this.ctx.lineTo(x + radius * Math.cos(startAngle), y + radius * Math.sin(startAngle));  // Line to beginning of the arc
+    this.ctx.arc(x, y, radius, startAngle, endAngle, anticlockwise);
+    this.ctx.lineTo(x, y);  // Line to center
     this.ctx.fill();
-    this.ctx.restore();
-  }
 
-  private strokeArc(args: any[], buffers: any) {
-    this.ctx.save();
-
-    this.ctx.beginPath();
-    this.executeCommand('arc', args);
     this.ctx.closePath();
-
-    this.ctx.stroke();
-    this.ctx.restore();
   }
 
-  private drawArcs(args: any[], buffers: any, commandName: string) {
+  protected strokeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {
+    this.ctx.beginPath();
+
+    this.ctx.arc(x, y, radius, startAngle, endAngle, anticlockwise);
+    this.ctx.stroke();
+
+    this.ctx.closePath();
+  }
+
+  private drawArcs(args: any[], buffers: any, callback: (x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) => void) {
     const x = getArg(args[0], buffers);
     const y = getArg(args[1], buffers);
     const radius = getArg(args[2], buffers);
@@ -197,21 +264,58 @@ class CanvasModel extends DOMWidgetModel {
       startAngle.length, endAngle.length
     );
 
-    this.ctx.save();
-
     for (let idx = 0; idx < numberArcs; ++idx) {
-      this.ctx.beginPath();
-      this.ctx.arc(
+      callback(
         x.getItem(idx), y.getItem(idx), radius.getItem(idx),
         startAngle.getItem(idx), endAngle.getItem(idx),
         anticlockwise.getItem(idx)
-      );
-      this.ctx.closePath();
-
-      this.executeCommand(commandName);
+      )
     }
+  }
 
-    this.ctx.restore();
+  protected fillCircle(x: number, y: number, radius: number) {
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
+    this.ctx.fill();
+
+    this.ctx.closePath();
+  }
+
+  protected strokeCircle(x: number, y: number, radius: number) {
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
+    this.ctx.stroke();
+
+    this.ctx.closePath();
+  }
+
+  private drawCircles(args: any[], buffers: any, callback: (x: number, y: number, radius: number) => void) {
+    const x = getArg(args[0], buffers);
+    const y = getArg(args[1], buffers);
+    const radius = getArg(args[2], buffers);
+
+    const numberCircles = Math.min(x.length, y.length, radius.length);
+
+    for (let idx = 0; idx < numberCircles; ++idx) {
+      callback(x.getItem(idx), y.getItem(idx), radius.getItem(idx))
+    }
+  }
+
+  protected strokeLine(args: any[], buffers: any) {
+    this.ctx.beginPath();
+    this.ctx.moveTo(args[0], args[1]);
+    this.ctx.lineTo(args[2], args[3]);
+    this.ctx.stroke();
+
+    this.ctx.closePath();
+  }
+
+  protected async fillPath(args: any[], buffers: any) {
+    const [serializedPath] = args;
+
+    const path = await unpack_models(serializedPath, this.widget_manager);
+
+    this.ctx.fill(path.value);
   }
 
   private async drawImage(args: any[], buffers: any) {
@@ -275,7 +379,7 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.drawImage(offscreenCanvas, dx, dy);
   }
 
-  private setAttr(attr: string, value: any) {
+  protected setAttr(attr: string, value: any) {
     (this.ctx as any)[attr] = value;
   }
 
@@ -286,7 +390,7 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  private executeCommand(name: string, args: any[] = []) {
+  protected executeCommand(name: string, args: any[] = []) {
     (this.ctx as any)[name](...args);
   }
 
@@ -325,6 +429,124 @@ class CanvasModel extends DOMWidgetModel {
   ctx: CanvasRenderingContext2D;
 
   views: Dict<Promise<CanvasView>>;
+}
+
+
+export
+class RoughCanvasModel extends CanvasModel {
+  defaults() {
+    return {...super.defaults(),
+      _model_name: RoughCanvasModel.model_name,
+    };
+  }
+
+  initialize(attributes: any, options: any) {
+    super.initialize(attributes, options);
+
+    this.roughCanvas = new RoughCanvas(this.canvas);
+  }
+
+  protected fillRect(x: number, y: number, width: number, height: number) {
+    this.roughCanvas.rectangle(x, y, width, height, this.getRoughFillStyle());
+  }
+
+  protected strokeRect(x: number, y: number, width: number, height: number) {
+    this.roughCanvas.rectangle(x, y, width, height, this.getRoughStrokeStyle());
+  }
+
+  protected fillCircle(x: number, y: number, radius: number) {
+    this.roughCanvas.circle(x, y, radius, this.getRoughFillStyle());
+  }
+
+  protected strokeCircle(x: number, y: number, radius: number) {
+    this.roughCanvas.circle(x, y, radius, this.getRoughStrokeStyle());
+  }
+
+  protected strokeLine(args: any[], buffers: any) {
+    this.roughCanvas.line(args[0], args[1], args[2], args[3], this.getRoughStrokeStyle());
+  }
+
+  protected async fillPath(args: any[], buffers: any) {
+    const [serializedPath] = args;
+
+    const path = await unpack_models(serializedPath, this.widget_manager);
+
+    this.roughCanvas.path(path.get('value'), this.getRoughFillStyle());
+  }
+
+  protected fillArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {
+    const ellipseSize = 2. * radius;
+
+    // The following is needed because roughjs does not allow a clockwise draw
+    const start = anticlockwise ? endAngle : startAngle;
+    const end = anticlockwise ? startAngle + 2. * Math.PI : endAngle;
+
+    this.roughCanvas.arc(x, y, ellipseSize, ellipseSize, start, end, true, this.getRoughFillStyle());
+  }
+
+  protected strokeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {
+    const ellipseSize = 2. * radius;
+
+    // The following is needed because roughjs does not allow a clockwise draw
+    const start = anticlockwise ? endAngle : startAngle;
+    const end = anticlockwise ? startAngle + 2. * Math.PI : endAngle;
+
+    this.roughCanvas.arc(x, y, ellipseSize, ellipseSize, start, end, false, this.getRoughStrokeStyle());
+  }
+
+  protected setAttr(attr: string, value: any) {
+    switch (attr) {
+      case 'roughFillStyle':
+        this.roughFillStyle = value;
+        break;
+      case 'roughness':
+        this.roughness = value;
+        break;
+      case 'bowing':
+        this.bowing = value;
+        break;
+      default:
+        super.setAttr(attr, value);
+        break;
+    }
+  }
+
+  private getRoughFillStyle() {
+    const fill = this.ctx.fillStyle as string;
+    const lineWidth = this.ctx.lineWidth;
+
+    return {
+      fill,
+      fillStyle: this.roughFillStyle,
+      fillWeight: lineWidth / 2.,
+      hachureGap: lineWidth * 4.,
+      curveStepCount: 18,
+      strokeWidth: 0.001, // This is to ensure there is no stroke,
+      roughness: this.roughness,
+      bowing: this.bowing,
+    };
+  }
+
+  private getRoughStrokeStyle() {
+    const stroke = this.ctx.strokeStyle as string;
+    const lineWidth = this.ctx.lineWidth;
+
+    return {
+      stroke,
+      strokeWidth: lineWidth,
+      roughness: this.roughness,
+      bowing: this.bowing,
+      curveStepCount: 18,
+    };
+  }
+
+  static model_name = 'RoughCanvasModel';
+
+  roughCanvas: RoughCanvas;
+
+  roughFillStyle: string = 'hachure';
+  roughness: number = 1.;
+  bowing: number = 1.;
 }
 
 

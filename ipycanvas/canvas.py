@@ -11,12 +11,36 @@ import numpy as np
 
 from traitlets import Bool, Bytes, CInt, Enum, Float, Instance, List, Unicode
 
-from ipywidgets import CallbackDispatcher, Color, DOMWidget, Image, widget_serialization
+from ipywidgets import CallbackDispatcher, Color, DOMWidget, Image, Widget, widget_serialization
 from ipywidgets.widgets.trait_types import bytes_serialization
 
 from ._frontend import module_name, module_version
 
 from .utils import binary_image, populate_args, to_camel_case, image_bytes_to_array
+
+
+class Path2D(Widget):
+    """Create a Path2D.
+
+    Args:
+        value (str): The path value, e.g. "M10 10 h 80 v 80 h -80 Z"
+    """
+
+    _model_module = Unicode(module_name).tag(sync=True)
+    _model_module_version = Unicode(module_version).tag(sync=True)
+    _view_module = Unicode(module_name).tag(sync=True)
+    _view_module_version = Unicode(module_version).tag(sync=True)
+
+    _model_name = Unicode('Path2DModel').tag(sync=True)
+    _view_name = Unicode('Path2DView').tag(sync=True)
+
+    value = Unicode(allow_none=False, read_only=True).tag(sync=True)
+
+    def __init__(self, value):
+        """Create a Path2D object given the path string."""
+        self.set_trait('value', value)
+
+        super(Path2D, self).__init__()
 
 
 class _CanvasBase(DOMWidget):
@@ -274,12 +298,20 @@ class Canvas(_CanvasBase):
 
     # Arc methods
     def fill_arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
-        """Draw a filled arc centered at ``(x, y)`` with a radius of ``radius``."""
+        """Draw a filled arc centered at ``(x, y)`` with a radius of ``radius`` from ``start_angle`` to ``end_angle``."""
         self._send_canvas_command('fillArc', (x, y, radius, start_angle, end_angle, anticlockwise))
+
+    def fill_circle(self, x, y, radius):
+        """Draw a filled circle centered at ``(x, y)`` with a radius of ``radius``."""
+        self._send_canvas_command('fillCircle', (x, y, radius))
 
     def stroke_arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Draw an arc outline centered at ``(x, y)`` with a radius of ``radius``."""
         self._send_canvas_command('strokeArc', (x, y, radius, start_angle, end_angle, anticlockwise))
+
+    def stroke_circle(self, x, y, radius):
+        """Draw a circle centered at ``(x, y)`` with a radius of ``radius``."""
+        self._send_canvas_command('strokeCircle', (x, y, radius))
 
     def fill_arcs(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Draw filled arcs centered at ``(x, y)`` with a radius of ``radius``.
@@ -315,6 +347,39 @@ class Canvas(_CanvasBase):
 
         self._send_canvas_command('strokeArcs', args, buffers)
 
+    def fill_circles(self, x, y, radius):
+        """Draw filled circles centered at ``(x, y)`` with a radius of ``radius``.
+
+        Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(radius, args, buffers)
+
+        self._send_canvas_command('fillCircles', args, buffers)
+
+    def stroke_circles(self, x, y, radius):
+        """Draw a circle outlines centered at ``(x, y)`` with a radius of ``radius``.
+
+        Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(radius, args, buffers)
+
+        self._send_canvas_command('strokeCircles', args, buffers)
+
+    # Lines methods
+    def stroke_line(self, x1, y1, x2, y2):
+        """Draw a line from ``(x1, y1)`` to ``(x2, y2)``."""
+        self._send_canvas_command('strokeLine', (x1, y1, x2, y2))
+
     # Paths methods
     def begin_path(self):
         """Call this method when you want to create a new path."""
@@ -332,12 +397,15 @@ class Canvas(_CanvasBase):
         """Stroke (outlines) the current path with the current ``stroke_style``."""
         self._send_canvas_command('stroke')
 
-    def fill(self, rule='nonzero'):
-        """Fill the current path with the current ``fill_style`` and given the rule.
+    def fill(self, rule_or_path='nonzero'):
+        """Fill the current path with the current ``fill_style`` and given the rule, or fill the given Path2D.
 
         Possible rules are ``nonzero`` and ``evenodd``.
         """
-        self._send_canvas_command('fill', (rule, ))
+        if isinstance(rule_or_path, Path2D):
+            self._send_canvas_command('fillPath', (widget_serialization['to_json'](rule_or_path, None), ))
+        else:
+            self._send_canvas_command('fill', (rule_or_path, ))
 
     def move_to(self, x, y):
         """Move the "pen" to the given ``(x, y)`` coordinates."""
@@ -352,16 +420,24 @@ class Canvas(_CanvasBase):
         self._send_canvas_command('lineTo', (x, y))
 
     def rect(self, x, y, width, height):
-        """Draw a rectangle of size ``(width, height)`` at the ``(x, y)`` position in the current path."""
+        """Add a rectangle of size ``(width, height)`` at the ``(x, y)`` position in the current path."""
         self._send_canvas_command('rect', (x, y, width, height))
 
     def arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
-        """Create a circular arc centered at ``(x, y)`` with a radius of ``radius``.
+        """Add a circular arc centered at ``(x, y)`` with a radius of ``radius`` to the current path.
 
         The path starts at ``start_angle`` and ends at ``end_angle``, and travels in the direction given by
         ``anticlockwise`` (defaulting to clockwise: ``False``).
         """
         self._send_canvas_command('arc', (x, y, radius, start_angle, end_angle, anticlockwise))
+
+    def ellipse(self, x, y, radius_x, radius_y, rotation, start_angle, end_angle, anticlockwise=False):
+        """Add an ellipse centered at ``(x, y)`` with the radii ``radius_x`` and ``radius_y`` to the current path.
+
+        The path starts at ``start_angle`` and ends at ``end_angle``, and travels in the direction given by
+        ``anticlockwise`` (defaulting to clockwise: ``False``).
+        """
+        self._send_canvas_command('ellipse', (x, y, radius_x, radius_y, rotation, start_angle, end_angle, anticlockwise))
 
     def arc_to(self, x1, y1, x2, y2, radius):
         """Add a circular arc to the current path.
@@ -612,6 +688,48 @@ class Canvas(_CanvasBase):
             self._touch_cancel_callbacks([(touch['x'], touch['y']) for touch in content['touches']])
 
 
+class RoughCanvas(Canvas):
+    """Create a RoughCanvas widget. It gives a hand-drawn-like style to your drawings.
+
+    Args:
+        width (int): The width (in pixels) of the canvas
+        height (int): The height (in pixels) of the canvas
+        caching (boolean): Whether commands should be cached or not
+    """
+
+    _model_name = Unicode('RoughCanvasModel').tag(sync=True)
+    _view_name = Unicode('CanvasView').tag(sync=True)
+
+    #: (str) Sets the appearance of the filling, possible values are ``'hachure'``, ``'solid'``, ``'zigzag'``,
+    #: ``'cross-hatch'``, ``'dots'``, ``'sunburst'``, ``'dashed'``, ``'zigzag-line'``.
+    #: Default to ``'hachure'``.
+    rough_fill_style = Enum(['hachure', 'solid', 'zigzag', 'cross-hatch', 'dots', 'sunburst', 'dashed', 'zigzag-line'], default_value='hachure')
+
+    #: (float) Numerical value indicating how rough the drawing is. A rectangle with the roughness of 0 would be a perfect rectangle.
+    #: There is no upper limit to this value, but a value over 10 is mostly useless.
+    #: Default to ``'1'``.
+    roughness = Float(1)
+
+    #: (float) Numerical value indicating how curvy the lines are when drawing a sketch. A value of 0 will cause straight lines.
+    #: Default to ``'1'``.
+    bowing = Float(1)
+
+    def __setattr__(self, name, value):
+        super(RoughCanvas, self).__setattr__(name, value)
+
+        rough_canvas_attrs = [
+            'rough_fill_style', 'roughness', 'bowing'
+        ]
+
+        if name in rough_canvas_attrs:
+            command = {
+                'name': 'set',
+                'attr': to_camel_case(name),
+                'value': value
+            }
+            self._send_command(command)
+
+
 class MultiCanvas(_CanvasBase):
     """Create a MultiCanvas widget with n_canvases Canvas widgets.
 
@@ -663,6 +781,22 @@ class MultiCanvas(_CanvasBase):
         """Flush all the cached commands and clear the cache."""
         for layer in self._canvases:
             layer.flush()
+
+
+class MultiRoughCanvas(MultiCanvas):
+    """Create a MultiRoughCanvas widget with n_canvases RoughCanvas widgets.
+
+    Args:
+        n_canvases (int): The number of rough canvases to create
+        width (int): The width (in pixels) of the canvases
+        height (int): The height (in pixels) of the canvases
+    """
+
+    _canvases = List(Instance(RoughCanvas)).tag(sync=True, **widget_serialization)
+
+    def __init__(self, n_canvases=3, *args, **kwargs):
+        """Constructor."""
+        super(MultiCanvas, self).__init__(*args, _canvases=[RoughCanvas() for _ in range(n_canvases)], **kwargs)
 
 
 @contextmanager
