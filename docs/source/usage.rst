@@ -7,6 +7,8 @@ Usage
 
     basic_usage
     drawing_shapes
+    drawing_paths
+    styles_and_colors
     drawing_text
     drawing_images
     retrieve_images
