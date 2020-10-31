@@ -100,6 +100,32 @@ There are methods that draw arcs/circles on the canvas:
 
 .. image:: images/arc.png
 
+Drawing lines
+-------------
+
+There is one command for drawing a straight line from one point to another:
+
+- ``stroke_line(x1, y1, x2, y2)``: Draw a line from ``(x1, y1)`` to ``(x2, y2)``.
+
+.. code:: Python
+
+    from ipycanvas import Canvas
+
+    canvas = Canvas(width=200, height=200)
+
+    canvas.stroke_style = 'blue'
+    canvas.stroke_line(0, 0, 150, 150)
+
+    canvas.stroke_style = 'red'
+    canvas.stroke_line(200, 0, 0, 200)
+
+    canvas.stroke_style = 'green'
+    canvas.stroke_line(150, 150, 0, 200)
+
+    canvas
+
+.. image:: images/lines.png
+
 Drawing paths
 -------------
 
@@ -108,7 +134,7 @@ of different width and of different color. A path can be closed. To make shapes 
 extra steps:
 
 - First, you create the path with ``begin_path``
-- Then you use drawing commands to draw into the path
+- Then you use drawing commands to add shapes into the path
 - Once the path has been created, you can ``stroke`` or ``fill`` the path to render it
 
 Here are the functions used to perform these steps:
