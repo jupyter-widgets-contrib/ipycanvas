@@ -83,11 +83,13 @@ Here are the available draw commands:
 
 - ``move_to(x, y)``: Moves the pen to the coordinates specified by x and y. This does not actually draw anything.
 - ``line_to(x, y)``: Add a straight line to the current path by connecting the path’s last point to the specified (x, y) coordinates.
-- ``arc(x, y, radius, start_angle, end_angle, anticlockwise=False)``: Create a circular arc centered at (x, y) with a radius
-  of ``radius``. The path starts at ``start_angle`` and ends at ``end_angle`` in radians, and travels in the direction given by
+- ``arc(x, y, radius, start_angle, end_angle, anticlockwise=False)``: Add a circular arc centered at (x, y) with a radius
+  of ``radius`` to the current path. The path starts at ``start_angle`` and ends at ``end_angle`` in radians, and travels in the direction given by
   ``anticlockwise`` (defaulting to clockwise: False).
 - ``arc_to(x1, y1, x2, y2, radius)``: Add a circular arc to the current path. Using the given control points (``x1``, ``y1``)
   and (``x2``, ``y2``) and the ``radius``.
+- ``ellipse(x, y, radius_x, radius_y, rotation, start_angle, end_angle, anticlockwise=False)``: Add an ellipse centered at ``(x, y)`` with
+  the radii ``radius_x`` and ``radius_y`` to the current path.
 - ``quadratic_curve_to(cp1x, cp1y, x, y)``: Add a quadratic Bezier curve to the current path.
   It requires two points: the first one is a control point and the second one is the end point. The starting point is the latest point in the current path, which can be changed using ``move_to()`` before creating the quadratic Bezier curve.
 - ``bezier_curve_to(cp1x, cp1y, cp2x, cp2y, x, y)``: Add a cubic Bezier curve to the current path.

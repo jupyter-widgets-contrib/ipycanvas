@@ -420,16 +420,24 @@ class Canvas(_CanvasBase):
         self._send_canvas_command('lineTo', (x, y))
 
     def rect(self, x, y, width, height):
-        """Draw a rectangle of size ``(width, height)`` at the ``(x, y)`` position in the current path."""
+        """Add a rectangle of size ``(width, height)`` at the ``(x, y)`` position in the current path."""
         self._send_canvas_command('rect', (x, y, width, height))
 
     def arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
-        """Create a circular arc centered at ``(x, y)`` with a radius of ``radius``.
+        """Add a circular arc centered at ``(x, y)`` with a radius of ``radius`` to the current path.
 
         The path starts at ``start_angle`` and ends at ``end_angle``, and travels in the direction given by
         ``anticlockwise`` (defaulting to clockwise: ``False``).
         """
         self._send_canvas_command('arc', (x, y, radius, start_angle, end_angle, anticlockwise))
+
+    def ellipse(self, x, y, radius_x, radius_y, rotation, start_angle, end_angle, anticlockwise=False):
+        """Add an ellipse centered at ``(x, y)`` with the radii ``radius_x`` and ``radius_y`` to the current path.
+
+        The path starts at ``start_angle`` and ends at ``end_angle``, and travels in the direction given by
+        ``anticlockwise`` (defaulting to clockwise: ``False``).
+        """
+        self._send_canvas_command('ellipse', (x, y, radius_x, radius_y, rotation, start_angle, end_angle, anticlockwise))
 
     def arc_to(self, x1, y1, x2, y2, radius):
         """Add a circular arc to the current path.
