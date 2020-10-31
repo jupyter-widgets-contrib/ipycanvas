@@ -11,12 +11,36 @@ import numpy as np
 
 from traitlets import Bool, Bytes, CInt, Enum, Float, Instance, List, Unicode
 
-from ipywidgets import CallbackDispatcher, Color, DOMWidget, Image, widget_serialization
+from ipywidgets import CallbackDispatcher, Color, DOMWidget, Image, Widget, widget_serialization
 from ipywidgets.widgets.trait_types import bytes_serialization
 
 from ._frontend import module_name, module_version
 
 from .utils import binary_image, populate_args, to_camel_case, image_bytes_to_array
+
+
+class Path2D(Widget):
+    """Create a Path2D.
+
+    Args:
+        value (str): The path value, e.g. "M10 10 h 80 v 80 h -80 Z"
+    """
+
+    _model_module = Unicode(module_name).tag(sync=True)
+    _model_module_version = Unicode(module_version).tag(sync=True)
+    _view_module = Unicode(module_name).tag(sync=True)
+    _view_module_version = Unicode(module_version).tag(sync=True)
+
+    _model_name = Unicode('Path2DModel').tag(sync=True)
+    _view_name = Unicode('Path2DView').tag(sync=True)
+
+    value = Unicode(allow_none=False, read_only=True).tag(sync=True)
+
+    def __init__(self, value):
+        """Create a Path2D object given the path string."""
+        self.set_trait('value', value)
+
+        super(Path2D, self).__init__()
 
 
 class _CanvasBase(DOMWidget):
@@ -373,12 +397,15 @@ class Canvas(_CanvasBase):
         """Stroke (outlines) the current path with the current ``stroke_style``."""
         self._send_canvas_command('stroke')
 
-    def fill(self, rule='nonzero'):
-        """Fill the current path with the current ``fill_style`` and given the rule.
+    def fill(self, rule_or_path='nonzero'):
+        """Fill the current path with the current ``fill_style`` and given the rule, or fill the given Path2D.
 
         Possible rules are ``nonzero`` and ``evenodd``.
         """
-        self._send_canvas_command('fill', (rule, ))
+        if isinstance(rule_or_path, Path2D):
+            self._send_canvas_command('fillPath', (widget_serialization['to_json'](rule_or_path, None), ))
+        else:
+            self._send_canvas_command('fill', (rule_or_path, ))
 
     def move_to(self, x, y):
         """Move the "pen" to the given ``(x, y)`` coordinates."""

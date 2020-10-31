@@ -2,7 +2,7 @@
 // Distributed under the terms of the Modified BSD License.
 
 import {
-  DOMWidgetModel, DOMWidgetView, ISerializers, Dict, unpack_models
+  DOMWidgetModel, DOMWidgetView, WidgetModel, ISerializers, Dict, unpack_models
 } from '@jupyter-widgets/base';
 
 import {
@@ -36,6 +36,37 @@ function deserializeImageData(dataview: DataView | null) {
   }
 
   return new Uint8ClampedArray(dataview.buffer);
+}
+
+
+export
+class Path2DModel extends WidgetModel {
+  defaults() {
+    return {...super.defaults(),
+      _model_name: Path2DModel.model_name,
+      _model_module: Path2DModel.model_module,
+      _model_module_version: Path2DModel.model_module_version,
+      _view_name: Path2DModel.view_name,
+      _view_module: Path2DModel.view_module,
+      _view_module_version: Path2DModel.view_module_version,
+      value: '',
+    };
+  }
+
+  initialize(attributes: any, options: any) {
+    super.initialize(attributes, options);
+
+    this.value = new Path2D(this.get('value'));
+  }
+
+  value: Path2D;
+
+  static model_name = 'Path2DModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+  static view_name = 'Path2DView';
+  static view_module = MODULE_NAME;
+  static view_module_version = MODULE_VERSION;
 }
 
 
@@ -157,6 +188,9 @@ class CanvasModel extends DOMWidgetModel {
       case 'strokeLine':
         this.strokeLine(command.args, buffers);
         break;
+      case 'fillPath':
+        await this.fillPath(command.args, buffers);
+        break;
       case 'drawImage':
         await this.drawImage(command.args, buffers);
         break;
@@ -198,6 +232,7 @@ class CanvasModel extends DOMWidgetModel {
 
   protected fillArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {
     this.ctx.beginPath();
+
     this.ctx.moveTo(x, y);  // Move to center
     this.ctx.lineTo(x + radius * Math.cos(startAngle), y + radius * Math.sin(startAngle));  // Line to beginning of the arc
     this.ctx.arc(x, y, radius, startAngle, endAngle, anticlockwise);
@@ -209,6 +244,7 @@ class CanvasModel extends DOMWidgetModel {
 
   protected strokeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {
     this.ctx.beginPath();
+
     this.ctx.arc(x, y, radius, startAngle, endAngle, anticlockwise);
     this.ctx.stroke();
 
@@ -272,6 +308,14 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.stroke();
 
     this.ctx.closePath();
+  }
+
+  protected async fillPath(args: any[], buffers: any) {
+    const [serializedPath] = args;
+
+    const path = await unpack_models(serializedPath, this.widget_manager);
+
+    this.ctx.fill(path.value);
   }
 
   private async drawImage(args: any[], buffers: any) {
@@ -420,6 +464,14 @@ class RoughCanvasModel extends CanvasModel {
 
   protected strokeLine(args: any[], buffers: any) {
     this.roughCanvas.line(args[0], args[1], args[2], args[3], this.getRoughStrokeStyle());
+  }
+
+  protected async fillPath(args: any[], buffers: any) {
+    const [serializedPath] = args;
+
+    const path = await unpack_models(serializedPath, this.widget_manager);
+
+    this.roughCanvas.path(path.get('value'), this.getRoughFillStyle());
   }
 
   protected fillArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {

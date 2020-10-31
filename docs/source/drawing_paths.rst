@@ -1,6 +1,47 @@
 Drawing paths
 =============
 
+There are two ways for creating and drawing a path in ipycanvas.
+
+Using Path2D
+------------
+
+You can define a Path2D given an SVG path. Note that once the path is created, it is read only, you cannot dynamically change the path value.
+Using the Path2D class is very useful and efficient when you want to reuse the same path multiple times.
+
+- ``Path2D(value)``: Creates a Path2D given the SVG path string value.
+
+.. code:: Python
+
+    from ipycanvas import Canvas, Path2D
+
+    canvas = Canvas(width=350, height=350)
+
+    path1 = Path2D('M80 80 A 45 45, 0, 0, 0, 125 125 L 125 80 Z')
+    path2 = Path2D('M230 80 A 45 45, 0, 1, 0, 275 125 L 275 80 Z')
+    path3 = Path2D('M80 230 A 45 45, 0, 0, 1, 125 275 L 125 230 Z')
+    path4 = Path2D('M230 230 A 45 45, 0, 1, 1, 275 275 L 275 230 Z')
+
+    canvas.fill_style = 'green'
+    canvas.fill(path1)
+
+    canvas.fill_style = 'purple'
+    canvas.fill(path2)
+
+    canvas.fill_style = 'red'
+    canvas.fill(path3)
+
+    canvas.fill_style = 'blue'
+    canvas.fill(path4)
+
+    canvas
+
+.. image:: images/path2d.png
+
+
+Using Path commands
+-------------------
+
 A path is a list of points, connected by segments of lines that can be of different shapes, curved or not,
 of different width and of different color. A path can be closed. To make shapes using paths, we take some
 extra steps:
@@ -12,7 +53,7 @@ extra steps:
 Here are the functions used to perform these steps:
 
 - ``begin_path()``: Creates a new path. Once created, future drawing commands are directed into the path and used to build the path up.
-- Draw commands like ``line_to`` and ``arc``
+- Path commands like ``line_to`` and ``arc``
 - ``close_path()``: Adds a straight line to the path, going to the start of the current path.
 - ``stroke()``: Draws the shape by stroking its outline.
 - ``fill(rule)``: Draws a solid shape by filling the path's content area. The given fill rule is applied, possible rules are `nonzero` and `evenodd`.
@@ -35,8 +76,8 @@ Here are the functions used to perform these steps:
 .. image:: images/triangle.png
 
 
-Draw commands
--------------
+Path commands
++++++++++++++
 
 Here are the available draw commands:
 
@@ -55,10 +96,10 @@ Here are the available draw commands:
 
 
 Examples
---------
+++++++++
 
 Stroke arcs
-+++++++++++
+'''''''''''
 
 .. code:: Python
 
@@ -84,7 +125,7 @@ Stroke arcs
 .. image:: images/smiley.png
 
 Fill bezier curves
-++++++++++++++++++
+''''''''''''''''''
 
 .. code:: Python
 
@@ -108,7 +149,7 @@ Fill bezier curves
 .. image:: images/heart.png
 
 Change the fill rule
-++++++++++++++++++++
+''''''''''''''''''''
 
 .. code:: Python
 
