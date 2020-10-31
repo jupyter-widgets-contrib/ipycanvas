@@ -27,7 +27,7 @@ COMMANDS = {
     'bezierCurveTo': 26, 'fillText': 27, 'strokeText': 28, 'setLineDash': 29, 'drawImage': 30,
     'putImageData': 31, 'clip': 32, 'save': 33, 'restore': 34, 'translate': 35,
     'rotate': 36, 'scale': 37, 'transform': 38, 'setTransform': 39, 'resetTransform': 40,
-    'set': 41, 'clear': 42,
+    'set': 41, 'clear': 42, 'sleep': 43,
 }
 
 
@@ -252,6 +252,10 @@ class Canvas(_CanvasBase):
         super(Canvas, self).__init__(*args, **kwargs)
 
         self.on_msg(self._handle_frontend_event)
+
+    def sleep(self, time):
+        """Make the Canvas sleep for `time` milliseconds."""
+        self._send_canvas_command(COMMANDS['sleep'], [time])
 
     # Rectangles methods
     def fill_rect(self, x, y, width, height=None):
