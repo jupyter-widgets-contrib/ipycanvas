@@ -47,6 +47,9 @@ jupyter labextension install @jupyter-widgets/jupyterlab-manager ipycanvas
 ### Create John Conway's Game Of Life
 ![John Conway's Game Of Life](docs/source/images/ipycanvas_gameoflife.png)
 
+### Give a "hand-drawn" style to your drawings using the RoughCanvas
+![RoughCanvas](docs/source/images/ipycanvas_rough.png)
+
 ### Draw Particles from IPython
 ![Particles](docs/source/images/ipycanvas_particles.png)
 
