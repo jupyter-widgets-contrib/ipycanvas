@@ -588,7 +588,6 @@ class Canvas(_CanvasBase):
 
         self.send(self._commands_cache, self._buffers_cache)
 
-        self.caching = False
         self._commands_cache = []
         self._buffers_cache = []
 
@@ -808,6 +807,11 @@ def hold_canvas(canvas):
     Args:
         canvas (ipycanvas.canvas.Canvas): The canvas widget on which to hold the commands
     """
+    orig_caching = canvas.caching
+
     canvas.caching = True
     yield
     canvas.flush()
+
+    if not orig_caching:
+        canvas.caching = False
