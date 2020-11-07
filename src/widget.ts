@@ -38,6 +38,18 @@ function deserializeImageData(dataview: DataView | null) {
   return new Uint8ClampedArray(dataview.buffer);
 }
 
+const COMMANDS = [
+  'fillRect', 'strokeRect', 'fillRects', 'strokeRects', 'clearRect', 'fillArc',
+  'fillCircle', 'strokeArc', 'strokeCircle', 'fillArcs', 'strokeArcs',
+  'fillCircles', 'strokeCircles', 'strokeLine', 'beginPath', 'closePath',
+  'stroke', 'fillPath', 'fill', 'moveTo', 'lineTo',
+  'rect', 'arc', 'ellipse', 'arcTo', 'quadraticCurveTo',
+  'bezierCurveTo', 'fillText', 'strokeText', 'setLineDash', 'drawImage',
+  'putImageData', 'clip', 'save', 'restore', 'translate',
+  'rotate', 'scale', 'transform', 'setTransform', 'resetTransform',
+  'set', 'clear',
+];
+
 
 export
 class Path2DModel extends WidgetModel {
@@ -95,6 +107,13 @@ class CanvasModel extends DOMWidgetModel {
     }
   }
 
+  static ATTRS = [
+    'fillStyle', 'strokeStyle', 'globalAlpha', 'font', 'textAlign',
+    'textBaseline', 'direction', 'globalCompositeOperation',
+    'lineWidth', 'lineCap', 'lineJoin', 'miterLimit', 'lineDashOffset',
+    'shadowOffsetX', 'shadowOffsetY', 'shadowBlur', 'shadowColor',
+  ];
+
   initialize(attributes: any, options: any) {
     super.initialize(attributes, options);
 
@@ -133,22 +152,25 @@ class CanvasModel extends DOMWidgetModel {
   }
 
   private async processCommand(command: any, buffers: any) {
-    if (command instanceof Array) {
+    // If it's a list of commands
+    if (command instanceof Array && command[0] instanceof Array) {
       let remainingBuffers = buffers;
 
       for (const subcommand of command) {
         let subbuffers = [];
-        if (subcommand.n_buffers) {
-          subbuffers = remainingBuffers.slice(0, subcommand.n_buffers);
-          remainingBuffers = remainingBuffers.slice(subcommand.n_buffers)
+        const nBuffers: Number = subcommand[2];
+        if (nBuffers) {
+          subbuffers = remainingBuffers.slice(0, nBuffers);
+          remainingBuffers = remainingBuffers.slice(nBuffers)
         }
         await this.processCommand(subcommand, subbuffers);
       }
       return;
     }
 
-    const args: any[] = command.args;
-    switch (command.name) {
+    const name: string = COMMANDS[command[0]];
+    const args: any[] = command[1];
+    switch (name) {
       case 'fillRect':
         this.fillRect(args[0], args[1], args[2], args[3]);
         break;
@@ -156,10 +178,10 @@ class CanvasModel extends DOMWidgetModel {
         this.strokeRect(args[0], args[1], args[2], args[3]);
         break;
       case 'fillRects':
-        this.drawRects(command.args, buffers, this.fillRect.bind(this));
+        this.drawRects(args, buffers, this.fillRect.bind(this));
         break;
       case 'strokeRects':
-        this.drawRects(command.args, buffers, this.strokeRect.bind(this));
+        this.drawRects(args, buffers, this.strokeRect.bind(this));
         break;
       case 'fillArc':
         this.fillArc(args[0], args[1], args[2], args[3], args[4], args[5]);
@@ -168,10 +190,10 @@ class CanvasModel extends DOMWidgetModel {
         this.strokeArc(args[0], args[1], args[2], args[3], args[4], args[5]);
         break;
       case 'fillArcs':
-        this.drawArcs(command.args, buffers, this.fillArc.bind(this));
+        this.drawArcs(args, buffers, this.fillArc.bind(this));
         break;
       case 'strokeArcs':
-        this.drawArcs(command.args, buffers, this.strokeArc.bind(this));
+        this.drawArcs(args, buffers, this.strokeArc.bind(this));
         break;
       case 'fillCircle':
         this.fillCircle(args[0], args[1], args[2]);
@@ -180,31 +202,31 @@ class CanvasModel extends DOMWidgetModel {
         this.strokeCircle(args[0], args[1], args[2]);
         break;
       case 'fillCircles':
-        this.drawCircles(command.args, buffers, this.fillCircle.bind(this));
+        this.drawCircles(args, buffers, this.fillCircle.bind(this));
         break;
       case 'strokeCircles':
-        this.drawCircles(command.args, buffers, this.strokeCircle.bind(this));
+        this.drawCircles(args, buffers, this.strokeCircle.bind(this));
         break;
       case 'strokeLine':
-        this.strokeLine(command.args, buffers);
+        this.strokeLine(args, buffers);
         break;
       case 'fillPath':
-        await this.fillPath(command.args, buffers);
+        await this.fillPath(args, buffers);
         break;
       case 'drawImage':
-        await this.drawImage(command.args, buffers);
+        await this.drawImage(args, buffers);
         break;
       case 'putImageData':
-        this.putImageData(command.args, buffers);
+        this.putImageData(args, buffers);
         break;
       case 'set':
-        this.setAttr(command.attr, command.value);
+        this.setAttr(args[0], args[1]);
         break;
       case 'clear':
         this.clearCanvas();
         break;
       default:
-        this.executeCommand(command.name, command.args);
+        this.executeCommand(name, args);
         break;
     }
   }
@@ -379,8 +401,8 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.drawImage(offscreenCanvas, dx, dy);
   }
 
-  protected setAttr(attr: string, value: any) {
-    (this.ctx as any)[attr] = value;
+  protected setAttr(attr: number, value: any) {
+    (this.ctx as any)[CanvasModel.ATTRS[attr]] = value;
   }
 
   private clearCanvas() {
@@ -434,6 +456,8 @@ class CanvasModel extends DOMWidgetModel {
 
 export
 class RoughCanvasModel extends CanvasModel {
+  static ROUGH_ATTRS: string[] = new Array(100).concat(['rough_fill_style', 'roughness', 'bowing']);
+
   defaults() {
     return {...super.defaults(),
       _model_name: RoughCanvasModel.model_name,
@@ -494,21 +518,14 @@ class RoughCanvasModel extends CanvasModel {
     this.roughCanvas.arc(x, y, ellipseSize, ellipseSize, start, end, false, this.getRoughStrokeStyle());
   }
 
-  protected setAttr(attr: string, value: any) {
-    switch (attr) {
-      case 'roughFillStyle':
-        this.roughFillStyle = value;
-        break;
-      case 'roughness':
-        this.roughness = value;
-        break;
-      case 'bowing':
-        this.bowing = value;
-        break;
-      default:
-        super.setAttr(attr, value);
-        break;
+  protected setAttr(attr: number, value: any) {
+    if (RoughCanvasModel.ROUGH_ATTRS[attr]) {
+      (this as any)[RoughCanvasModel.ROUGH_ATTRS[attr]] = value;
+
+      return;
     }
+
+    super.setAttr(attr, value);
   }
 
   private getRoughFillStyle() {

@@ -65,9 +65,3 @@ def populate_args(arg, args, buffers):
         buffers.append(arg_buffer)
     else:
         args.append(arg)
-
-
-def to_camel_case(snake_str):
-    """Snake case to Camel case translator."""
-    components = snake_str.split('_')
-    return components[0] + ''.join(x.title() for x in components[1:])
