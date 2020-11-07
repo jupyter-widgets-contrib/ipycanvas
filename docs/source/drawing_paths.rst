@@ -9,6 +9,8 @@ Using Path2D
 You can define a Path2D given an SVG path. Note that once the path is created, it is read only, you cannot dynamically change the path value.
 Using the Path2D class is very useful and efficient when you want to reuse the same path multiple times.
 
+See https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths for documentation about SVG paths.
+
 - ``Path2D(value)``: Creates a Path2D given the SVG path string value.
 
 .. code:: Python
