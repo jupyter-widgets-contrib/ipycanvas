@@ -154,3 +154,5 @@ ipycanvas/labextension/*.tgz
 
 # Packed lab extensions
 ipycanvas/labextension
+
+examples/my_scatter.png
