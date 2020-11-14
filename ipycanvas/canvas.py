@@ -769,6 +769,12 @@ class MultiCanvas(_CanvasBase):
             for layer in self._canvases:
                 setattr(layer, name, value)
 
+    def __getattr__(self, name):
+        if name in ('caching', 'width', 'height'):
+            return getattr(self._canvases[0], name)
+
+        return super(MultiCanvas, self).__getattr__(name)
+
     def on_client_ready(self, callback, remove=False):
         """Register a callback that will be called when a new client is ready to receive draw commands.
 
