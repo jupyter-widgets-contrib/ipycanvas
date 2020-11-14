@@ -14,7 +14,7 @@ import {
 } from './version';
 
 import {
-  getArg, toBytes, fromBytes
+  getArg, toBytes, fromBytes, getTypedArray
 } from './utils';
 
 
@@ -141,7 +141,10 @@ class CanvasModel extends DOMWidgetModel {
   }
 
   private async onCommand(command: any, buffers: any) {
-    await this.processCommand(command, buffers);
+    // Retrieve the commands buffer as an object (list of commands)
+    const commands = JSON.parse(Buffer.from(getTypedArray(buffers[0], command)).toString('utf-8'));
+
+    await this.processCommand(commands, buffers.slice(1, buffers.length));
 
     this.forEachView((view: CanvasView) => {
       view.updateCanvas();
