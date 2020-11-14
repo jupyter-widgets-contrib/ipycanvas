@@ -456,7 +456,7 @@ class CanvasModel extends DOMWidgetModel {
 
 export
 class RoughCanvasModel extends CanvasModel {
-  static ROUGH_ATTRS: string[] = new Array(100).concat(['rough_fill_style', 'roughness', 'bowing']);
+  static ROUGH_ATTRS: string[] = new Array(100).concat(['roughFillStyle', 'roughness', 'bowing']);
 
   defaults() {
     return {...super.defaults(),
