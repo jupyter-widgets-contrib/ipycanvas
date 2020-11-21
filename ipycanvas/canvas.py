@@ -16,7 +16,7 @@ from ipywidgets.widgets.trait_types import bytes_serialization
 
 from ._frontend import module_name, module_version
 
-from .utils import binary_image, populate_args, image_bytes_to_array
+from .utils import binary_image, populate_args, image_bytes_to_array, commands_to_buffer
 
 COMMANDS = {
     'fillRect': 0, 'strokeRect': 1, 'fillRects': 2, 'strokeRects': 3, 'clearRect': 4, 'fillArc': 5,
@@ -259,14 +259,14 @@ class Canvas(_CanvasBase):
         if height is None:
             height = width
 
-        self._send_canvas_command(COMMANDS['fillRect'], (x, y, width, height))
+        self._send_canvas_command(COMMANDS['fillRect'], [x, y, width, height])
 
     def stroke_rect(self, x, y, width, height=None):
         """Draw a rectangular outline of size ``(width, height)`` at the ``(x, y)`` position."""
         if height is None:
             height = width
 
-        self._send_canvas_command(COMMANDS['strokeRect'], (x, y, width, height))
+        self._send_canvas_command(COMMANDS['strokeRect'], [x, y, width, height])
 
     def fill_rects(self, x, y, width, height=None):
         """Draw filled rectangles of sizes ``(width, height)`` at the ``(x, y)`` positions.
@@ -313,24 +313,24 @@ class Canvas(_CanvasBase):
         if height is None:
             height = width
 
-        self._send_canvas_command(COMMANDS['clearRect'], (x, y, width, height))
+        self._send_canvas_command(COMMANDS['clearRect'], [x, y, width, height])
 
     # Arc methods
     def fill_arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Draw a filled arc centered at ``(x, y)`` with a radius of ``radius`` from ``start_angle`` to ``end_angle``."""
-        self._send_canvas_command(COMMANDS['fillArc'], (x, y, radius, start_angle, end_angle, anticlockwise))
+        self._send_canvas_command(COMMANDS['fillArc'], [x, y, radius, start_angle, end_angle, anticlockwise])
 
     def fill_circle(self, x, y, radius):
         """Draw a filled circle centered at ``(x, y)`` with a radius of ``radius``."""
-        self._send_canvas_command(COMMANDS['fillCircle'], (x, y, radius))
+        self._send_canvas_command(COMMANDS['fillCircle'], [x, y, radius])
 
     def stroke_arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Draw an arc outline centered at ``(x, y)`` with a radius of ``radius``."""
-        self._send_canvas_command(COMMANDS['strokeArc'], (x, y, radius, start_angle, end_angle, anticlockwise))
+        self._send_canvas_command(COMMANDS['strokeArc'], [x, y, radius, start_angle, end_angle, anticlockwise])
 
     def stroke_circle(self, x, y, radius):
         """Draw a circle centered at ``(x, y)`` with a radius of ``radius``."""
-        self._send_canvas_command(COMMANDS['strokeCircle'], (x, y, radius))
+        self._send_canvas_command(COMMANDS['strokeCircle'], [x, y, radius])
 
     def fill_arcs(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Draw filled arcs centered at ``(x, y)`` with a radius of ``radius``.
@@ -397,7 +397,7 @@ class Canvas(_CanvasBase):
     # Lines methods
     def stroke_line(self, x1, y1, x2, y2):
         """Draw a line from ``(x1, y1)`` to ``(x2, y2)``."""
-        self._send_canvas_command(COMMANDS['strokeLine'], (x1, y1, x2, y2))
+        self._send_canvas_command(COMMANDS['strokeLine'], [x1, y1, x2, y2])
 
     # Paths methods
     def begin_path(self):
@@ -422,13 +422,13 @@ class Canvas(_CanvasBase):
         Possible rules are ``nonzero`` and ``evenodd``.
         """
         if isinstance(rule_or_path, Path2D):
-            self._send_canvas_command(COMMANDS['fillPath'], (widget_serialization['to_json'](rule_or_path, None), ))
+            self._send_canvas_command(COMMANDS['fillPath'], [widget_serialization['to_json'](rule_or_path, None)])
         else:
-            self._send_canvas_command(COMMANDS['fill'], (rule_or_path, ))
+            self._send_canvas_command(COMMANDS['fill'], [rule_or_path])
 
     def move_to(self, x, y):
         """Move the "pen" to the given ``(x, y)`` coordinates."""
-        self._send_canvas_command(COMMANDS['moveTo'], (x, y))
+        self._send_canvas_command(COMMANDS['moveTo'], [x, y])
 
     def line_to(self, x, y):
         """Add a straight line to the current path by connecting the path's last point to the specified ``(x, y)`` coordinates.
@@ -436,11 +436,11 @@ class Canvas(_CanvasBase):
         Like other methods that modify the current path, this method does not directly render anything. To
         draw the path onto the canvas, you can use the fill() or stroke() methods.
         """
-        self._send_canvas_command(COMMANDS['lineTo'], (x, y))
+        self._send_canvas_command(COMMANDS['lineTo'], [x, y])
 
     def rect(self, x, y, width, height):
         """Add a rectangle of size ``(width, height)`` at the ``(x, y)`` position in the current path."""
-        self._send_canvas_command(COMMANDS['rect'], (x, y, width, height))
+        self._send_canvas_command(COMMANDS['rect'], [x, y, width, height])
 
     def arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Add a circular arc centered at ``(x, y)`` with a radius of ``radius`` to the current path.
@@ -448,7 +448,7 @@ class Canvas(_CanvasBase):
         The path starts at ``start_angle`` and ends at ``end_angle``, and travels in the direction given by
         ``anticlockwise`` (defaulting to clockwise: ``False``).
         """
-        self._send_canvas_command(COMMANDS['arc'], (x, y, radius, start_angle, end_angle, anticlockwise))
+        self._send_canvas_command(COMMANDS['arc'], [x, y, radius, start_angle, end_angle, anticlockwise])
 
     def ellipse(self, x, y, radius_x, radius_y, rotation, start_angle, end_angle, anticlockwise=False):
         """Add an ellipse centered at ``(x, y)`` with the radii ``radius_x`` and ``radius_y`` to the current path.
@@ -456,14 +456,14 @@ class Canvas(_CanvasBase):
         The path starts at ``start_angle`` and ends at ``end_angle``, and travels in the direction given by
         ``anticlockwise`` (defaulting to clockwise: ``False``).
         """
-        self._send_canvas_command(COMMANDS['ellipse'], (x, y, radius_x, radius_y, rotation, start_angle, end_angle, anticlockwise))
+        self._send_canvas_command(COMMANDS['ellipse'], [x, y, radius_x, radius_y, rotation, start_angle, end_angle, anticlockwise])
 
     def arc_to(self, x1, y1, x2, y2, radius):
         """Add a circular arc to the current path.
 
         Using the given control points ``(x1, y1)`` and ``(x2, y2)`` and the ``radius``.
         """
-        self._send_canvas_command(COMMANDS['arcTo'], (x1, y1, x2, y2, radius))
+        self._send_canvas_command(COMMANDS['arcTo'], [x1, y1, x2, y2, radius])
 
     def quadratic_curve_to(self, cp1x, cp1y, x, y):
         """Add a quadratic Bezier curve to the current path.
@@ -472,7 +472,7 @@ class Canvas(_CanvasBase):
         The starting point is the latest point in the current path, which can be changed using move_to()
         before creating the quadratic Bezier curve.
         """
-        self._send_canvas_command(COMMANDS['quadraticCurveTo'], (cp1x, cp1y, x, y))
+        self._send_canvas_command(COMMANDS['quadraticCurveTo'], [cp1x, cp1y, x, y])
 
     def bezier_curve_to(self, cp1x, cp1y, cp2x, cp2y, x, y):
         """Add a cubic Bezier curve to the current path.
@@ -481,16 +481,16 @@ class Canvas(_CanvasBase):
         The starting point is the latest point in the current path, which can be changed using move_to()
         before creating the Bezier curve.
         """
-        self._send_canvas_command(COMMANDS['bezierCurveTo'], (cp1x, cp1y, cp2x, cp2y, x, y))
+        self._send_canvas_command(COMMANDS['bezierCurveTo'], [cp1x, cp1y, cp2x, cp2y, x, y])
 
     # Text methods
     def fill_text(self, text, x, y, max_width=None):
         """Fill a given text at the given ``(x, y)`` position. Optionally with a maximum width to draw."""
-        self._send_canvas_command(COMMANDS['fillText'], (text, x, y, max_width))
+        self._send_canvas_command(COMMANDS['fillText'], [text, x, y, max_width])
 
     def stroke_text(self, text, x, y, max_width=None):
         """Stroke a given text at the given ``(x, y)`` position. Optionally with a maximum width to draw."""
-        self._send_canvas_command(COMMANDS['strokeText'], (text, x, y, max_width))
+        self._send_canvas_command(COMMANDS['strokeText'], [text, x, y, max_width])
 
     # Line methods
     def get_line_dash(self):
@@ -503,7 +503,7 @@ class Canvas(_CanvasBase):
             self._line_dash = segments + segments
         else:
             self._line_dash = segments
-        self._send_canvas_command(COMMANDS['setLineDash'], (self._line_dash, ))
+        self._send_canvas_command(COMMANDS['setLineDash'], [self._line_dash])
 
     # Image methods
     def draw_image(self, image, x=0, y=0, width=None, height=None):
@@ -516,7 +516,7 @@ class Canvas(_CanvasBase):
 
         serialized_image = widget_serialization['to_json'](image, None)
 
-        self._send_canvas_command(COMMANDS['drawImage'], (serialized_image, x, y, width, height))
+        self._send_canvas_command(COMMANDS['drawImage'], [serialized_image, x, y, width, height])
 
     def put_image_data(self, image_data, x=0, y=0):
         """Draw an image on the Canvas.
@@ -526,7 +526,7 @@ class Canvas(_CanvasBase):
         matrix, and supports transparency.
         """
         image_metadata, image_buffer = binary_image(image_data)
-        self._send_canvas_command(COMMANDS['putImageData'], (image_metadata, x, y), (image_buffer, ))
+        self._send_canvas_command(COMMANDS['putImageData'], [image_metadata, x, y], [image_buffer])
 
     def create_image_data(self, width, height):
         """Create a NumPy array of shape (width, height, 4) representing a table of pixel colors."""
@@ -556,11 +556,11 @@ class Canvas(_CanvasBase):
         ``x`` indicates the horizontal distance to move,
         and ``y`` indicates how far to move the grid vertically.
         """
-        self._send_canvas_command(COMMANDS['translate'], (x, y))
+        self._send_canvas_command(COMMANDS['translate'], [x, y])
 
     def rotate(self, angle):
         """Rotate the canvas clockwise around the current origin by the ``angle`` number of radians."""
-        self._send_canvas_command(COMMANDS['rotate'], (angle, ))
+        self._send_canvas_command(COMMANDS['rotate'], [angle])
 
     def scale(self, x, y=None):
         """Scale the canvas units by ``x`` horizontally and by ``y`` vertically. Both parameters are real numbers.
@@ -571,7 +571,7 @@ class Canvas(_CanvasBase):
         """
         if y is None:
             y = x
-        self._send_canvas_command(COMMANDS['scale'], (x, y))
+        self._send_canvas_command(COMMANDS['scale'], [x, y])
 
     def transform(self, a, b, c, d, e, f):
         """Multiply the current transformation matrix with the matrix described by its arguments.
@@ -579,14 +579,14 @@ class Canvas(_CanvasBase):
         The transformation matrix is described by:
         ``[[a, c, e], [b, d, f], [0, 0, 1]]``.
         """
-        self._send_canvas_command(COMMANDS['transform'], (a, b, c, d, e, f))
+        self._send_canvas_command(COMMANDS['transform'], [a, b, c, d, e, f])
 
     def set_transform(self, a, b, c, d, e, f):
         """Reset the current transform to the identity matrix, and then invokes the transform() method with the same arguments.
 
         This basically undoes the current transformation, then sets the specified transform, all in one step.
         """
-        self._send_canvas_command(COMMANDS['setTransform'], (a, b, c, d, e, f))
+        self._send_canvas_command(COMMANDS['setTransform'], [a, b, c, d, e, f])
 
     def reset_transform(self):
         """Reset the current transform to the identity matrix.
@@ -605,7 +605,7 @@ class Canvas(_CanvasBase):
         if not self.caching or not len(self._commands_cache):
             return
 
-        self.send(self._commands_cache, self._buffers_cache)
+        self._send_custom(self._commands_cache, self._buffers_cache)
 
         self._commands_cache = []
         self._buffers_cache = []
@@ -660,22 +660,20 @@ class Canvas(_CanvasBase):
             self._send_command([COMMANDS['set'], [self.ATTRS[name], value]])
 
     def _send_canvas_command(self, name, args=[], buffers=[]):
-        command = [name]
-
-        if len(args):
-            command.append([arg for arg in args if arg is not None])
-
-        if len(buffers):
-            command.append(len(buffers))
-
-        self._send_command(command, buffers)
+        while len(args) and args[len(args) - 1] is None:
+            args.pop()
+        self._send_command([name, args, len(buffers)], buffers)
 
     def _send_command(self, command, buffers=[]):
         if self.caching:
             self._commands_cache.append(command)
             self._buffers_cache += buffers
         else:
-            self.send(command, buffers)
+            self._send_custom(command, buffers)
+
+    def _send_custom(self, command, buffers=[]):
+        metadata, command_buffer = commands_to_buffer(command)
+        self.send(metadata, buffers=[command_buffer] + buffers)
 
     def _handle_frontend_event(self, _, content, buffers):
         if content.get('event', '') == 'client_ready':
