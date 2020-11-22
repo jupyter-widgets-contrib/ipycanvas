@@ -47,7 +47,7 @@ const COMMANDS = [
   'bezierCurveTo', 'fillText', 'strokeText', 'setLineDash', 'drawImage',
   'putImageData', 'clip', 'save', 'restore', 'translate',
   'rotate', 'scale', 'transform', 'setTransform', 'resetTransform',
-  'set', 'clear',
+  'set', 'clear', 'sleep',
 ];
 
 
@@ -174,6 +174,9 @@ class CanvasModel extends DOMWidgetModel {
     const name: string = COMMANDS[command[0]];
     const args: any[] = command[1];
     switch (name) {
+      case 'sleep':
+        await this.sleep(args[0]);
+        break;
       case 'fillRect':
         this.fillRect(args[0], args[1], args[2], args[3]);
         break;
@@ -232,6 +235,17 @@ class CanvasModel extends DOMWidgetModel {
         this.executeCommand(name, args);
         break;
     }
+  }
+
+  private async sleep(time: number) {
+    this.forEachView((view: CanvasView) => {
+      view.updateCanvas();
+    });
+
+    this.trigger('new-frame');
+    this.syncImageData();
+
+    await new Promise(resolve => setTimeout(resolve, time));
   }
 
   protected fillRect(x: number, y: number, width: number, height: number) {
