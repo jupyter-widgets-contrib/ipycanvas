@@ -13,6 +13,7 @@ Usage
     drawing_text
     drawing_images
     retrieve_images
+    animations
     canvas_state
     transformations
     events

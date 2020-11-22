@@ -1,3 +1,5 @@
+.. _drawing_shapes:
+
 Drawing simple shapes
 =====================
 
@@ -125,3 +127,45 @@ There is one command for drawing a straight line from one point to another:
     canvas
 
 .. image:: images/lines.png
+
+
+Vectorized methods
+------------------
+
+Some methods like ``fill_rect`` and ``fill_circle`` have a vectorized counterpart: ``fill_rects`` and ``fill_cicles``. It is essential
+to use those methods when you want to draw the same shape multiple times with the same style.
+
+For example, it is way faster to run:
+
+.. code:: Python
+
+    from ipycanvas import Canvas
+
+    canvas = Canvas(width=300, height=300)
+
+    canvas.global_alpha = 0.01
+
+    size = [i for i in range(300)]
+    position = [300 - i for i in range(300)]
+
+    canvas.fill_rects(position, position, size)
+
+    canvas
+
+instead of running:
+
+.. code:: Python
+
+    from ipycanvas import Canvas
+
+    canvas = Canvas(width=300, height=300)
+
+    canvas.global_alpha = 0.01
+
+    for i in range(300):
+        size = i
+        position = 300 - i
+
+        canvas.fill_rect(position, position, size)
+
+    canvas
