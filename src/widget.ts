@@ -38,6 +38,28 @@ function deserializeImageData(dataview: DataView | null) {
   return new Uint8ClampedArray(dataview.buffer);
 }
 
+async function createImageFromWidget(image: DOMWidgetModel): Promise<HTMLImageElement> {
+  // Create the image manually instead of creating an ImageView
+  let url: string;
+  const format = image.get('format');
+  const value = image.get('value');
+  if (format !== 'url') {
+      const blob = new Blob([value], {type: `image/${format}`});
+      url = URL.createObjectURL(blob);
+  } else {
+      url = (new TextDecoder('utf-8')).decode(value.buffer);
+  }
+
+  const img = new Image();
+  return new Promise((resolve) => {
+    img.onload = () => {
+      resolve(img);
+    };
+    img.src = url;
+  });
+}
+
+
 const COMMANDS = [
   'fillRect', 'strokeRect', 'fillRects', 'strokeRects', 'clearRect', 'fillArc',
   'fillCircle', 'strokeArc', 'strokeCircle', 'fillArcs', 'strokeArcs',
@@ -73,6 +95,62 @@ class Path2DModel extends WidgetModel {
   static model_name = 'Path2DModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
+}
+
+
+export
+class PatternModel extends WidgetModel {
+  defaults() {
+    return {...super.defaults(),
+      _model_name: PatternModel.model_name,
+      _model_module: PatternModel.model_module,
+      _model_module_version: PatternModel.model_module_version,
+      image: '',
+      repetition: 'repeat',
+    };
+  }
+
+  async initialize(attributes: any, options: any) {
+    super.initialize(attributes, options);
+
+    const image = this.get('image');
+    let patternSource: HTMLCanvasElement | HTMLImageElement | undefined = undefined;
+
+    if (image instanceof CanvasModel || image instanceof MultiCanvasModel) {
+      patternSource = image.canvas;
+    }
+
+    if (image.get('_model_name') == 'ImageModel') {
+      const img = await createImageFromWidget(image);
+      patternSource = img;
+    }
+
+    if (patternSource == undefined) {
+      throw "Could not understand the souce for the pattern";
+    }
+
+    const pattern = PatternModel.ctx.createPattern(patternSource, this.get('repetition'));
+
+    if (pattern == null) {
+      throw "Could not initialize pattern object";
+    }
+
+    this.value = pattern;
+  }
+
+  static serializers: ISerializers = {
+    ...WidgetModel.serializers,
+    image: { deserialize: (unpack_models as any) },
+  }
+
+  value: CanvasPattern;
+
+  static model_name = 'PatternModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+
+  // Global context for creating the gradients
+  static ctx: CanvasRenderingContext2D = getContext(document.createElement('canvas'));
 }
 
 
@@ -435,25 +513,8 @@ class CanvasModel extends DOMWidgetModel {
     }
 
     if (image.get('_model_name') == 'ImageModel') {
-      // Create the image manually instead of creating an ImageView
-      let url: string;
-      const format = image.get('format');
-      const value = image.get('value');
-      if (format !== 'url') {
-          const blob = new Blob([value], {type: `image/${format}`});
-          url = URL.createObjectURL(blob);
-      } else {
-          url = (new TextDecoder('utf-8')).decode(value.buffer);
-      }
-
-      const img = new Image();
-      return new Promise((resolve) => {
-        img.onload = () => {
-          this._drawImage(img, x, y, width, height);
-          resolve();
-        };
-        img.src = url;
-      });
+      const img = await createImageFromWidget(image);
+      this._drawImage(img, x, y, width, height);
     }
   }
 
