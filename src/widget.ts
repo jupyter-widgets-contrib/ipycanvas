@@ -58,9 +58,6 @@ class Path2DModel extends WidgetModel {
       _model_name: Path2DModel.model_name,
       _model_module: Path2DModel.model_module,
       _model_module_version: Path2DModel.model_module_version,
-      _view_name: Path2DModel.view_name,
-      _view_module: Path2DModel.view_module,
-      _view_module_version: Path2DModel.view_module_version,
       value: '',
     };
   }
@@ -76,9 +73,79 @@ class Path2DModel extends WidgetModel {
   static model_name = 'Path2DModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
-  static view_name = 'Path2DView';
-  static view_module = MODULE_NAME;
-  static view_module_version = MODULE_VERSION;
+}
+
+
+class GradientModel extends WidgetModel {
+  defaults() {
+    return {...super.defaults(),
+      _model_module: GradientModel.model_module,
+      _model_module_version: GradientModel.model_module_version,
+      x0: 0.,
+      y0: 0.,
+      x1: 0.,
+      y1: 0.,
+      color_stops: [],
+    };
+  }
+
+  initialize(attributes: any, options: any) {
+    super.initialize(attributes, options);
+
+    this.createGradient();
+
+    for (const colorStop of this.get('color_stops')) {
+      this.value.addColorStop(colorStop[0], colorStop[1]);
+    }
+  }
+
+  protected createGradient() {
+    this.value = GradientModel.ctx.createLinearGradient(
+      this.get('x0'), this.get('y0'),
+      this.get('x1'), this.get('y1')
+    );
+  }
+
+  value: CanvasGradient;
+
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+
+  // Global context for creating the gradients
+  static ctx: CanvasRenderingContext2D = getContext(document.createElement('canvas'));
+}
+
+
+export
+class LinearGradientModel extends GradientModel {
+  defaults() {
+    return {...super.defaults(),
+      _model_name: LinearGradientModel.model_name,
+    };
+  }
+
+  static model_name = 'LinearGradientModel';
+}
+
+
+export
+class RadialGradientModel extends GradientModel {
+  defaults() {
+    return {...super.defaults(),
+      _model_name: RadialGradientModel.model_name,
+      r0: 0.,
+      r1: 0.,
+    };
+  }
+
+  protected createGradient() {
+    this.value = GradientModel.ctx.createRadialGradient(
+      this.get('x0'), this.get('y0'), this.get('r0'),
+      this.get('x1'), this.get('y1'), this.get('r1')
+    );
+  }
+
+  static model_name = 'RadialGradientModel';
 }
 
 
@@ -226,7 +293,7 @@ class CanvasModel extends DOMWidgetModel {
         this.putImageData(args, buffers);
         break;
       case 'set':
-        this.setAttr(args[0], args[1]);
+        await this.setAttr(args[0], args[1]);
         break;
       case 'clear':
         this.clearCanvas();
@@ -418,7 +485,12 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.drawImage(offscreenCanvas, dx, dy);
   }
 
-  protected setAttr(attr: number, value: any) {
+  protected async setAttr(attr: number, value: any) {
+    if (typeof value === 'string' && value.startsWith('IPY')) {
+      const widgetModel: GradientModel = await unpack_models(value, this.widget_manager);
+      value = widgetModel.value;
+    }
+
     (this.ctx as any)[CanvasModel.ATTRS[attr]] = value;
   }
 
@@ -535,14 +607,14 @@ class RoughCanvasModel extends CanvasModel {
     this.roughCanvas.arc(x, y, ellipseSize, ellipseSize, start, end, false, this.getRoughStrokeStyle());
   }
 
-  protected setAttr(attr: number, value: any) {
+  protected async setAttr(attr: number, value: any) {
     if (RoughCanvasModel.ROUGH_ATTRS[attr]) {
       (this as any)[RoughCanvasModel.ROUGH_ATTRS[attr]] = value;
 
       return;
     }
 
-    super.setAttr(attr, value);
+    await super.setAttr(attr, value);
   }
 
   private getRoughFillStyle() {

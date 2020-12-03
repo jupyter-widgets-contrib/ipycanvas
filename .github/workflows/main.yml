@@ -43,4 +43,4 @@ jobs:
 
     - name: Test flake8
       shell: bash -l {0}
-      run: flake8 ipycanvas --ignore=E501
+      run: flake8 ipycanvas --ignore=E501,W504,W503

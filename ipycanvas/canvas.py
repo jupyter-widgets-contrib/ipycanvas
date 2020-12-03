@@ -9,10 +9,12 @@ from contextlib import contextmanager
 
 import numpy as np
 
-from traitlets import Bool, Bytes, CInt, Enum, Float, Instance, List, Unicode
+from traitlets import Bool, Bytes, CInt, Enum, Float, Instance, List, Unicode, TraitError, Union
 
 from ipywidgets import CallbackDispatcher, Color, DOMWidget, Image, Widget, widget_serialization
-from ipywidgets.widgets.trait_types import bytes_serialization
+from ipywidgets.widgets.trait_types import (
+    bytes_serialization, _color_names, _color_hex_re, _color_hexa_re, _color_rgbhsl_re
+)
 
 from ._frontend import module_name, module_version
 
@@ -31,6 +33,26 @@ COMMANDS = {
 }
 
 
+# Traitlets does not allow validating without creating a trait class, so we need this
+def _validate_color(value):
+    if isinstance(value, str):
+        if (value.lower() in _color_names or _color_hex_re.match(value)
+                or _color_hexa_re.match(value) or _color_rgbhsl_re.match(value)):
+            return value
+    raise TraitError('{} is not a valid HTML Color'.format(value))
+
+
+def _validate_number(value, min_val, max_val):
+    try:
+        number = float(value)
+
+        if number >= min_val and number <= max_val:
+            return number
+    except ValueError:
+        raise TraitError('{} is not a number'.format(value))
+    raise TraitError('{} is not in the range [{}, {}]'.format(value, min_val, max_val))
+
+
 class Path2D(Widget):
     """Create a Path2D.
 
@@ -40,11 +62,8 @@ class Path2D(Widget):
 
     _model_module = Unicode(module_name).tag(sync=True)
     _model_module_version = Unicode(module_version).tag(sync=True)
-    _view_module = Unicode(module_name).tag(sync=True)
-    _view_module_version = Unicode(module_version).tag(sync=True)
 
     _model_name = Unicode('Path2DModel').tag(sync=True)
-    _view_name = Unicode('Path2DView').tag(sync=True)
 
     value = Unicode(allow_none=False, read_only=True).tag(sync=True)
 
@@ -53,6 +72,76 @@ class Path2D(Widget):
         self.set_trait('value', value)
 
         super(Path2D, self).__init__()
+
+
+class _CanvasGradient(Widget):
+    _model_module = Unicode(module_name).tag(sync=True)
+    _model_module_version = Unicode(module_version).tag(sync=True)
+
+    x0 = Float(allow_none=False, read_only=True).tag(sync=True)
+    y0 = Float(allow_none=False, read_only=True).tag(sync=True)
+    x1 = Float(allow_none=False, read_only=True).tag(sync=True)
+    y1 = Float(allow_none=False, read_only=True).tag(sync=True)
+
+    color_stops = List(allow_none=False, read_only=True).tag(sync=True)
+
+    def __init__(self, x0, y0, x1, y1, color_stops):
+        self.set_trait('x0', x0)
+        self.set_trait('y0', y0)
+        self.set_trait('x1', x1)
+        self.set_trait('y1', y1)
+
+        for color_stop in color_stops:
+            _validate_number(color_stop[0], 0, 1)
+            _validate_color(color_stop[1])
+        self.set_trait('color_stops', color_stops)
+
+        super(_CanvasGradient, self).__init__()
+
+
+class LinearGradient(_CanvasGradient):
+    """Create a LinearGradient."""
+    _model_name = Unicode('LinearGradientModel').tag(sync=True)
+
+    def __init__(self, x0, y0, x1, y1, color_stops):
+        """Create a LinearGradient object given the start point, end point and color stops.
+
+        Args:
+            x0 (float): The x-axis coordinate of the start point.
+            y0 (float): The y-axis coordinate of the start point.
+            x1 (float): The x-axis coordinate of the end point.
+            y1 (float): The y-axis coordinate of the end point.
+            color_stops (list): The list of color stop tuples (offset, color) defining the gradient.
+        """
+        super(LinearGradient, self).__init__(x0, y0, x1, y1, color_stops)
+
+
+class RadialGradient(_CanvasGradient):
+    """Create a RadialGradient."""
+    _model_name = Unicode('RadialGradientModel').tag(sync=True)
+
+    r0 = Float(allow_none=False, read_only=True).tag(sync=True)
+    r1 = Float(allow_none=False, read_only=True).tag(sync=True)
+
+    def __init__(self, x0, y0, r0, x1, y1, r1, color_stops):
+        """Create a RadialGradient object given the start circle, end circle and color stops.
+
+        Args:
+            x0 (float): The x-axis coordinate of the start circle.
+            y0 (float): The y-axis coordinate of the start circle.
+            r0 (float): The radius of the start circle.
+            x1 (float): The x-axis coordinate of the end circle.
+            y1 (float): The y-axis coordinate of the end circle.
+            r1 (float): The radius of the end circle.
+            color_stops (list): The list of color stop tuples (offset, color) defining the gradient.
+        """
+        _validate_number(r0, 0, float('inf'))
+        _validate_number(r1, 0, float('inf'))
+
+        self.set_trait('r0', r0)
+        self.set_trait('r1', r1)
+
+        super(RadialGradient, self).__init__(x0, y0, x1, y1, color_stops)
 
 
 class _CanvasBase(DOMWidget):
@@ -138,7 +227,7 @@ class Canvas(_CanvasBase):
     _view_name = Unicode('CanvasView').tag(sync=True)
 
     #: (valid HTML color) The color for filling rectangles and paths. Default to ``'black'``.
-    fill_style = Color('black')
+    fill_style = Union((Color(), Instance(_CanvasGradient)), default_value='black')
 
     #: (valid HTML color) The color for rectangles and paths stroke. Default to ``'black'``.
     stroke_style = Color('black')
@@ -256,6 +345,33 @@ class Canvas(_CanvasBase):
     def sleep(self, time):
         """Make the Canvas sleep for `time` milliseconds."""
         self._send_canvas_command(COMMANDS['sleep'], [time])
+
+    # Gradient methods
+    def create_linear_gradient(self, x0, y0, x1, y1, color_stops):
+        """Create a LinearGradient object given the start point, end point, and color stops.
+
+        Args:
+            x0 (float): The x-axis coordinate of the start point.
+            y0 (float): The y-axis coordinate of the start point.
+            x1 (float): The x-axis coordinate of the end point.
+            y1 (float): The y-axis coordinate of the end point.
+            color_stops (list): The list of color stop tuples (offset, color) defining the gradient.
+        """
+        return LinearGradient(x0, y0, x1, y1, color_stops)
+
+    def create_radial_gradient(self, x0, y0, r0, x1, y1, r1, color_stops):
+        """Create a RadialGradient object given the start circle, end circle and color stops.
+
+        Args:
+            x0 (float): The x-axis coordinate of the start circle.
+            y0 (float): The y-axis coordinate of the start circle.
+            r0 (float): The radius of the start circle.
+            x1 (float): The x-axis coordinate of the end circle.
+            y1 (float): The y-axis coordinate of the end circle.
+            r1 (float): The radius of the end circle.
+            color_stops (list): The list of color stop tuples (offset, color) defining the gradient.
+        """
+        return RadialGradient(x0, y0, r0, x1, y1, r1, color_stops)
 
     # Rectangles methods
     def fill_rect(self, x, y, width, height=None):
@@ -661,6 +777,10 @@ class Canvas(_CanvasBase):
         super(Canvas, self).__setattr__(name, value)
 
         if name in self.ATTRS:
+            # If it's a Widget we need to serialize it
+            if isinstance(value, Widget):
+                value = widget_serialization['to_json'](value, None)
+
             self._send_command([COMMANDS['set'], [self.ATTRS[name], value]])
 
     def _send_canvas_command(self, name, args=[], buffers=[]):
