@@ -74,6 +74,33 @@ class Path2D(Widget):
         super(Path2D, self).__init__()
 
 
+class Pattern(Widget):
+    """Create a Pattern.
+
+    Args:
+        image (Canvas or MultiCanvas or ipywidgets.Image): The source to be used as the pattern's image
+        repetition (str): A string indicating how to repeat the pattern's image, can be "repeat" (both directions), "repeat-x" (horizontal only), "repeat-y" (vertical only), "no-repeat" (neither direction)
+    """
+
+    _model_module = Unicode(module_name).tag(sync=True)
+    _model_module_version = Unicode(module_version).tag(sync=True)
+
+    _model_name = Unicode('PatternModel').tag(sync=True)
+
+    image = Union((Instance(Image), Instance('ipycanvas.Canvas'), Instance('ipycanvas.MultiCanvas')), allow_none=False, read_only=True).tag(sync=True, **widget_serialization)
+    repetition = Enum(['repeat', 'repeat-x', 'repeat-y', 'no-repeat'], allow_none=False, read_only=True).tag(sync=True)
+
+    def __init__(self, image, repetition='repeat'):
+        """Create a Pattern object given the image and the type of repetition."""
+        self.set_trait('image', image)
+        self.set_trait('repetition', repetition)
+
+        super(Pattern, self).__init__()
+
+    def _ipython_display_(self, *args, **kwargs):
+        return self.image._ipython_display_(*args, **kwargs)
+
+
 class _CanvasGradient(Widget):
     _model_module = Unicode(module_name).tag(sync=True)
     _model_module_version = Unicode(module_version).tag(sync=True)
@@ -226,11 +253,11 @@ class Canvas(_CanvasBase):
     _model_name = Unicode('CanvasModel').tag(sync=True)
     _view_name = Unicode('CanvasView').tag(sync=True)
 
-    #: (valid HTML color) The color for filling rectangles and paths. Default to ``'black'``.
-    fill_style = Union((Color(), Instance(_CanvasGradient)), default_value='black')
+    #: (valid HTML color or Gradient or Pattern) The color for filling rectangles and paths. Default to ``'black'``.
+    fill_style = Union((Color(), Instance(_CanvasGradient), Instance(Pattern)), default_value='black')
 
-    #: (valid HTML color) The color for rectangles and paths stroke. Default to ``'black'``.
-    stroke_style = Color('black')
+    #: (valid HTML color or Gradient or Pattern) The color for rectangles and paths stroke. Default to ``'black'``.
+    stroke_style = Union((Color(), Instance(_CanvasGradient), Instance(Pattern)), default_value='black')
 
     #: (float) Transparency level. Default to ``1.0``.
     global_alpha = Float(1.0)
@@ -372,6 +399,16 @@ class Canvas(_CanvasBase):
             color_stops (list): The list of color stop tuples (offset, color) defining the gradient.
         """
         return RadialGradient(x0, y0, r0, x1, y1, r1, color_stops)
+
+    # Pattern method
+    def create_pattern(self, image, repetition='repeat'):
+        """Create a Pattern.
+
+        Args:
+            image (Canvas or MultiCanvas or ipywidgets.Image): The source to be used as the pattern's image
+            repetition (str): A string indicating how to repeat the pattern's image, can be "repeat" (both directions), "repeat-x" (horizontal only), "repeat-y" (vertical only), "no-repeat" (neither direction)
+        """
+        return Pattern(image, repetition)
 
     # Rectangles methods
     def fill_rect(self, x, y, width, height=None):
