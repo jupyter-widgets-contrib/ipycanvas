@@ -45,19 +45,38 @@ def get_perspective_matrix(fovy, aspect, near, far):
     ])
 
 
-def get_orbit_projection(elev, azim, radius, center=[0, 0, 0], aspect=1., near=0.5, far=5.):
-    relev, razim = np.pi * elev/180, np.pi * azim/180
+class OrbitCamera():
 
-    xp = center[0] + cos(razim) * cos(relev) * radius
-    yp = center[1] + sin(razim) * cos(relev) * radius
-    zp = center[2] + sin(relev) * radius
-    eye = np.array((xp, yp, zp))
+    def __init__(self, radius, center, aspect, near=0, far=8):
+        self.radius = radius
+        self.center = np.array(center)
+        self.aspect = aspect
+        self.near = near
+        self.far = far
 
-    if abs(relev) > pi / 2.:
-        up = np.array((0, 0, -1))
-    else:
-        up = np.array((0, 0, 1))
+        self.update_position(0, 0)
 
-    view_matrix = get_look_at_matrix(eye, center, up)
-    projection_matrix = get_perspective_matrix(50, aspect, 0.5, 2 * radius)
-    return np.dot(projection_matrix, view_matrix)
+    def update_position(self, elev, azim):
+        self.elev = elev
+        self.azim = azim
+
+        relev, razim = np.pi * self.elev/180, np.pi * self.azim/180
+
+        xp = self.center[0] + cos(razim) * cos(relev) * self.radius
+        yp = self.center[1] + sin(razim) * cos(relev) * self.radius
+        zp = self.center[2] + sin(relev) * self.radius
+
+        self.position = np.array((xp, yp, zp))
+        self.front = self.center - self.position
+
+        if abs(relev) > pi / 2.:
+            self.up = np.array((0, 0, -1))
+        else:
+            self.up = np.array((0, 0, 1))
+
+        self.update_matrix()
+
+    def update_matrix(self):
+        self.view_matrix = get_look_at_matrix(self.position, self.center, self.up)
+        self.projection_matrix = get_perspective_matrix(50, self.aspect, self.near, self.far)
+        self.matrix = np.dot(self.projection_matrix, self.view_matrix)
