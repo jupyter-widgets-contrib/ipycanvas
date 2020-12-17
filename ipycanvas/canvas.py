@@ -30,6 +30,7 @@ COMMANDS = {
     'putImageData': 31, 'clip': 32, 'save': 33, 'restore': 34, 'translate': 35,
     'rotate': 36, 'scale': 37, 'transform': 38, 'setTransform': 39, 'resetTransform': 40,
     'set': 41, 'clear': 42, 'sleep': 43, 'fillPolygon': 44, 'strokePolygon': 45,
+    'strokeLines': 46,
 }
 
 
@@ -574,6 +575,15 @@ class Canvas(_CanvasBase):
     def stroke_line(self, x1, y1, x2, y2):
         """Draw a line from ``(x1, y1)`` to ``(x2, y2)``."""
         self._send_canvas_command(COMMANDS['strokeLine'], [x1, y1, x2, y2])
+
+    def stroke_lines(self, points):
+        """Draw a path of consecutive lines from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``."""
+        args = []
+        buffers = []
+
+        populate_args(points, args, buffers)
+
+        self._send_canvas_command(COMMANDS['strokeLines'], args, buffers)
 
     # Paths methods
     def begin_path(self):
