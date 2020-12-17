@@ -69,7 +69,7 @@ const COMMANDS = [
   'bezierCurveTo', 'fillText', 'strokeText', 'setLineDash', 'drawImage',
   'putImageData', 'clip', 'save', 'restore', 'translate',
   'rotate', 'scale', 'transform', 'setTransform', 'resetTransform',
-  'set', 'clear', 'sleep',
+  'set', 'clear', 'sleep', 'fillPolygon', 'strokePolygon',
 ];
 
 
@@ -361,6 +361,12 @@ class CanvasModel extends DOMWidgetModel {
       case 'strokeLine':
         this.strokeLine(args, buffers);
         break;
+      case 'fillPolygon':
+        this.fillPolygon(args, buffers);
+        break;
+      case 'strokePolygon':
+        this.strokePolygon(args, buffers);
+        break;
       case 'fillPath':
         await this.fillPath(args, buffers);
         break;
@@ -492,6 +498,34 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.stroke();
 
     this.ctx.closePath();
+  }
+
+  protected fillPolygon(args: any[], buffers: any) {
+    this.ctx.beginPath();
+    const points = getArg(args[0], buffers);
+
+    // Move to the first point, then create lines between points
+    this.ctx.moveTo(points.getItem(0), points.getItem(1));
+    for (let idx = 2; idx < points.length; idx += 2) {
+      this.ctx.lineTo(points.getItem(idx), points.getItem(idx + 1));
+    }
+
+    this.ctx.closePath();
+    this.ctx.fill();
+  }
+
+  protected strokePolygon(args: any[], buffers: any) {
+    this.ctx.beginPath();
+    const points = getArg(args[0], buffers);
+
+    // Move to the first point, then create lines between points
+    this.ctx.moveTo(points.getItem(0), points.getItem(1));
+    for (let idx = 2; idx < points.length; idx += 2) {
+      this.ctx.lineTo(points.getItem(idx), points.getItem(idx + 1));
+    }
+
+    this.ctx.closePath();
+    this.ctx.stroke();
   }
 
   protected async fillPath(args: any[], buffers: any) {
@@ -666,6 +700,28 @@ class RoughCanvasModel extends CanvasModel {
     const end = anticlockwise ? startAngle + 2. * Math.PI : endAngle;
 
     this.roughCanvas.arc(x, y, ellipseSize, ellipseSize, start, end, false, this.getRoughStrokeStyle());
+  }
+
+  protected fillPolygon(args: any[], buffers: any) {
+    const points = getArg(args[0], buffers);
+
+    const polygon: [number, number][] = [];
+    for (let idx = 0; idx < points.length; idx += 2) {
+      polygon.push([points.getItem(idx), points.getItem(idx + 1)]);
+    }
+
+    this.roughCanvas.polygon(polygon, this.getRoughFillStyle());
+  }
+
+  protected strokePolygon(args: any[], buffers: any) {
+    const points = getArg(args[0], buffers);
+
+    const polygon: [number, number][] = [];
+    for (let idx = 0; idx < points.length; idx += 2) {
+      polygon.push([points.getItem(idx), points.getItem(idx + 1)]);
+    }
+
+    this.roughCanvas.polygon(polygon, this.getRoughStrokeStyle());
   }
 
   protected async setAttr(attr: number, value: any) {
