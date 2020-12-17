@@ -29,7 +29,7 @@ COMMANDS = {
     'bezierCurveTo': 26, 'fillText': 27, 'strokeText': 28, 'setLineDash': 29, 'drawImage': 30,
     'putImageData': 31, 'clip': 32, 'save': 33, 'restore': 34, 'translate': 35,
     'rotate': 36, 'scale': 37, 'transform': 38, 'setTransform': 39, 'resetTransform': 40,
-    'set': 41, 'clear': 42, 'sleep': 43,
+    'set': 41, 'clear': 42, 'sleep': 43, 'fillPolygon': 44, 'strokePolygon': 45,
 }
 
 
@@ -550,6 +550,25 @@ class Canvas(_CanvasBase):
         populate_args(radius, args, buffers)
 
         self._send_canvas_command(COMMANDS['strokeCircles'], args, buffers)
+
+    # Polygon methods
+    def fill_polygon(self, points):
+        """Fill a polygon from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``."""
+        args = []
+        buffers = []
+
+        populate_args(points, args, buffers)
+
+        self._send_canvas_command(COMMANDS['fillPolygon'], args, buffers)
+
+    def stroke_polygon(self, points):
+        """Draw polygon outline from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``."""
+        args = []
+        buffers = []
+
+        populate_args(points, args, buffers)
+
+        self._send_canvas_command(COMMANDS['strokePolygon'], args, buffers)
 
     # Lines methods
     def stroke_line(self, x1, y1, x2, y2):
