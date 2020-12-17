@@ -70,6 +70,7 @@ const COMMANDS = [
   'putImageData', 'clip', 'save', 'restore', 'translate',
   'rotate', 'scale', 'transform', 'setTransform', 'resetTransform',
   'set', 'clear', 'sleep', 'fillPolygon', 'strokePolygon',
+  'strokeLines',
 ];
 
 
@@ -361,6 +362,9 @@ class CanvasModel extends DOMWidgetModel {
       case 'strokeLine':
         this.strokeLine(args, buffers);
         break;
+      case 'strokeLines':
+        this.strokeLines(args, buffers);
+        break;
       case 'fillPolygon':
         this.fillPolygon(args, buffers);
         break;
@@ -497,6 +501,20 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.lineTo(args[2], args[3]);
     this.ctx.stroke();
 
+    this.ctx.closePath();
+  }
+
+  protected strokeLines(args: any[], buffers: any) {
+    this.ctx.beginPath();
+    const points = getArg(args[0], buffers);
+
+    // Move to the first point, then create lines between points
+    this.ctx.moveTo(points.getItem(0), points.getItem(1));
+    for (let idx = 2; idx < points.length; idx += 2) {
+      this.ctx.lineTo(points.getItem(idx), points.getItem(idx + 1));
+    }
+
+    this.ctx.stroke();
     this.ctx.closePath();
   }
 
@@ -672,6 +690,17 @@ class RoughCanvasModel extends CanvasModel {
 
   protected strokeLine(args: any[], buffers: any) {
     this.roughCanvas.line(args[0], args[1], args[2], args[3], this.getRoughStrokeStyle());
+  }
+
+  protected strokeLines(args: any[], buffers: any) {
+    const points = getArg(args[0], buffers);
+
+    const polygon: [number, number][] = [];
+    for (let idx = 0; idx < points.length; idx += 2) {
+      polygon.push([points.getItem(idx), points.getItem(idx + 1)]);
+    }
+
+    this.roughCanvas.linearPath(polygon, this.getRoughStrokeStyle());
   }
 
   protected async fillPath(args: any[], buffers: any) {
