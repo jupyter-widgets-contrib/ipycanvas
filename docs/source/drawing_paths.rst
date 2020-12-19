@@ -11,7 +11,8 @@ Using the Path2D class is very useful and efficient when you want to reuse the s
 
 See https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths for documentation about SVG paths.
 
-- ``Path2D(value)``: Creates a Path2D given the SVG path string value.
+- ``Path2D(value)``:
+    Creates a Path2D given the SVG path string value.
 
 .. code:: Python
 
@@ -55,14 +56,14 @@ extra steps:
 Here are the functions used to perform these steps:
 
 - ``begin_path()``:
-  Creates a new path. Once created, future drawing commands are directed into the path and used to build the path up.
+    Creates a new path. Once created, future drawing commands are directed into the path and used to build the path up.
 - Path commands like ``line_to`` and ``arc``
 - ``close_path()``:
-  Adds a straight line to the path, going to the start of the current path.
+    Adds a straight line to the path, going to the start of the current path.
 - ``stroke()``:
-  Draws the shape by stroking its outline.
+    Draws the shape by stroking its outline.
 - ``fill(rule)``:
-  Draws a solid shape by filling the path's content area. The given fill rule is applied, possible rules are `nonzero` and `evenodd`.
+    Draws a solid shape by filling the path's content area. The given fill rule is applied, possible rules are `nonzero` and `evenodd`.
 
 .. code:: Python
 
@@ -88,27 +89,27 @@ Path commands
 Here are the available draw commands:
 
 - ``move_to(x, y)``:
-  Moves the pen to the coordinates specified by x and y. This does not actually draw anything.
+    Moves the pen to the coordinates specified by x and y. This does not actually draw anything.
 - ``line_to(x, y)``:
-  Add a straight line to the current path by connecting the path’s last point to the specified (x, y) coordinates.
+    Add a straight line to the current path by connecting the path’s last point to the specified (x, y) coordinates.
 - ``arc(x, y, radius, start_angle, end_angle, anticlockwise=False)``:
-  Add a circular arc centered at (x, y) with a radius
-  of ``radius`` to the current path. The path starts at ``start_angle`` and ends at ``end_angle`` in radians, and travels in the direction given by
-  ``anticlockwise`` (defaulting to clockwise: False).
+    Add a circular arc centered at (x, y) with a radius
+    of ``radius`` to the current path. The path starts at ``start_angle`` and ends at ``end_angle`` in radians, and travels in the direction given by
+    ``anticlockwise`` (defaulting to clockwise: False).
 - ``arc_to(x1, y1, x2, y2, radius)``:
-  Add a circular arc to the current path. Using the given control points (``x1``, ``y1``)
-  and (``x2``, ``y2``) and the ``radius``.
+    Add a circular arc to the current path. Using the given control points (``x1``, ``y1``)
+    and (``x2``, ``y2``) and the ``radius``.
 - ``ellipse(x, y, radius_x, radius_y, rotation, start_angle, end_angle, anticlockwise=False)``:
-  Add an ellipse centered at ``(x, y)`` with
-  the radii ``radius_x`` and ``radius_y`` to the current path.
+    Add an ellipse centered at ``(x, y)`` with
+    the radii ``radius_x`` and ``radius_y`` to the current path.
 - ``quadratic_curve_to(cp1x, cp1y, x, y)``:
-  Add a quadratic Bezier curve to the current path.
-  It requires two points: the first one is a control point and the second one is the end point. The starting point is the latest point in the current path, which can be changed using ``move_to()`` before creating the quadratic Bezier curve.
+    Add a quadratic Bezier curve to the current path.
+    It requires two points: the first one is a control point and the second one is the end point. The starting point is the latest point in the current path, which can be changed using ``move_to()`` before creating the quadratic Bezier curve.
 - ``bezier_curve_to(cp1x, cp1y, cp2x, cp2y, x, y)``:
-  Add a cubic Bezier curve to the current path.
-  It requires three points: the first two are control points and the third one is the end point. The starting point is the latest point in the current path, which can be changed using ``move_to()`` before creating the Bezier curve.
+    Add a cubic Bezier curve to the current path.
+    It requires three points: the first two are control points and the third one is the end point. The starting point is the latest point in the current path, which can be changed using ``move_to()`` before creating the Bezier curve.
 - ``rect(x, y, width, height)``:
-  Draws a rectangle whose top-left corner is specified by (``x``, ``y``) with the specified ``width`` and ``height``.
+    Draws a rectangle whose top-left corner is specified by (``x``, ``y``) with the specified ``width`` and ``height``.
 
 
 Examples
