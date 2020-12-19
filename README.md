@@ -19,6 +19,10 @@ You can try it online by clicking on this badge:
 
 You can read the documentation following this link: https://ipycanvas.readthedocs.io
 
+## Questions?
+
+If you have any question, or if you want to share what you do with ipycanvas, [start a new discussion on Github](https://github.com/martinRenou/ipycanvas/discussions/new)!
+
 ## Installation
 
 You can install using `pip`:
