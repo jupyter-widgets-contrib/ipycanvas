@@ -22,14 +22,21 @@ Drawing rectangles
 
 There are four methods that draw rectangles on the canvas:
 
-- ``fill_rect(x, y, width, height=None)``: Draws a filled rectangle. If ``height`` is None, it is set to the same value as ``width``.
-- ``stroke_rect(x, y, width, height=None)``: Draws a rectangular outline. If ``height`` is None, it is set to the same value as ``width``.
-- ``fill_rects(x, y, width, height=None)``: Draws filled rectangles. Where ``x``, ``y``, ``width`` and ``height`` are either integers, lists of integers or NumPy arrays. If ``height`` is None, it is set to the same value as ``width``.
-- ``stroke_rects(x, y, width, height=None)``: Draws rectangular outlines. Where ``x``, ``y``, ``width`` and ``height`` are either integers, lists of integers or NumPy arrays. If ``height`` is None, it is set to the same value as ``width``.
+- ``fill_rect(x, y, width, height=None)``:
+    Draws a filled rectangle. If ``height`` is None, it is set to the same value as ``width``.
+- ``stroke_rect(x, y, width, height=None)``:
+    Draws a rectangular outline. If ``height`` is None, it is set to the same value as ``width``.
+- ``fill_rects(x, y, width, height=None)``:
+    Draws filled rectangles. Where ``x``, ``y``, ``width`` and ``height`` are either integers, lists of integers or NumPy arrays.
+    If ``height`` is None, it is set to the same value as ``width``.
+- ``stroke_rects(x, y, width, height=None)``:
+    Draws rectangular outlines. Where ``x``, ``y``, ``width`` and ``height`` are either integers, lists of integers or NumPy arrays.
+    If ``height`` is None, it is set to the same value as ``width``.
 
 You can also clear a certain canvas rectangle area:
 
-- ``clear_rect(x, y, width, height=None)``: Clears the specified rectangular area, making it fully transparent. If ``height`` is None, it is set to the same value as ``width``.
+- ``clear_rect(x, y, width, height=None)``:
+    Clears the specified rectangular area, making it fully transparent. If ``height`` is None, it is set to the same value as ``width``.
 
 .. code:: Python
 
@@ -74,8 +81,10 @@ Drawing polygons
 You can draw a polygon by providing a list of points, either a Python list, or a NumPy array.
 It's the fastest way to draw a polygon with ipycanvas.
 
-- ``fill_polygon(points)``: Fill a polygon from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
-- ``stroke_polygon(points)``: Draw polygon outline from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
+- ``fill_polygon(points)``:
+    Fill a polygon from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
+- ``stroke_polygon(points)``:
+    Draw polygon outline from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
 
 .. code:: Python
 
@@ -129,15 +138,23 @@ Drawing arcs and circles
 
 There are methods that draw arcs/circles on the canvas:
 
-- ``fill_arc(x, y, radius, start_angle, end_angle, anticlockwise=False)``: Draw a filled arc centered at ``(x, y)`` with a radius of ``radius``.
-- ``stroke_arc(x, y, radius, start_angle, end_angle, anticlockwise=False)``: Draw an arc outline centered at ``(x, y)`` with a radius of ``radius``.
-- ``fill_arcs(x, y, radius, start_angle, end_angle, anticlockwise=False)``: Draw filled arcs centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
-- ``stroke_arcs(x, y, radius, start_angle, end_angle, anticlockwise=False)``: Draw an arc outlines centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+- ``fill_arc(x, y, radius, start_angle, end_angle, anticlockwise=False)``:
+    Draw a filled arc centered at ``(x, y)`` with a radius of ``radius``.
+- ``stroke_arc(x, y, radius, start_angle, end_angle, anticlockwise=False)``:
+    Draw an arc outline centered at ``(x, y)`` with a radius of ``radius``.
+- ``fill_arcs(x, y, radius, start_angle, end_angle, anticlockwise=False)``:
+    Draw filled arcs centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+- ``stroke_arcs(x, y, radius, start_angle, end_angle, anticlockwise=False)``:
+    Draw an arc outlines centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
 
-- ``fill_circle(x, y, radius)``: Draw a filled circle centered at ``(x, y)`` with a radius of ``radius``.
-- ``stroke_circle(x, y, radius)``: Draw an circle outline centered at ``(x, y)`` with a radius of ``radius``.
-- ``fill_circles(x, y, radius)``: Draw filled circles centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` are NumPy arrays, lists or scalar values.
-- ``stroke_circles(x, y, radius)``: Draw a circle outlines centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` are NumPy arrays, lists or scalar values.
+- ``fill_circle(x, y, radius)``:
+    Draw a filled circle centered at ``(x, y)`` with a radius of ``radius``.
+- ``stroke_circle(x, y, radius)``:
+    Draw an circle outline centered at ``(x, y)`` with a radius of ``radius``.
+- ``fill_circles(x, y, radius)``:
+    Draw filled circles centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` are NumPy arrays, lists or scalar values.
+- ``stroke_circles(x, y, radius)``:
+    Draw a circle outlines centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` are NumPy arrays, lists or scalar values.
 
 
 .. code:: Python
@@ -163,8 +180,10 @@ Drawing lines
 
 There are two commands for drawing a straight line from one point to another:
 
-- ``stroke_line(x1, y1, x2, y2)``: Draw a line from ``(x1, y1)`` to ``(x2, y2)``.
-- ``stroke_lines(points)``: Draw a path of consecutive lines from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
+- ``stroke_line(x1, y1, x2, y2)``:
+    Draw a line from ``(x1, y1)`` to ``(x2, y2)``.
+- ``stroke_lines(points)``:
+    Draw a path of consecutive lines from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
 
 .. code:: Python
 
