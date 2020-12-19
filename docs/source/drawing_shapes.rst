@@ -161,9 +161,10 @@ There are methods that draw arcs/circles on the canvas:
 Drawing lines
 -------------
 
-There is one command for drawing a straight line from one point to another:
+There are two commands for drawing a straight line from one point to another:
 
 - ``stroke_line(x1, y1, x2, y2)``: Draw a line from ``(x1, y1)`` to ``(x2, y2)``.
+- ``stroke_lines(points)``: Draw a path of consecutive lines from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
 
 .. code:: Python
 
@@ -183,6 +184,26 @@ There is one command for drawing a straight line from one point to another:
     canvas
 
 .. image:: images/lines.png
+
+.. code:: Python
+
+    import numpy as np
+
+    from ipycanvas import Canvas
+
+    canvas = Canvas(width=200, height=200)
+
+    n = 50
+    x = np.linspace(0, 200, n)
+    y = np.random.randint(200, size=n)
+
+    points = np.stack((x, y), axis=1)
+
+    canvas.stroke_lines(points)
+
+    canvas
+
+.. image:: images/stroke_lines.png
 
 
 Vectorized methods
