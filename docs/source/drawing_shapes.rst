@@ -68,6 +68,62 @@ You can also clear a certain canvas rectangle area:
 
 .. image:: images/rects.png
 
+Drawing polygons
+----------------
+
+You can draw a polygon by providing a list of points, either a Python list, or a NumPy array.
+It's the fastest way to draw a polygon with ipycanvas.
+
+- ``fill_polygon(points)``: Fill a polygon from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
+- ``stroke_polygon(points)``: Draw polygon outline from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
+
+.. code:: Python
+
+    from ipycanvas import Canvas
+
+    canvas = Canvas(width=200, height=200)
+
+    canvas.fill_style = '#63934e'
+    canvas.stroke_style = '#4e6393'
+    canvas.line_width = 5
+    canvas.fill_polygon([(20, 20), (180, 20), (100, 150)])
+    canvas.stroke_polygon([(20, 20), (180, 20), (100, 150)])
+
+    canvas
+
+.. image:: images/polygon.png
+
+.. code:: Python
+
+    from math import pi
+    import numpy as np
+    from ipycanvas import Canvas
+
+    def polygon(canvas, x, y, radius, n_points):
+        angles = (2 * pi / n_points) * np.arange(n_points)
+
+        v_x = x + np.cos(angles) * radius
+        v_y = y + np.sin(angles) * radius
+
+        points = np.stack((v_x, v_y), axis=1)
+
+        canvas.fill_polygon(points)
+
+    background_color = '#89c64f'
+    polygon_color = '#c6574f'
+
+    canvas = Canvas(width=200, height=200)
+
+    canvas.fill_style = background_color
+    canvas.fill_rect(0, 0, canvas.width, canvas.height)
+
+    canvas.fill_style = polygon_color
+    polygon(canvas, 100, 100, 70, 6)
+
+    canvas
+
+.. image:: images/polygon_numpy.png
+
 Drawing arcs and circles
 ------------------------
 
