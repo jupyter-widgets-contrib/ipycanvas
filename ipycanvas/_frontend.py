@@ -9,4 +9,4 @@ Information about the frontend package of the widgets.
 """
 
 module_name = "ipycanvas"
-module_version = "^0.7.0"
+module_version = "^0.8.0"
