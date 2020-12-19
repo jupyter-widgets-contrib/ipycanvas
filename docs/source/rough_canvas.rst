@@ -1,3 +1,5 @@
+.. _rough_canvas:
+
 Rough Canvas
 ============
 

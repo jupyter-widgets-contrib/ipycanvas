@@ -3,8 +3,10 @@ Retrieve Canvas image
 
 There are two methods for retrieving the canvas image:
 
-- ``to_file(filename)``: Dumps the image data to a PNG file.
-- ``get_image_data(x=0, y=0, width=None, height=None)``: Get the image data as a NumPy array for a sub-portion of the Canvas.
+- ``to_file(filename)``:
+    Dumps the image data to a PNG file.
+- ``get_image_data(x=0, y=0, width=None, height=None)``:
+    Get the image data as a NumPy array for a sub-portion of the Canvas.
 
 By default, and in order to keep ipycanvas fast, the image state of the Canvas is not synchronized between the TypeScript front-end and the Python back-end. If you want to retrieve the image data from the Canvas, you first need to explicitly specify that you want the image to be synchronized by setting ``sync_image_data`` to ``True`` before doing any drawing, you can set ``sync_image_data`` back to ``False`` once you're done.
 

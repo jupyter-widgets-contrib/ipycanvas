@@ -1,8 +1,10 @@
 Canvas state
 ============
 
-- ``save()``: Saves the entire state of the canvas.
-- ``restore()``: Restores the most recently saved canvas state.
+- ``save()``:
+    Saves the entire state of the canvas.
+- ``restore()``:
+    Restores the most recently saved canvas state.
 
 Canvas states are stored on a stack. Every time the ``save()`` method is called, the current drawing state is pushed onto the stack. A drawing state consists of:
 
