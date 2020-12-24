@@ -681,11 +681,11 @@ class RoughCanvasModel extends CanvasModel {
   }
 
   protected fillCircle(x: number, y: number, radius: number) {
-    this.roughCanvas.circle(x, y, radius, this.getRoughFillStyle());
+    this.roughCanvas.circle(x, y, 2. * radius, this.getRoughFillStyle());
   }
 
   protected strokeCircle(x: number, y: number, radius: number) {
-    this.roughCanvas.circle(x, y, radius, this.getRoughStrokeStyle());
+    this.roughCanvas.circle(x, y, 2. * radius, this.getRoughStrokeStyle());
   }
 
   protected strokeLine(args: any[], buffers: any) {
