@@ -30,26 +30,27 @@
     "url": "https://github.com/martinRenou/ipycanvas"
   },
   "scripts": {
-    "build": "npm run build:lib && npm run build:nbextension",
-    "build:labextension": "npm run clean:labextension && mkdirp ipycanvas/labextension && cd ipycanvas/labextension && npm pack ../..",
+    "build": "npm run build:lib && npm run build:nbextension && npm run build:labextension",
     "build:lib": "tsc",
     "build:nbextension": "webpack -p",
-    "build:all": "npm run build:lib && npm run build:labextension && npm run build:nbextension",
-    "clean": "npm run clean:lib && npm run clean:nbextension",
+    "build:labextension": "jupyter labextension build .",
+    "clean": "npm run clean:lib && npm run clean:nbextension && npm run clean:labextension",
     "clean:lib": "rimraf lib",
-    "clean:labextension": "rimraf ipycanvas/labextension",
     "clean:nbextension": "rimraf ipycanvas/nbextension/static/index.js",
+    "clean:labextension": "rimraf ipycanvas/labextension",
     "prepack": "npm run build",
     "watch": "npm-run-all -p watch:*",
     "watch:lib": "tsc -w",
     "watch:nbextension": "webpack --watch"
   },
   "dependencies": {
-    "@jupyter-widgets/base": "^2.0.1 || ^3",
+    "@jupyter-widgets/base": "^2.0.1 || ^3 || ^4.0.0",
+    "buffer": "^4.9.2",
     "lodash": ">=4.17.13",
     "roughjs": "^4.3.1"
   },
   "devDependencies": {
+    "@jupyterlab/builder": "^3.0.0",
     "@phosphor/application": "^1.6.0",
     "@phosphor/widgets": "^1.6.0",
     "@types/node": "^10.11.6",
@@ -63,10 +64,17 @@
     "source-map-loader": "^0.2.4",
     "ts-loader": "^5.2.1",
     "typescript": "~3.8",
-    "webpack": "^4.20.2",
+    "webpack": "^5",
     "webpack-cli": "^3.1.2"
   },
   "jupyterlab": {
-    "extension": "lib/plugin"
+    "extension": "lib/plugin",
+    "outputDir": "ipycanvas/labextension",
+    "sharedPackages": {
+      "@jupyter-widgets/base": {
+        "bundled": false,
+        "singleton": true
+      }
+    }
   }
 }

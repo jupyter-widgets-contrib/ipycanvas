@@ -6,7 +6,6 @@ include setupbase.py
 include package.json
 include tsconfig.json
 include webpack.config.js
-include ipycanvas/labextension/*.tgz
 
 # Documentation
 graft docs
@@ -24,6 +23,7 @@ prune tests/build
 
 # Javascript files
 graft ipycanvas/nbextension
+graft ipycanvas/labextension
 graft src
 prune **/node_modules
 prune coverage

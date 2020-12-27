@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.7, 3.8]
 
     steps:
     - name: Checkout
@@ -30,16 +30,26 @@ jobs:
 
     - name: Mamba install dependencies
       shell: bash -l {0}
-      run: mamba install python=${{ matrix.python-version }} pip nodejs ipywidgets jupyter jupyterlab pillow numpy flake8
+      run: mamba install python=${{ matrix.python-version }} pip nodejs ipywidgets=7.6 jupyter jupyterlab=3 pillow numpy flake8
 
     - name: Install ipycanvas
       shell: bash -l {0}
       run: pip install -e .
 
-    - name: Install labextension (Only on Ubuntu for build speed)
-      if: matrix.os == 'ubuntu-latest'
+    - name: Check installation files
       shell: bash -l {0}
-      run: jupyter labextension install .
+      run: |
+        test -d $CONDA_PREFIX/share/jupyter/nbextensions/ipycanvas
+        test -f $CONDA_PREFIX/share/jupyter/nbextensions/ipycanvas/extension.js
+        test -f $CONDA_PREFIX/share/jupyter/nbextensions/ipycanvas/index.js
+        test -d $CONDA_PREFIX/share/jupyter/labextensions/ipycanvas
+        test -f $CONDA_PREFIX/share/jupyter/labextensions/ipycanvas/package.json
+
+    - name: Check nbextension and labextension
+      shell: bash -l {0}
+      run: |
+        jupyter nbextension list 2>&1 | grep -ie "ipycanvas/extension.*enabled" -
+        jupyter labextension list 2>&1 | grep -ie "ipycanvas.*enabled.*ok" -
 
     - name: Test flake8
       shell: bash -l {0}
