@@ -1,6 +1,8 @@
 // Copyright (c) Martin Renou
 // Distributed under the terms of the Modified BSD License.
 
+import { Buffer } from 'buffer';
+
 import {
   DOMWidgetModel, DOMWidgetView, WidgetModel, ISerializers, Dict, unpack_models
 } from '@jupyter-widgets/base';

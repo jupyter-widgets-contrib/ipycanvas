@@ -37,7 +37,7 @@ Or using `conda`:
 conda install -c conda-forge ipycanvas
 ```
 
-And if you use jupyterlab:
+And if you use jupyterlab <= 2:
 
 ```bash
 conda install -c conda-forge nodejs

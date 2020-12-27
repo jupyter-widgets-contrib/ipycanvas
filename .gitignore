@@ -61,8 +61,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-docs/source/_static/embed-bundle.js
-docs/source/_static/embed-bundle.js.map
+docs/source/_static/embed-bundle*
 
 # PyBuilder
 target/
@@ -146,7 +145,6 @@ $RECYCLE.BIN/
 
 **/node_modules/
 ipycanvas/nbextension/static/index.*
-ipycanvas/labextension/*.tgz
 
 # Coverage data
 # -------------
