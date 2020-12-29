@@ -3,7 +3,7 @@
 <h2 align="center"> Interactive Canvas in Jupyter </h1>
 
 [![Documentation](http://readthedocs.org/projects/ipycanvas/badge/?version=latest)](https://ipycanvas.readthedocs.io/en/latest/?badge=latest)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?filepath=examples)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?urlpath=lab%2Ftree%2Fexamples)
 [![Downloads](https://pepy.tech/badge/ipycanvas)](https://pepy.tech/project/ipycanvas)
 
 ipycanvas is a lightweight, fast and stable library exposing the [browser's Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) to IPython.
@@ -13,7 +13,7 @@ It allows you to draw simple primitives directly from Python like text, lines, p
 
 You can try it online by clicking on this badge:
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?filepath=examples)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?urlpath=lab%2Ftree%2Fexamples)
 
 ## Documentation
 
