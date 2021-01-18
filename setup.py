@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 from glob import glob
+import os
 from os.path import join as pjoin
 from os import path
 
@@ -13,7 +14,7 @@ from os import path
 from jupyter_packaging import (
     create_cmdclass, install_npm, ensure_targets,
     combine_commands, ensure_python,
-    get_version
+    get_version, skip_if_exists
 )
 
 from setuptools import setup, find_packages
@@ -36,7 +37,7 @@ lab_path = pjoin(HERE, name, 'labextension')
 # Representative files that should exist after a successful build
 jstargets = [
     pjoin(nb_path, 'index.js'),
-    pjoin(HERE, 'lib', 'plugin.js'),
+    pjoin(lab_path, 'package.json'),
 ]
 
 package_data_spec = {
@@ -56,11 +57,16 @@ data_files_spec = [
 
 cmdclass = create_cmdclass('jsdeps', package_data_spec=package_data_spec,
     data_files_spec=data_files_spec)
-cmdclass['jsdeps'] = combine_commands(
-    install_npm(HERE, build_cmd='build'),
+js_command = combine_commands(
+    install_npm(HERE, npm=["yarn"], build_cmd='build:extensions'),
     ensure_targets(jstargets),
 )
 
+is_repo = os.path.exists(os.path.join(HERE, '.git'))
+if is_repo:
+    cmdclass['jsdeps'] = js_command
+else:
+    cmdclass['jsdeps'] = skip_if_exists(jstargets, js_command)
 
 setup_args = dict(
     name=name,
