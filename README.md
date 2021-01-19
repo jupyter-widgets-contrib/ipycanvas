@@ -40,7 +40,7 @@ conda install -c conda-forge ipycanvas
 And if you use jupyterlab <= 2:
 
 ```bash
-conda install -c conda-forge nodejs
+conda install -c conda-forge yarn
 jupyter labextension install @jupyter-widgets/jupyterlab-manager ipycanvas
 ```
 
