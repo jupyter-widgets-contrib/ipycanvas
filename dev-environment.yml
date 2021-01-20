@@ -8,3 +8,4 @@ dependencies:
     - jupyterlab=3
     - ipywidgets>=7.6
     - flake8
+    - twine
