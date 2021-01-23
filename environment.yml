@@ -5,3 +5,5 @@ dependencies:
   - jupyterlab=3
   - ipycanvas=0.8.2
   - branca
+  - pip:
+    - perlin-noise
