@@ -228,7 +228,7 @@ There are two commands for drawing a straight line from one point to another:
 Vectorized methods
 ------------------
 
-Some methods like ``fill_rect`` and ``fill_circle`` have a vectorized counterpart: ``fill_rects`` and ``fill_cicles``. It is essential
+Some methods like ``fill_rect`` and ``fill_circle`` have a vectorized counterpart: ``fill_rects`` and ``fill_circles``. It is essential
 to use those methods when you want to draw the same shape multiple times with the same style.
 
 For example, it is way faster to run:
