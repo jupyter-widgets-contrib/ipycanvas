@@ -42,14 +42,16 @@ data_files_spec = [
     ('etc/jupyter/nbconfig/notebook.d', HERE, 'ipycanvas.json')
 ]
 
-post_develop = npm_builder(
-    npm="yarn", build_cmd="build:extensions",
+build_extensions = npm_builder(
+    npm=["yarn"], build_cmd="build:extensions",
     source_dir="src", build_dir=lab_path
 )
 
 cmdclass = wrap_installers(
-    post_develop=post_develop,
-    ensured_targets=ensured_targets
+    pre_develop=build_extensions,
+    pre_dist=build_extensions,
+    ensured_targets=ensured_targets,
+    skip_if_exists=ensured_targets
 )
 
 setup_args = dict(
