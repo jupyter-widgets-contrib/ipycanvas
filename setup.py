@@ -6,15 +6,15 @@
 
 from __future__ import print_function
 from glob import glob
-import os
-from os.path import join as pjoin
 from os import path
 
 
 from jupyter_packaging import (
-    create_cmdclass, install_npm, ensure_targets,
-    combine_commands, ensure_python,
-    get_version, skip_if_exists
+    ensure_python,
+    get_version,
+    wrap_installers,
+    npm_builder,
+    get_data_files
 )
 
 from setuptools import setup, find_packages
@@ -29,51 +29,41 @@ name = 'ipycanvas'
 ensure_python('>=3.5')
 
 # Get our version
-version = get_version(pjoin(name, '_version.py'))
+version = get_version(path.join(name, '_version.py'))
 
-nb_path = pjoin(HERE, name, 'nbextension', 'static')
-lab_path = pjoin(HERE, name, 'labextension')
+nb_path = path.join(HERE, name, 'nbextension', 'static')
+lab_path = path.join(HERE, name, 'labextension')
 
 # Representative files that should exist after a successful build
-jstargets = [
-    pjoin(nb_path, 'index.js'),
-    pjoin(lab_path, 'package.json'),
+ensured_targets = [
+    path.join(nb_path, 'index.js'),
+    path.join(lab_path, 'package.json'),
 ]
-
-package_data_spec = {
-    name: [
-        'nbextension/static/*.*js*',
-        'labextension/**'
-    ]
-}
 
 data_files_spec = [
     ('share/jupyter/nbextensions/ipycanvas',
         nb_path, '*.js*'),
     ('share/jupyter/labextensions/ipycanvas', lab_path, '**'),
-    ('etc/jupyter/nbconfig/notebook.d' , HERE, 'ipycanvas.json')
+    ('etc/jupyter/nbconfig/notebook.d', HERE, 'ipycanvas.json')
 ]
 
-
-cmdclass = create_cmdclass('jsdeps', package_data_spec=package_data_spec,
-    data_files_spec=data_files_spec)
-js_command = combine_commands(
-    install_npm(HERE, npm=["yarn"], build_cmd='build:extensions'),
-    ensure_targets(jstargets),
+post_develop = npm_builder(
+    npm="yarn", build_cmd="build:extensions",
+    source_dir="src", build_dir=lab_path
 )
 
-is_repo = os.path.exists(os.path.join(HERE, '.git'))
-if is_repo:
-    cmdclass['jsdeps'] = js_command
-else:
-    cmdclass['jsdeps'] = skip_if_exists(jstargets, js_command)
+cmdclass = wrap_installers(
+    post_develop=post_develop,
+    ensured_targets=ensured_targets
+)
 
 setup_args = dict(
     name=name,
     description='Interactive widgets library exposing the browser\'s Canvas API',
     version=version,
-    scripts=glob(pjoin('scripts', '*')),
+    scripts=glob(path.join('scripts', '*')),
     cmdclass=cmdclass,
+    data_files=get_data_files(data_files_spec),
     packages=find_packages(),
     author='Martin Renou',
     author_email='martin.renou@gmail.com',
@@ -90,18 +80,17 @@ setup_args = dict(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Framework :: Jupyter',
     ],
-    include_package_data = True,
-    install_requires = [
+    include_package_data=True,
+    install_requires=[
         'ipywidgets>=7.6.0',
         'pillow>=6.0',
         'numpy',
         'orjson'
     ],
-    extras_require = {},
-    entry_points = {
-    },
 )
 
 if __name__ == '__main__':
