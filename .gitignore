@@ -155,3 +155,9 @@ ipycanvas/nbextension/static/index.*
 ipycanvas/labextension
 
 examples/my_scatter.png
+
+# We use yarn
+package-lock.json
+
+# Untitled notebooks
+*Untitled*.ipynb
