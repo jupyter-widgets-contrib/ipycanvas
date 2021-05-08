@@ -37,7 +37,7 @@ jobs:
         channels: conda-forge
 
     - name: Install ipycanvas
-      run: pip install -e .
+      run: pip install -e . -vvv
 
     - name: Check installation files
       run: |
