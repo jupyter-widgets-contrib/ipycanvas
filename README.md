@@ -13,7 +13,7 @@ It allows you to draw simple primitives directly from Python like text, lines, p
 
 You can try it online by clicking on this badge:
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?urlpath=lab%2Ftree%2Fexamples)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?urlpath=lab%2Ftree%2Fexamples) [![Join the chat at https://gitter.im/martinRenou/ipycanvas](https://badges.gitter.im/martinRenou/ipycanvas.svg)](https://gitter.im/martinRenou/ipycanvas?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Documentation
 
