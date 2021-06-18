@@ -5,7 +5,12 @@ from PIL import Image as PILImage
 
 import numpy as np
 
-import orjson
+try:
+    import orjson
+    ORJSON_AVAILABLE = True
+except ImportError:
+    import json
+    ORJSON_AVAILABLE = False
 
 
 def image_bytes_to_array(im_bytes):
@@ -71,7 +76,12 @@ def populate_args(arg, args, buffers):
 
 def commands_to_buffer(commands):
     # Turn the commands list into a binary buffer
-    return array_to_binary(np.frombuffer(
-        bytes(orjson.dumps(commands, option=orjson.OPT_SERIALIZE_NUMPY)),
-        dtype=np.uint8)
-    )
+    if ORJSON_AVAILABLE:
+        return array_to_binary(np.frombuffer(
+            bytes(orjson.dumps(commands, option=orjson.OPT_SERIALIZE_NUMPY)),
+            dtype=np.uint8)
+        )
+    else:
+        return array_to_binary(np.frombuffer(
+            bytes(json.dumps(commands), encoding='utf8'), dtype=np.uint8
+        ))
