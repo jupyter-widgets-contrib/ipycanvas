@@ -3,5 +3,5 @@ channels:
   - conda-forge
 dependencies:
   - jupyterlab=3
-  - ipycanvas=0.8.2
+  - ipycanvas=0.9.0
   - branca
