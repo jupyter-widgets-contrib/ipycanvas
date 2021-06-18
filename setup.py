@@ -96,8 +96,7 @@ setup_args = dict(
     install_requires = [
         'ipywidgets>=7.6.0',
         'pillow>=6.0',
-        'numpy',
-        'orjson'
+        'numpy'
     ],
     extras_require = {},
     entry_points = {

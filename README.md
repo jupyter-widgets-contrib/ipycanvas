@@ -14,7 +14,7 @@ It allows you to draw simple primitives directly from Python like text, lines, p
 
 You can try it online by clicking on this badge:
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?urlpath=lab%2Ftree%2Fexamples) 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?urlpath=lab%2Ftree%2Fexamples)
 
 ## Documentation
 
@@ -32,7 +32,7 @@ Or join the gitter channel: [![Join the chat at https://gitter.im/martinRenou/ip
 You can install using `pip`:
 
 ```bash
-pip install ipycanvas
+pip install ipycanvas orjson
 ```
 
 Or using `conda`:
