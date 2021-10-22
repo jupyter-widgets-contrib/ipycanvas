@@ -254,6 +254,8 @@ class Canvas(_CanvasBase):
     _model_name = Unicode('CanvasModel').tag(sync=True)
     _view_name = Unicode('CanvasView').tag(sync=True)
 
+    _send_client_ready_event = Bool(True).tag(sync=True)
+
     #: (valid HTML color or Gradient or Pattern) The color for filling rectangles and paths. Default to ``'black'``.
     fill_style = Union((Color(), Instance(_CanvasGradient), Instance(Pattern)), default_value='black')
 

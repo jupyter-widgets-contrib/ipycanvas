@@ -244,6 +244,7 @@ class CanvasModel extends DOMWidgetModel {
       height: 500,
       sync_image_data: false,
       image_data: null,
+      _send_client_ready_event: true,
     };
   }
 
@@ -275,7 +276,9 @@ class CanvasModel extends DOMWidgetModel {
     this.on('change:sync_image_data', this.syncImageData.bind(this));
     this.on('msg:custom', this.onCommand.bind(this));
 
-    this.send({ event: 'client_ready' }, {});
+    if (this.get('_send_client_ready_event')) {
+      this.send({ event: 'client_ready' }, {});
+    }
   }
 
   private async drawImageData() {
