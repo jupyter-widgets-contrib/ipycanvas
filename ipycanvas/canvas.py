@@ -31,6 +31,11 @@ COMMANDS = {
     'rotate': 36, 'scale': 37, 'transform': 38, 'setTransform': 39, 'resetTransform': 40,
     'set': 41, 'clear': 42, 'sleep': 43, 'fillPolygon': 44, 'strokePolygon': 45,
     'strokeLines': 46,
+    'batchFillCircles':47,
+    'batchStrokeCircles':48,
+    'batchFillPolygons':49,
+    'batchStrokePolygons':50,
+    'batchStrokeLineSegments':51,
 }
 
 
@@ -539,6 +544,72 @@ class Canvas(_CanvasBase):
         populate_args(radius, args, buffers)
 
         self._send_canvas_command(COMMANDS['fillCircles'], args, buffers)
+
+    def batch_fill_circles(self, x, y, radius, color, alpha):
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(radius, args, buffers)
+        populate_args(color, args, buffers)
+        populate_args(alpha, args, buffers)
+        self._send_canvas_command(COMMANDS['batchFillCircles'], args, buffers)
+
+    def batch_stroke_circles(self, x, y, radius, color, alpha):
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(radius, args, buffers)
+        populate_args(color, args, buffers)
+        populate_args(alpha, args, buffers)
+        self._send_cavnas_command(COMMANDS['batchStrokeCircles'], args, buffers)
+
+    def _batch_draw_polygons_or_linesegments(self, cmd, points, color, alpha, sizes=None):
+        args = []
+        buffers = []
+
+        if isinstance(points, list):
+            if sizes is not None:
+                raise RuntimeError("when points are a list, sizes must be None")
+            sizes = []
+            np_polygons = []
+            for polygon_points in points:
+                polygon_points = np.require(polygon_points, requirements=['C'])
+                if polygon_points.shape[1] != 2:
+                    raise RuntimeError("polygon_points ha e wrong shape")
+                sizes.append(polygon_points.shape[0])
+                np_polygons.append(polygon_points.ravel())
+            flat_points = np.concatenate(np_polygons)
+            sizes = np.array(sizes)
+            print(flat_points)
+
+        else:
+            raise RuntimeError("not yet implemented") 
+
+        color = np.require(color, requirements=['C'], dtype='uint8')
+        if color.ndim != 1:
+            color = color .ravel()
+
+        populate_args(flat_points, args, buffers)
+        populate_args(sizes, args, buffers)
+        populate_args(color, args, buffers)
+        populate_args(alpha, args, buffers)
+        self._send_canvas_command(COMMANDS[cmd], args, buffers)
+
+
+    def batch_fill_polygons(self, points, color, alpha, sizes=None):
+        self._batch_draw_polygons_or_linesegments('batchFillPolygons', points, color, alpha, sizes)
+
+    def batch_stroke_polygons(self, points, color, alpha, sizes=None):
+        self._batch_draw_polygons_or_linesegments('batchStrokePolygons', points, color, alpha, sizes)
+
+    def batch_stroke_line_segments(self, points, color, alpha, sizes=None):
+        self._batch_draw_polygons_or_linesegments('batchStrokeLineSegments', points, color, alpha, sizes)
+
+
 
     def stroke_circles(self, x, y, radius):
         """Draw a circle outlines centered at ``(x, y)`` with a radius of ``radius``.
