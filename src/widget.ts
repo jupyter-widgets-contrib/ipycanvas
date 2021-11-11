@@ -536,13 +536,12 @@ class CanvasModel extends DOMWidgetModel {
 
 
   private batchDrawCircles(args: any[], buffers: any, fill: boolean){
-    const x = getArg(args[0], buffers);
-    const y = getArg(args[1], buffers);
-    const radius = getArg(args[2], buffers);
-    const colors = getArg(args[3], buffers);
-    const alpha = getArg(args[4], buffers);
+    const centers = getArg(args[0], buffers);
+    const radius = getArg(args[1], buffers);
+    const colors = getArg(args[2], buffers);
+    const alpha = getArg(args[3], buffers);
 
-    const numberCircles = Math.min(x.length, y.length, radius.length)
+    const numberCircles = Math.min(centers.length/2, radius.length)
     const oldStyle  = this.getStyle(fill)
 
     for (let idx = 0; idx < numberCircles; ++idx) {
@@ -550,7 +549,7 @@ class CanvasModel extends DOMWidgetModel {
         const ci = 3*idx
         const color = `rgba(${colors.getItem(ci)}, ${colors.getItem(ci+1)}, ${colors.getItem(ci+2)}, ${alpha.getItem(idx)})`;
         this.setStyle(color, fill)
-        this.fillCircle(x.getItem(idx), y.getItem(idx), radius.getItem(idx))
+        this.fillCircle(centers.getItem(2*idx), centers.getItem(2*idx+1), radius.getItem(idx))
     }
     this.setStyle(oldStyle, fill)
   }

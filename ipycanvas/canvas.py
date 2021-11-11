@@ -545,29 +545,31 @@ class Canvas(_CanvasBase):
 
         self._send_canvas_command(COMMANDS['fillCircles'], args, buffers)
 
-    def batch_fill_circles(self, x, y, radius, color, alpha):
+    def batch_fill_circles(self, centers, radius, color, alpha):
         args = []
         buffers = []
-
-        populate_args(x, args, buffers)
-        populate_args(y, args, buffers)
+        if centers.ndim > 1:
+            centers = np.require(centers, requirements=['C'])
+            centers = centers.ravel()
+        populate_args(centers, args, buffers)
         populate_args(radius, args, buffers)
         populate_args(color, args, buffers)
         populate_args(alpha, args, buffers)
         self._send_canvas_command(COMMANDS['batchFillCircles'], args, buffers)
 
-    def batch_stroke_circles(self, x, y, radius, color, alpha):
+    def batch_stroke_circles(self, centers, radius, color, alpha):
         args = []
         buffers = []
-
-        populate_args(x, args, buffers)
-        populate_args(y, args, buffers)
+        if centers.ndim > 1:
+            centers = np.require(centers, requirements=['C'])
+            centers = centers.ravel()
+        populate_args(centers, args, buffers)
         populate_args(radius, args, buffers)
         populate_args(color, args, buffers)
         populate_args(alpha, args, buffers)
         self._send_cavnas_command(COMMANDS['batchStrokeCircles'], args, buffers)
 
-    def _batch_draw_polygons_or_linesegments(self, cmd, points, color, alpha, sizes=None):
+    def _batch_draw_polygons_or_linesegments(self, cmd, points, color, alpha, sizes, min_elements, item_name):
         args = []
         buffers = []
 
@@ -584,14 +586,38 @@ class Canvas(_CanvasBase):
                 np_polygons.append(polygon_points.ravel())
             flat_points = np.concatenate(np_polygons)
             sizes = np.array(sizes)
-            print(flat_points)
+        elif isinstance(points, np.ndarray):
+
+            points =  np.require(points, requirements=['C'])
+            shape = points.shape
+            ndim = points.ndim
+
+            if ndim <= 2:
+                if sizes is None:
+                    raise RuntimeError("when points are given as a 1d / 2d array, sizes must not be None")
+                if ndim  == 1:
+                    flat_points = points
+                elif ndim == 2:
+                    if shape[1] != 2:
+                        raise RuntimeError("when points are given as a 2D array the shape must be of (n,2)")
+                    flat_points = points.ravel()
+            else:
+                # special case, sizes *could* be a scalar
+                # the shape is (n_poly, n_points_per_poly, 2)
+                if shape[2] != 2:
+                    raise RuntimeError(f"when points are given as a 3D array the shape must be of (n_{item_name}, n_points_per_{item_name}, 2)")
+                if shape[1] < min_elements:
+                    raise RuntimeError(f"when points are given as a 3D array the shape must be of (n_{item_name}, n_points_per_{item_name}, 2) and n_points_per_{item_name} must be >= {min_elements} ")
+                flat_points = points.ravel()
+                sizes = np.ones([shape[0]],dtype='int') * shape[1]
 
         else:
             raise RuntimeError("not yet implemented") 
 
         color = np.require(color, requirements=['C'], dtype='uint8')
-        if color.ndim != 1:
+        if color.ndim == 1:
             color = color .ravel()
+
 
         populate_args(flat_points, args, buffers)
         populate_args(sizes, args, buffers)
@@ -601,13 +627,13 @@ class Canvas(_CanvasBase):
 
 
     def batch_fill_polygons(self, points, color, alpha, sizes=None):
-        self._batch_draw_polygons_or_linesegments('batchFillPolygons', points, color, alpha, sizes)
+        self._batch_draw_polygons_or_linesegments('batchFillPolygons', points, color, alpha, sizes, 3, "polygon")
 
     def batch_stroke_polygons(self, points, color, alpha, sizes=None):
-        self._batch_draw_polygons_or_linesegments('batchStrokePolygons', points, color, alpha, sizes)
+        self._batch_draw_polygons_or_linesegments('batchStrokePolygons', points, color, alpha, sizes, 3, "polygon")
 
     def batch_stroke_line_segments(self, points, color, alpha, sizes=None):
-        self._batch_draw_polygons_or_linesegments('batchStrokeLineSegments', points, color, alpha, sizes)
+        self._batch_draw_polygons_or_linesegments('batchStrokeLineSegments', points, color, alpha, sizes, 2, "line_segment")
 
 
 
