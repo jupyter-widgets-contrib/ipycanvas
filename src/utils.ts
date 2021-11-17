@@ -9,8 +9,14 @@ export function getTypedArray(dataview: any, metadata: any) {
     case 'int16':
       return new Int16Array(dataview.buffer);
       break;
+    case 'uint16':
+      return new Uint16Array(dataview.buffer);
+      break;
     case 'int32':
       return new Int32Array(dataview.buffer);
+      break;
+    case 'uint32':
+      return new Uint32Array(dataview.buffer);
       break;
     case 'float32':
       return new Float32Array(dataview.buffer);

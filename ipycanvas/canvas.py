@@ -30,7 +30,9 @@ COMMANDS = {
     'putImageData': 31, 'clip': 32, 'save': 33, 'restore': 34, 'translate': 35,
     'rotate': 36, 'scale': 37, 'transform': 38, 'setTransform': 39, 'resetTransform': 40,
     'set': 41, 'clear': 42, 'sleep': 43, 'fillPolygon': 44, 'strokePolygon': 45,
-    'strokeLines': 46,
+    'strokeLines': 46, 'fillPolygons': 47, 'strokePolygons': 48, 'strokeLineSegments': 49,
+    'fillStyledCircles': 50, 'strokeStyledCircles': 51, 'fillStyledPolygons': 52,
+    'strokeStyledPolygons': 53, 'strokeStyledLineSegments': 54
 }
 
 
@@ -52,6 +54,55 @@ def _validate_number(value, min_val, max_val):
     except ValueError:
         raise TraitError('{} is not a number'.format(value))
     raise TraitError('{} is not in the range [{}, {}]'.format(value, min_val, max_val))
+
+
+def _serialize_list_of_polygons_or_linestrokes(points, points_per_item, item_name, min_elements):
+    if isinstance(points, list):
+        if points_per_item is not None:
+            raise RuntimeError("when points are a list, points_per_item must be None")
+        points_per_item = []
+        np_polygons = []
+        for i, polygon_points in enumerate(points):
+            polygon_points = np.require(polygon_points, requirements=['C'])
+            if polygon_points.shape[1] != 2:
+                raise RuntimeError(f"item {i} in points have wrong shape: `{polygon_points.shape}` but must be of type (n,2)")
+            points_per_item.append(polygon_points.shape[0])
+            np_polygons.append(polygon_points.ravel())
+
+        num_polygons = len(points)
+        flat_points = np.concatenate(np_polygons)
+        points_per_item = np.array(points_per_item)
+
+    elif isinstance(points, np.ndarray):
+        points = np.require(points, requirements=['C'])
+        shape = points.shape
+        ndim = points.ndim
+
+        if ndim <= 2:
+            if points_per_item is None:
+                raise RuntimeError("when points are given as a 1d / 2d array, points_per_item must not be None")
+            if ndim == 1:
+                flat_points = points
+            elif ndim == 2:
+                if shape[1] != 2:
+                    raise RuntimeError(f"points have wrong shape: `{shape}`. When points are given as a 2D array the shape must be of (n,2)")
+                flat_points = points.ravel()
+            num_polygons = len(points_per_item)
+        elif ndim == 3:
+            if points_per_item is not None:
+                raise RuntimeError("when points are a list, points_per_item must be None")
+            if shape[2] != 2:
+                raise RuntimeError(f"Points have wrong shape: `{shape}`: When points are given as a 3D array the shape must be of (n_{item_name}, n_points_per_{item_name}, 2)")
+            if shape[1] < min_elements:
+                raise RuntimeError(f"Points have wrong shape: `{shape}`: when points are given as a 3D array the shape must be of (n_{item_name}, n_points_per_{item_name}, 2) and n_points_per_{item_name} must be >= {min_elements} ")
+            flat_points = points.ravel()
+            num_polygons = shape[0]
+            points_per_item = shape[1]
+        else:
+            raise RuntimeError("ndarray must have ndim <= 3")
+    else:
+        raise RuntimeError("points must be a list or an ndarray")
+    return num_polygons, flat_points, points_per_item
 
 
 class Path2D(Widget):
@@ -539,6 +590,209 @@ class Canvas(_CanvasBase):
         populate_args(radius, args, buffers)
 
         self._send_canvas_command(COMMANDS['fillCircles'], args, buffers)
+
+    def fill_styled_circles(self, x, y, radius, color, alpha):
+        """Draw a filled circles centered at ``(x, y)`` with a radius of ``radius``.
+
+        Where ``x``, ``y``, ``radius``  ``and `alpha`  are NumPy arrays, lists or scalar values.
+        ``color`` must be an nx3 NumPy arrays with the color for each circle
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(radius, args, buffers)
+        populate_args(color, args, buffers)
+        populate_args(alpha, args, buffers)
+        self._send_canvas_command(COMMANDS['fillStyledCircles'], args, buffers)
+
+    def stroke_styled_circles(self, x, y, radius, color, alpha):
+        """Draw filled circles centered at ``(x, y)`` with a radius of ``radius``.
+
+        Where ``x``, ``y``, ``radius``  ``and `alpha`  are NumPy arrays, lists or scalar values.
+        ``color`` must be an nx3 NumPy arrays with the color for each circle
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(radius, args, buffers)
+        populate_args(color, args, buffers)
+        populate_args(alpha, args, buffers)
+        self._send_canvas_command(COMMANDS['strokeStyledCircles'], args, buffers)
+
+    def _draw_polygons_or_linesegments(self, cmd, points, color, alpha, points_per_item, with_style, min_elements, item_name):
+        args = []
+        buffers = []
+
+        num_polygons, flat_points, points_per_item = _serialize_list_of_polygons_or_linestrokes(
+            points=points, points_per_item=points_per_item, item_name=item_name, min_elements=min_elements)
+
+        if with_style:
+            color = np.require(color, requirements=['C'], dtype='uint8')
+            if color.ndim != 1:
+                color = color .ravel()
+
+        populate_args(num_polygons, args, buffers)
+        populate_args(flat_points, args, buffers)
+        populate_args(points_per_item, args, buffers)
+        if with_style:
+            populate_args(color, args, buffers)
+            populate_args(alpha, args, buffers)
+        self._send_canvas_command(COMMANDS[cmd], args, buffers)
+
+    def fill_styled_polygons(self, points, color, alpha, points_per_polygon=None):
+        """" Draw many filled polygons at once:
+
+            Args:
+                points (list or ndarray): The polygons points:
+
+                    The points can be specified as list or as ndarray:
+                    If the points are a list it must a an be a list of ndarrays,
+                    where each ndarray is a nx2 array of coordinates
+                    (n can be different for each entry)
+                    If the points are given as ndarray it must be either:
+                        * a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
+                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
+                            must be specified st. we know the the number of points for each individual polygon.
+                            Note that the number of points in ``points`` must match the points_per_polygon.
+                            array: ie: `np.sum(points_per_polygon) == points.shape[0]`
+                color (ndarray)
+                    An (n_polyons,3) array with the color for each polygon
+                alpha (ndarray,list,scalar):
+                    An  array with the alpha value for each polygon. Can be a scalar and the
+                    same value is used for all polygons
+                points_per_polygon (ndarray):
+                    ndarray with number of points for each polygon. Must **only** be given if points are
+                    given as `flat` 2D array.
+
+        """
+        self._draw_polygons_or_linesegments('fillStyledPolygons', points, color, alpha, points_per_polygon, True, 3, "polygon")
+
+    def stroke_styled_polygons(self, points, color, alpha, points_per_polygon=None):
+        """" Draw many stroked polygons at once:
+
+            Args:
+                points (list or ndarray): The polygons points:
+
+                    The points can be specified as list or as ndarray:
+                    If the points are a list it must a an be a list of ndarrays,
+                    where each ndarray is a nx2 array of coordinates
+                    (n can be different for each entry)
+                    If the points are given as ndarray it must be either:
+                        * a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
+                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
+                            must be specified st. we know the the number of points for each individual polygon.
+                            Note that the number of points in ``points`` must match the points_per_polygon.
+                            array: ie: `np.sum(points_per_polygon) == points.shape[0]`
+                color (ndarray)
+                    An (n_polyons,3) array with the color for each polygon
+                alpha (ndarray,list,scalar):
+                    An  array with the alpha value for each polygon. Can be a scalar and the
+                    same value is used for all polygons
+                points_per_polygon (ndarray):
+                    ndarray with number of points for each polygon. Must **only** be given if points are
+                    given as `flat` 2D array.
+
+        """
+        self._draw_polygons_or_linesegments('strokeStyledPolygons', points, color, alpha, points_per_polygon, True, 3, "polygon")
+
+    def stroke_styled_line_segments(self, points, color, alpha, points_per_line_segment=None):
+        """" Draw many line segments at once:
+
+            Args:
+                points (list or ndarray): The line_segments points:
+
+                    The points can be specified as list or as ndarray:
+                    If the points are a list it must a an be a list of ndarrays,
+                    where each ndarray is a nx2 array of coordinates
+                    (n can be different for each entry)
+                    If the points are given as ndarray it must be either:
+                        * a 3d array: the shape of the array is (n_line_segments, n_points_per_polygon, 2)
+                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_line_segment`
+                            must be specified st. we know the the number of points for each individual line_segment.
+                            Note that the number of points in ``points`` must match the points_per_line_segment.
+                            array: ie: `np.sum(points_per_line_segment) == points.shape[0]`
+                color (ndarray)
+                    An (n_line_segments,3) array with the color for each line_segment
+                alpha (ndarray,list,scalar):
+                    An  array with the alpha value for each line_segment. Can be a scalar and the
+                    same value is used for all line_segments
+                points_per_line_segment (ndarray):
+                    ndarray with number of points for each line_segment. Must **only** be given if points are
+                    given as `flat` 2D array.
+
+        """
+        self._draw_polygons_or_linesegments('strokeStyledLineSegments', points, color, alpha, points_per_line_segment, True, 2, "line_segment")
+
+    def fill_polygons(self, points, points_per_polygon=None):
+        """" Draw many filled polygons at once:
+
+            Args:
+                points (list or ndarray): The polygons points:
+
+                    The points can be specified as list or as ndarray:
+                    If the points are a list it must a an be a list of ndarrays,
+                    where each ndarray is a nx2 array of coordinates
+                    (n can be different for each entry)
+                    If the points are given as ndarray it must be either:
+                        * a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
+                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
+                            must be specified st. we know the the number of points for each individual polygon.
+                            Note that the number of points in ``points`` must match the points_per_polygon.
+                            array: ie: `np.sum(points_per_polygon) == points.shape[0]`
+                points_per_polygon (ndarray):
+                    ndarray with number of points for each polygon. Must **only** be given if points are
+                    given as `flat` 2D array.
+
+        """
+        self._draw_polygons_or_linesegments('fillPolygons', points, None, None, points_per_polygon, False, 3, "polygon")
+
+    def stroke_polygons(self, points, points_per_polygon=None):
+        """" Draw many stroked polygons at once:
+
+            Args:
+                points (list or ndarray): The polygons points:
+
+                    The points can be specified as list or as ndarray:
+                    If the points are a list it must a an be a list of ndarrays,
+                    where each ndarray is a nx2 array of coordinates
+                    (n can be different for each entry)
+                    If the points are given as ndarray it must be either:
+                        * a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
+                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
+                            must be specified st. we know the the number of points for each individual polygon.
+                            Note that the number of points in ``points`` must match the points_per_polygon.
+                            array: ie: `np.sum(points_per_polygon) == points.shape[0]`
+                points_per_polygon (ndarray):
+                    ndarray with number of points for each polygon. Must **only** be given if points are
+                    given as `flat` 2D array.
+        """
+        self._draw_polygons_or_linesegments('strokePolygons', points, None, None, points_per_polygon, False, 3, "polygon")
+
+    def stroke_line_segments(self, points, points_per_line_segment=None):
+        """ Draw many stroked line_segments at once:
+
+            Args:
+                points (list or ndarray): The line_segments points:
+
+                    The points can be specified as list or as ndarray:
+                    If the points are a list it must a an be a list of ndarrays,
+                    where each ndarray is a nx2 array of coordinates
+                    (n can be different for each entry)
+                    If the points are given as ndarray it must be either:
+                        * a 3d array: the shape of the array is (n_line_segments, n_points_per_polygon, 2)
+                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_line_segment `
+                            must be specified st. we know the the number of points for each individual polygon.
+                            Note that the number of points in ``points`` must match the points_per_line_segment .
+                            array: ie: `np.sum(points_per_line_segment  ) == points.shape[0]`
+                points_per_line_segment  (ndarray):
+                    ndarray with number of points for each polygon. Must **only** be given if points are
+                    given as `flat` 2D array.
+        """
+        self._draw_polygons_or_linesegments('strokeLineSegments', points, None, None, points_per_line_segment, False, 2, "line_segment")
 
     def stroke_circles(self, x, y, radius):
         """Draw a circle outlines centered at ``(x, y)`` with a radius of ``radius``.

@@ -73,6 +73,9 @@ const COMMANDS = [
   'rotate', 'scale', 'transform', 'setTransform', 'resetTransform',
   'set', 'clear', 'sleep', 'fillPolygon', 'strokePolygon',
   'strokeLines',
+  'fillPolygons','strokePolygons','strokeLineSegments',
+  'fillStyledCircles','strokeStyledCircles','fillStyledPolygons',
+  'strokeStyledPolygons','strokeStyledLineSegments'
 ];
 
 
@@ -391,6 +394,30 @@ class CanvasModel extends DOMWidgetModel {
       case 'clear':
         this.clearCanvas();
         break;
+      case 'fillPolygons':
+        await this.drawPolygonOrLineSegments(args, buffers, true, true)
+        break
+      case 'strokePolygons':
+        await this.drawPolygonOrLineSegments(args, buffers, false, true)
+        break
+      case 'strokeLineSegments':
+        await this.drawPolygonOrLineSegments(args, buffers, false, false)
+        break
+      case 'fillStyledCircles':
+        await this.drawStyledCircles(args, buffers, true)
+        break;
+      case 'strokeStyledCircles':
+        await this.drawStyledCircles(args, buffers, false)
+        break;
+      case 'fillStyledPolygons':
+        await this.drawStyledPolygonOrLineSegments(args, buffers, true, true)
+        break
+      case 'strokeStyledPolygons':
+        await this.drawStyledPolygonOrLineSegments(args, buffers, false, true)
+        break
+      case 'strokeStyledLineSegments':
+        await this.drawStyledPolygonOrLineSegments(args, buffers, false, false)
+        break
       default:
         this.executeCommand(name, args);
         break;
@@ -497,6 +524,120 @@ class CanvasModel extends DOMWidgetModel {
 
     for (let idx = 0; idx < numberCircles; ++idx) {
       callback(x.getItem(idx), y.getItem(idx), radius.getItem(idx))
+    }
+  }
+
+
+  private setStyle(style:any, fill:boolean){
+    if(fill){
+      this.ctx.fillStyle  = style
+    }else{
+      this.ctx.strokeStyle  = style
+    }
+  }
+
+  private drawStyledCircles(args: any[], buffers: any, fill: boolean){
+    const x = getArg(args[0], buffers);
+    const y = getArg(args[1], buffers);
+    const radius = getArg(args[2], buffers);
+    const colors = getArg(args[3], buffers);
+    const alpha = getArg(args[4], buffers);
+
+    const numberCircles = Math.min(x.length, y.length, radius.length)
+    this.ctx.save()
+    for (let idx = 0; idx < numberCircles; ++idx) {
+        // get color for this circle
+        const ci = 3*idx
+        const color = `rgba(${colors.getItem(ci)}, ${colors.getItem(ci+1)}, ${colors.getItem(ci+2)}, ${alpha.getItem(idx)})`;
+        this.setStyle(color, fill)
+        if(fill)
+        {
+          this.fillCircle(x.getItem(idx), y.getItem(idx), radius.getItem(idx))
+        }else{
+          this.strokeCircle(x.getItem(idx), y.getItem(idx), radius.getItem(idx))
+        }
+    }
+    this.ctx.restore()
+  }
+
+  private drawStyledPolygonOrLineSegments(args: any[], buffers: any, fill: boolean, close: boolean){
+
+    // a scalar
+    const numPolygons = args[0];
+
+    // always array 
+    const points = getArg(args[1], buffers);
+
+    // array or scalar
+    const sizes = getArg(args[2], buffers);
+
+    // always array
+    const colors = getArg(args[3], buffers);
+
+    // array or scalar
+    const alpha = getArg(args[4], buffers);
+
+    this.ctx.save()
+
+    var start : number  = 0
+    for (let idx = 0; idx < numPolygons; ++idx) {
+        // get color for this circle
+        const ci = 3*idx
+        const color = `rgba(${colors.getItem(ci)}, ${colors.getItem(ci+1)}, ${colors.getItem(ci+2)}, ${alpha.getItem(idx)})`;
+        this.setStyle(color, fill)
+
+        // start / stop in the points array fr this polygon
+        const size = sizes.getItem(idx) * 2;
+        const stop = start + size;
+
+        // Move to the first point, then create lines between points
+        this.ctx.beginPath();
+        this.ctx.moveTo(points.getItem(start), points.getItem(start+1));
+
+        // draw all points of the polygon (except start) 
+        for(let idp = start+2; idp < stop; idp += 2){
+          this.ctx.lineTo(points.getItem(idp), points.getItem(idp + 1));
+        }
+        start = stop
+        if(close){
+          this.ctx.closePath();
+        }
+        fill ? this.ctx.fill() : this.ctx.stroke()
+    }
+    this.ctx.restore()
+  }
+
+  private drawPolygonOrLineSegments(args: any[], buffers: any, fill: boolean, close: boolean){
+
+    // a scalar
+    const numPolygons = args[0];
+
+    // always array 
+    const points = getArg(args[1], buffers);
+
+    // array or scalar
+    const sizes = getArg(args[2], buffers);
+
+    var start : number  = 0
+    for (let idx = 0; idx < numPolygons; ++idx) {
+
+        // start / stop in the points array fr this polygon
+        const size = sizes.getItem(idx) * 2;
+        const stop = start + size;
+
+        // Move to the first point, then create lines between points
+        this.ctx.beginPath();
+        this.ctx.moveTo(points.getItem(start), points.getItem(start+1));
+
+        // draw all points of the polygon (except start) 
+        for(let idp = start+2; idp < stop; idp += 2){
+          this.ctx.lineTo(points.getItem(idp), points.getItem(idp + 1));
+        }
+        start = stop
+        if(close){
+          this.ctx.closePath();
+        }
+        fill ? this.ctx.fill() : this.ctx.stroke()
     }
   }
 
