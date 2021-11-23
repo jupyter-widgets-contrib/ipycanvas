@@ -11,3 +11,5 @@ dependencies:
     - setuptools
     - wheel
     - twine
+    - jupytext
+    - black
