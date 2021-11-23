@@ -20,20 +20,20 @@ from ._frontend import module_name, module_version
 
 from .utils import binary_image, populate_args, image_bytes_to_array, commands_to_buffer
 
-COMMANDS = {
-    'fillRect': 0, 'strokeRect': 1, 'fillRects': 2, 'strokeRects': 3, 'clearRect': 4, 'fillArc': 5,
-    'fillCircle': 6, 'strokeArc': 7, 'strokeCircle': 8, 'fillArcs': 9, 'strokeArcs': 10,
-    'fillCircles': 11, 'strokeCircles': 12, 'strokeLine': 13, 'beginPath': 14, 'closePath': 15,
-    'stroke': 16, 'fillPath': 17, 'fill': 18, 'moveTo': 19, 'lineTo': 20,
-    'rect': 21, 'arc': 22, 'ellipse': 23, 'arcTo': 24, 'quadraticCurveTo': 25,
-    'bezierCurveTo': 26, 'fillText': 27, 'strokeText': 28, 'setLineDash': 29, 'drawImage': 30,
-    'putImageData': 31, 'clip': 32, 'save': 33, 'restore': 34, 'translate': 35,
-    'rotate': 36, 'scale': 37, 'transform': 38, 'setTransform': 39, 'resetTransform': 40,
-    'set': 41, 'clear': 42, 'sleep': 43, 'fillPolygon': 44, 'strokePolygon': 45,
-    'strokeLines': 46, 'fillPolygons': 47, 'strokePolygons': 48, 'strokeLineSegments': 49,
-    'fillStyledCircles': 50, 'strokeStyledCircles': 51, 'fillStyledPolygons': 52,
-    'strokeStyledPolygons': 53, 'strokeStyledLineSegments': 54
-}
+_CMD_LIST = ['fillRect', 'strokeRect', 'fillRects', 'strokeRects', 'clearRect', 'fillArc',
+             'fillCircle', 'strokeArc', 'strokeCircle', 'fillArcs', 'strokeArcs',
+             'fillCircles', 'strokeCircles', 'strokeLine', 'beginPath', 'closePath',
+             'stroke', 'fillPath', 'fill', 'moveTo', 'lineTo',
+             'rect', 'arc', 'ellipse', 'arcTo', 'quadraticCurveTo',
+             'bezierCurveTo', 'fillText', 'strokeText', 'setLineDash', 'drawImage',
+             'putImageData', 'clip', 'save', 'restore', 'translate',
+             'rotate', 'scale', 'transform', 'setTransform', 'resetTransform',
+             'set', 'clear', 'sleep', 'fillPolygon', 'strokePolygon',
+             'strokeLines', 'fillPolygons', 'strokePolygons', 'strokeLineSegments',
+             'fillStyledRects', 'strokeStyledRects', 'fillStyledCircles', 'strokeStyledCircles',
+             'fillStyledArcs', 'strokeStyledArcs', 'fillStyledPolygons',
+             'strokeStyledPolygons', 'strokeStyledLineSegments']
+COMMANDS = {v: i for i, v in enumerate(_CMD_LIST)}
 
 
 # Traitlets does not allow validating without creating a trait class, so we need this
@@ -500,7 +500,7 @@ class Canvas(_CanvasBase):
         self._send_canvas_command(COMMANDS['fillRects'], args, buffers)
 
     def stroke_rects(self, x, y, width, height=None):
-        """Draw a rectangular outlines of sizes ``(width, height)`` at the ``(x, y)`` positions.
+        """Draw a rectangular outlines of sizes ``(width, height)`` at the ``(x, y)`` positions.of sizes ``(width, height)`
 
         Where ``x``, ``y``, ``width`` and ``height`` arguments are NumPy arrays, lists or scalar values.
         If ``height`` is None, it is set to the same value as width.
@@ -591,6 +591,54 @@ class Canvas(_CanvasBase):
 
         self._send_canvas_command(COMMANDS['fillCircles'], args, buffers)
 
+    def fill_styled_rects(self, x, y, width, height, color, alpha):
+        """Draw filled and styled rectangles of sizes ``(width, height)`` at the ``(x, y)`` positions
+
+        Where ``x``, ``y``, ``width`` and ``height`` arguments are NumPy arrays, lists or scalar values.
+        If ``height`` is None, it is set to the same value as width.
+        ``color`` is an (n_rect x 3) NumPy array with the colors and ``alpha`` is an (n_rect) NumPy array
+        with the alpha channel values.
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(width, args, buffers)
+
+        if height is None:
+            args.append(args[-1])
+        else:
+            populate_args(height, args, buffers)
+
+        populate_args(color, args, buffers)
+        populate_args(alpha, args, buffers)
+        self._send_canvas_command(COMMANDS['fillStyledRects'], args, buffers)
+
+    def stroke_styled_rects(self, x, y, width, height, color, alpha):
+        """Draw rectangular styled outlines of sizes ``(width, height)`` at the ``(x, y)`` positions.of sizes ``(width, height)`
+
+        Where ``x``, ``y``, ``width`` and ``height`` arguments are NumPy arrays, lists or scalar values.
+        If ``height`` is None, it is set to the same value as width.
+        ``color`` is an (n_rect x 3) NumPy array with the colors and ``alpha`` is an (n_rect) NumPy array
+        with the alpha channel values.
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(width, args, buffers)
+
+        if height is None:
+            args.append(args[-1])
+        else:
+            populate_args(height, args, buffers)
+
+        populate_args(color, args, buffers)
+        populate_args(alpha, args, buffers)
+        self._send_canvas_command(COMMANDS['strokeStyledRects'], args, buffers)
+
     def fill_styled_circles(self, x, y, radius, color, alpha):
         """Draw a filled circles centered at ``(x, y)`` with a radius of ``radius``.
 
@@ -622,6 +670,44 @@ class Canvas(_CanvasBase):
         populate_args(color, args, buffers)
         populate_args(alpha, args, buffers)
         self._send_canvas_command(COMMANDS['strokeStyledCircles'], args, buffers)
+
+    def fill_styled_arcs(self, x, y, radius, start_angle, end_angle, color, alpha, anticlockwise=False):
+        """Draw filled and styled arcs centered at ``(x, y)`` with a radius of ``radius``.
+
+        Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(radius, args, buffers)
+        populate_args(start_angle, args, buffers)
+        populate_args(end_angle, args, buffers)
+        args.append(anticlockwise)
+        populate_args(color, args, buffers)
+        populate_args(alpha, args, buffers)
+
+        self._send_canvas_command(COMMANDS['fillStyledArcs'], args, buffers)
+
+    def stroke_styled_arcs(self, x, y, radius, start_angle, end_angle, color, alpha, anticlockwise=False):
+        """Draw an styled arc outlines centered at ``(x, y)`` with a radius of ``radius``.
+
+        Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(radius, args, buffers)
+        populate_args(start_angle, args, buffers)
+        populate_args(end_angle, args, buffers)
+        args.append(anticlockwise)
+        populate_args(color, args, buffers)
+        populate_args(alpha, args, buffers)
+
+        self._send_canvas_command(COMMANDS['strokeStyledArcs'], args, buffers)
 
     def _draw_polygons_or_linesegments(self, cmd, points, color, alpha, points_per_item, with_style, min_elements, item_name):
         args = []
