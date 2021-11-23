@@ -13,7 +13,7 @@ from os import path
 
 from jupyter_packaging import (
     create_cmdclass, install_npm, ensure_targets,
-    combine_commands, ensure_python,
+    combine_commands,
     get_version, skip_if_exists
 )
 
@@ -24,9 +24,6 @@ HERE = path.dirname(path.abspath(__file__))
 
 # The name of the project
 name = 'ipycanvas'
-
-# Ensure a valid python version
-ensure_python('>=3.5')
 
 # Get our version
 version = get_version(pjoin(name, '_version.py'))
@@ -51,7 +48,7 @@ data_files_spec = [
     ('share/jupyter/nbextensions/ipycanvas',
         nb_path, '*.js*'),
     ('share/jupyter/labextensions/ipycanvas', lab_path, '**'),
-    ('etc/jupyter/nbconfig/notebook.d' , HERE, 'ipycanvas.json')
+    ('etc/jupyter/nbconfig/notebook.d', HERE, 'ipycanvas.json')
 ]
 
 
@@ -87,20 +84,21 @@ setup_args = dict(
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Framework :: Jupyter',
     ],
-    include_package_data = True,
-    install_requires = [
+    include_package_data=True,
+    install_requires=[
         'ipywidgets>=7.6.0',
         'pillow>=6.0',
         'numpy'
     ],
-    extras_require = {},
-    entry_points = {
-    },
+    extras_require={},
+    entry_points={},
 )
 
 if __name__ == '__main__':
