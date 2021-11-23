@@ -52,8 +52,11 @@ jobs:
         jupyter nbextension list 2>&1 | grep -ie "ipycanvas/extension.*enabled" -
         jupyter labextension list 2>&1 | grep -ie "ipycanvas.*enabled.*ok" -
 
-    - name: Test flake8
+    - name: Test PEP8
       run: flake8 ipycanvas --ignore=E501,W504,W503
+
+    - name: Test PEP8 on example notebooks
+      run: jupytext examples/*.ipynb --check 'black --check {}'
 
   build:
     runs-on: ubuntu-latest
