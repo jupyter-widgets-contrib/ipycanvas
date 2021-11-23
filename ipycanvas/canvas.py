@@ -519,6 +519,54 @@ class Canvas(_CanvasBase):
 
         self._send_canvas_command(COMMANDS['strokeRects'], args, buffers)
 
+    def fill_styled_rects(self, x, y, width, height, color, alpha):
+        """Draw filled and styled rectangles of sizes ``(width, height)`` at the ``(x, y)`` positions
+
+        Where ``x``, ``y``, ``width`` and ``height`` arguments are NumPy arrays, lists or scalar values.
+        If ``height`` is None, it is set to the same value as width.
+        ``color`` is an (n_rect x 3) NumPy array with the colors and ``alpha`` is an (n_rect) NumPy array
+        with the alpha channel values.
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(width, args, buffers)
+
+        if height is None:
+            args.append(args[-1])
+        else:
+            populate_args(height, args, buffers)
+
+        populate_args(color, args, buffers)
+        populate_args(alpha, args, buffers)
+        self._send_canvas_command(COMMANDS['fillStyledRects'], args, buffers)
+
+    def stroke_styled_rects(self, x, y, width, height, color, alpha):
+        """Draw rectangular styled outlines of sizes ``(width, height)`` at the ``(x, y)`` positions.of sizes ``(width, height)`
+
+        Where ``x``, ``y``, ``width`` and ``height`` arguments are NumPy arrays, lists or scalar values.
+        If ``height`` is None, it is set to the same value as width.
+        ``color`` is an (n_rect x 3) NumPy array with the colors and ``alpha`` is an (n_rect) NumPy array
+        with the alpha channel values.
+        """
+        args = []
+        buffers = []
+
+        populate_args(x, args, buffers)
+        populate_args(y, args, buffers)
+        populate_args(width, args, buffers)
+
+        if height is None:
+            args.append(args[-1])
+        else:
+            populate_args(height, args, buffers)
+
+        populate_args(color, args, buffers)
+        populate_args(alpha, args, buffers)
+        self._send_canvas_command(COMMANDS['strokeStyledRects'], args, buffers)
+
     def clear_rect(self, x, y, width, height=None):
         """Clear the specified rectangular area of size ``(width, height)`` at the ``(x, y)`` position, making it fully transparent."""
         if height is None:
@@ -591,53 +639,19 @@ class Canvas(_CanvasBase):
 
         self._send_canvas_command(COMMANDS['fillCircles'], args, buffers)
 
-    def fill_styled_rects(self, x, y, width, height, color, alpha):
-        """Draw filled and styled rectangles of sizes ``(width, height)`` at the ``(x, y)`` positions
+    def stroke_circles(self, x, y, radius):
+        """Draw a circle outlines centered at ``(x, y)`` with a radius of ``radius``.
 
-        Where ``x``, ``y``, ``width`` and ``height`` arguments are NumPy arrays, lists or scalar values.
-        If ``height`` is None, it is set to the same value as width.
-        ``color`` is an (n_rect x 3) NumPy array with the colors and ``alpha`` is an (n_rect) NumPy array
-        with the alpha channel values.
+        Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
         """
         args = []
         buffers = []
 
         populate_args(x, args, buffers)
         populate_args(y, args, buffers)
-        populate_args(width, args, buffers)
+        populate_args(radius, args, buffers)
 
-        if height is None:
-            args.append(args[-1])
-        else:
-            populate_args(height, args, buffers)
-
-        populate_args(color, args, buffers)
-        populate_args(alpha, args, buffers)
-        self._send_canvas_command(COMMANDS['fillStyledRects'], args, buffers)
-
-    def stroke_styled_rects(self, x, y, width, height, color, alpha):
-        """Draw rectangular styled outlines of sizes ``(width, height)`` at the ``(x, y)`` positions.of sizes ``(width, height)`
-
-        Where ``x``, ``y``, ``width`` and ``height`` arguments are NumPy arrays, lists or scalar values.
-        If ``height`` is None, it is set to the same value as width.
-        ``color`` is an (n_rect x 3) NumPy array with the colors and ``alpha`` is an (n_rect) NumPy array
-        with the alpha channel values.
-        """
-        args = []
-        buffers = []
-
-        populate_args(x, args, buffers)
-        populate_args(y, args, buffers)
-        populate_args(width, args, buffers)
-
-        if height is None:
-            args.append(args[-1])
-        else:
-            populate_args(height, args, buffers)
-
-        populate_args(color, args, buffers)
-        populate_args(alpha, args, buffers)
-        self._send_canvas_command(COMMANDS['strokeStyledRects'], args, buffers)
+        self._send_canvas_command(COMMANDS['strokeCircles'], args, buffers)
 
     def fill_styled_circles(self, x, y, radius, color, alpha):
         """Draw a filled circles centered at ``(x, y)`` with a radius of ``radius``.
@@ -709,25 +723,69 @@ class Canvas(_CanvasBase):
 
         self._send_canvas_command(COMMANDS['strokeStyledArcs'], args, buffers)
 
-    def _draw_polygons_or_linesegments(self, cmd, points, color, alpha, points_per_item, with_style, min_elements, item_name):
+    # Polygon methods
+    def fill_polygon(self, points):
+        """Fill a polygon from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``."""
         args = []
         buffers = []
 
-        num_polygons, flat_points, points_per_item = _serialize_list_of_polygons_or_linestrokes(
-            points=points, points_per_item=points_per_item, item_name=item_name, min_elements=min_elements)
+        populate_args(points, args, buffers)
 
-        if with_style:
-            color = np.require(color, requirements=['C'], dtype='uint8')
-            if color.ndim != 1:
-                color = color .ravel()
+        self._send_canvas_command(COMMANDS['fillPolygon'], args, buffers)
 
-        populate_args(num_polygons, args, buffers)
-        populate_args(flat_points, args, buffers)
-        populate_args(points_per_item, args, buffers)
-        if with_style:
-            populate_args(color, args, buffers)
-            populate_args(alpha, args, buffers)
-        self._send_canvas_command(COMMANDS[cmd], args, buffers)
+    def stroke_polygon(self, points):
+        """Draw polygon outline from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``."""
+        args = []
+        buffers = []
+
+        populate_args(points, args, buffers)
+
+        self._send_canvas_command(COMMANDS['strokePolygon'], args, buffers)
+
+    def fill_polygons(self, points, points_per_polygon=None):
+        """" Draw many filled polygons at once:
+
+            Args:
+                points (list or ndarray): The polygons points:
+
+                    The points can be specified as list or as ndarray:
+                    If the points are a list it must a an be a list of ndarrays,
+                    where each ndarray is a nx2 array of coordinates
+                    (n can be different for each entry)
+                    If the points are given as ndarray it must be either:
+                        * a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
+                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
+                            must be specified st. we know the the number of points for each individual polygon.
+                            Note that the number of points in ``points`` must match the points_per_polygon.
+                            array: ie: `np.sum(points_per_polygon) == points.shape[0]`
+                points_per_polygon (ndarray):
+                    ndarray with number of points for each polygon. Must **only** be given if points are
+                    given as `flat` 2D array.
+
+        """
+        self._draw_polygons_or_linesegments('fillPolygons', points, None, None, points_per_polygon, False, 3, "polygon")
+
+    def stroke_polygons(self, points, points_per_polygon=None):
+        """" Draw many stroked polygons at once:
+
+            Args:
+                points (list or ndarray): The polygons points:
+
+                    The points can be specified as list or as ndarray:
+                    If the points are a list it must a an be a list of ndarrays,
+                    where each ndarray is a nx2 array of coordinates
+                    (n can be different for each entry)
+                    If the points are given as ndarray it must be either:
+                        * a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
+                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
+                            must be specified st. we know the the number of points for each individual polygon.
+                            Note that the number of points in ``points`` must match the points_per_polygon.
+                            array: ie: `np.sum(points_per_polygon) == points.shape[0]`
+                points_per_polygon (ndarray):
+                    ndarray with number of points for each polygon. Must **only** be given if points are
+                    given as `flat` 2D array.
+        """
+        self._draw_polygons_or_linesegments('strokePolygons', points, None, None, points_per_polygon, False, 3, "polygon")
 
     def fill_styled_polygons(self, points, color, alpha, points_per_polygon=None):
         """" Draw many filled polygons at once:
@@ -785,6 +843,20 @@ class Canvas(_CanvasBase):
         """
         self._draw_polygons_or_linesegments('strokeStyledPolygons', points, color, alpha, points_per_polygon, True, 3, "polygon")
 
+    # Lines methods
+    def stroke_line(self, x1, y1, x2, y2):
+        """Draw a line from ``(x1, y1)`` to ``(x2, y2)``."""
+        self._send_canvas_command(COMMANDS['strokeLine'], [x1, y1, x2, y2])
+
+    def stroke_lines(self, points):
+        """Draw a path of consecutive lines from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``."""
+        args = []
+        buffers = []
+
+        populate_args(points, args, buffers)
+
+        self._send_canvas_command(COMMANDS['strokeLines'], args, buffers)
+
     def stroke_styled_line_segments(self, points, color, alpha, points_per_line_segment=None):
         """" Draw many line segments at once:
 
@@ -813,51 +885,6 @@ class Canvas(_CanvasBase):
         """
         self._draw_polygons_or_linesegments('strokeStyledLineSegments', points, color, alpha, points_per_line_segment, True, 2, "line_segment")
 
-    def fill_polygons(self, points, points_per_polygon=None):
-        """" Draw many filled polygons at once:
-
-            Args:
-                points (list or ndarray): The polygons points:
-
-                    The points can be specified as list or as ndarray:
-                    If the points are a list it must a an be a list of ndarrays,
-                    where each ndarray is a nx2 array of coordinates
-                    (n can be different for each entry)
-                    If the points are given as ndarray it must be either:
-                        * a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
-                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
-                            must be specified st. we know the the number of points for each individual polygon.
-                            Note that the number of points in ``points`` must match the points_per_polygon.
-                            array: ie: `np.sum(points_per_polygon) == points.shape[0]`
-                points_per_polygon (ndarray):
-                    ndarray with number of points for each polygon. Must **only** be given if points are
-                    given as `flat` 2D array.
-
-        """
-        self._draw_polygons_or_linesegments('fillPolygons', points, None, None, points_per_polygon, False, 3, "polygon")
-
-    def stroke_polygons(self, points, points_per_polygon=None):
-        """" Draw many stroked polygons at once:
-
-            Args:
-                points (list or ndarray): The polygons points:
-
-                    The points can be specified as list or as ndarray:
-                    If the points are a list it must a an be a list of ndarrays,
-                    where each ndarray is a nx2 array of coordinates
-                    (n can be different for each entry)
-                    If the points are given as ndarray it must be either:
-                        * a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
-                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
-                            must be specified st. we know the the number of points for each individual polygon.
-                            Note that the number of points in ``points`` must match the points_per_polygon.
-                            array: ie: `np.sum(points_per_polygon) == points.shape[0]`
-                points_per_polygon (ndarray):
-                    ndarray with number of points for each polygon. Must **only** be given if points are
-                    given as `flat` 2D array.
-        """
-        self._draw_polygons_or_linesegments('strokePolygons', points, None, None, points_per_polygon, False, 3, "polygon")
-
     def stroke_line_segments(self, points, points_per_line_segment=None):
         """ Draw many stroked line_segments at once:
 
@@ -879,53 +906,6 @@ class Canvas(_CanvasBase):
                     given as `flat` 2D array.
         """
         self._draw_polygons_or_linesegments('strokeLineSegments', points, None, None, points_per_line_segment, False, 2, "line_segment")
-
-    def stroke_circles(self, x, y, radius):
-        """Draw a circle outlines centered at ``(x, y)`` with a radius of ``radius``.
-
-        Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
-        """
-        args = []
-        buffers = []
-
-        populate_args(x, args, buffers)
-        populate_args(y, args, buffers)
-        populate_args(radius, args, buffers)
-
-        self._send_canvas_command(COMMANDS['strokeCircles'], args, buffers)
-
-    # Polygon methods
-    def fill_polygon(self, points):
-        """Fill a polygon from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``."""
-        args = []
-        buffers = []
-
-        populate_args(points, args, buffers)
-
-        self._send_canvas_command(COMMANDS['fillPolygon'], args, buffers)
-
-    def stroke_polygon(self, points):
-        """Draw polygon outline from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``."""
-        args = []
-        buffers = []
-
-        populate_args(points, args, buffers)
-
-        self._send_canvas_command(COMMANDS['strokePolygon'], args, buffers)
-
-    # Lines methods
-    def stroke_line(self, x1, y1, x2, y2):
-        """Draw a line from ``(x1, y1)`` to ``(x2, y2)``."""
-        self._send_canvas_command(COMMANDS['strokeLine'], [x1, y1, x2, y2])
-
-    def stroke_lines(self, points):
-        """Draw a path of consecutive lines from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``."""
-        args = []
-        buffers = []
-
-        populate_args(points, args, buffers)
-
-        self._send_canvas_command(COMMANDS['strokeLines'], args, buffers)
 
     # Paths methods
     def begin_path(self):
@@ -1228,6 +1208,26 @@ class Canvas(_CanvasBase):
             self._touch_move_callbacks([(touch['x'], touch['y']) for touch in content['touches']])
         if content.get('event', '') == 'touch_cancel':
             self._touch_cancel_callbacks([(touch['x'], touch['y']) for touch in content['touches']])
+
+    def _draw_polygons_or_linesegments(self, cmd, points, color, alpha, points_per_item, with_style, min_elements, item_name):
+        args = []
+        buffers = []
+
+        num_polygons, flat_points, points_per_item = _serialize_list_of_polygons_or_linestrokes(
+            points=points, points_per_item=points_per_item, item_name=item_name, min_elements=min_elements)
+
+        if with_style:
+            color = np.require(color, requirements=['C'], dtype='uint8')
+            if color.ndim != 1:
+                color = color .ravel()
+
+        populate_args(num_polygons, args, buffers)
+        populate_args(flat_points, args, buffers)
+        populate_args(points_per_item, args, buffers)
+        if with_style:
+            populate_args(color, args, buffers)
+            populate_args(alpha, args, buffers)
+        self._send_canvas_command(COMMANDS[cmd], args, buffers)
 
 
 class RoughCanvas(Canvas):
