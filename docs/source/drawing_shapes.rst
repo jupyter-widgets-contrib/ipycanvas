@@ -272,11 +272,11 @@ Styled vectorized methods
 
 Ipycanvas provides methods to draw the same shape multiple times but with different colors:
 
-    - ``fille_styled_rects`` / ``stroke_styled_rects``
-    - ``fille_styled_circles`` / ``stroke_styled_circles``
-    - ``fille_styled_arcs`` / ``stroke_styled_arcs``
-    - ``fille_styled_polygons`` / ``stroke_styled_polygons``
-    - ``fille_styled_line_segments`` / ``stroke_styled_line_segments``
+    - ``fill_styled_rects`` / ``stroke_styled_rects``
+    - ``fill_styled_circles`` / ``stroke_styled_circles``
+    - ``fill_styled_arcs`` / ``stroke_styled_arcs``
+    - ``fill_styled_polygons`` / ``stroke_styled_polygons``
+    - ``fill_styled_line_segments`` / ``stroke_styled_line_segments``
 
 
 Styled rects
