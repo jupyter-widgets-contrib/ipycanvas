@@ -20,7 +20,7 @@ left corner of the blue square becomes x pixels from the left and y pixels from 
 Drawing rectangles
 ------------------
 
-There are four methods that draw rectangles on the canvas:
+There are six methods that draw rectangles on the canvas:
 
 - ``fill_rect(x, y, width, height=None)``:
     Draws a filled rectangle. If ``height`` is None, it is set to the same value as ``width``.
@@ -32,6 +32,10 @@ There are four methods that draw rectangles on the canvas:
 - ``stroke_rects(x, y, width, height=None)``:
     Draws rectangular outlines. Where ``x``, ``y``, ``width`` and ``height`` are either integers, lists of integers or NumPy arrays.
     If ``height`` is None, it is set to the same value as ``width``.
+- ``fill_styled_rect(x, y, width, height, color, alpha)``:
+    Same as ``fill_rects``  but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
+- ``stroke_styled_rects(x, y, width, height, color, alpha)``:
+    Same as ``stroke_rects`` but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
 
 You can also clear a certain canvas rectangle area:
 
@@ -83,8 +87,19 @@ It's the fastest way to draw a polygon with ipycanvas.
 
 - ``fill_polygon(points)``:
     Fill a polygon from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
-- ``stroke_polygon(points)``:
-    Draw polygon outline from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
+- ``stroke_polygon(points)``:    Draw polygon outline from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
+
+- ``fill_polygons(points, points_per_polygon=None)``:
+    Fill multiple polygons at once.
+- ``stroke_polygons(points, points_per_polygon=None)``:
+    Stroke multiple polygons at once. See :ref:`styled_polygons` for details.
+- ``fill_styled_polygons(points, color, alpha, points_per_polygon=None)``:
+    Fill multiple polygons at once where each polygon can have its own color.
+    See :ref:`styled_polygons` for details.
+- ``stroke_styled_polygons(points, color, alpha, points_per_polygon=None)``:
+    Stroke multiple polygons at once where each polygon can have its own color.
+    See :ref:`styled_polygons` for details.
+
 
 .. code:: Python
 
@@ -146,6 +161,10 @@ There are methods that draw arcs/circles on the canvas:
     Draw filled arcs centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
 - ``stroke_arcs(x, y, radius, start_angle, end_angle, anticlockwise=False)``:
     Draw an arc outlines centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+- ``fill_styled_arcs( x, y, radius, start_angle, end_angle, color, alpha, anticlockwise=False)``:
+    Same as ``fill_arcs`` but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
+- ``stroke_styled_arcs( x, y, radius, start_angle, end_angle, color, alpha, anticlockwise=False)``:
+    Same as ``stroke_arcs`` but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
 
 - ``fill_circle(x, y, radius)``:
     Draw a filled circle centered at ``(x, y)`` with a radius of ``radius``.
@@ -155,7 +174,10 @@ There are methods that draw arcs/circles on the canvas:
     Draw filled circles centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` are NumPy arrays, lists or scalar values.
 - ``stroke_circles(x, y, radius)``:
     Draw a circle outlines centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` are NumPy arrays, lists or scalar values.
-
+- ``fill_styled_circles( x, y, radius color, alpha)`` :
+    Same as ``fill_circles`` but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
+- ``stroke_styled_circles( x, y, radius, color, alpha)`` :
+    Same as ``stroke_circles`` but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
 
 .. code:: Python
 
@@ -184,6 +206,10 @@ There are two commands for drawing a straight line from one point to another:
     Draw a line from ``(x1, y1)`` to ``(x2, y2)``.
 - ``stroke_lines(points)``:
     Draw a path of consecutive lines from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
+- ``stroke_styled_line_segments(points, points_per_line_segment=None)``:
+    Draw multiple disconnected line-segments at once. See :ref:`styled_polygons` for details.
+- ``stroke_styled_line_segments(points, color, alpha, points_per_line_segment=None)``:
+    Draw multiple disconnected line-segments at once. See :ref:`styled_polygons` for details.
 
 .. code:: Python
 
@@ -267,19 +293,21 @@ instead of running:
     canvas
 
 
+.. _styled_vectorized_methods:
+
 Styled vectorized methods
 ------------------------------------
 
 Ipycanvas provides methods to draw the same shape multiple times but with different colors:
 
-    - ``fill_styled_rects`` / ``stroke_styled_rects``
-    - ``fill_styled_circles`` / ``stroke_styled_circles``
-    - ``fill_styled_arcs`` / ``stroke_styled_arcs``
-    - ``fill_styled_polygons`` / ``stroke_styled_polygons``
-    - ``fill_styled_line_segments`` / ``stroke_styled_line_segments``
+- ``fill_styled_rects`` / ``stroke_styled_rects``
+- ``fill_styled_circles`` / ``stroke_styled_circles``
+- ``fill_styled_arcs`` / ``stroke_styled_arcs``
+- ``fill_styled_polygons`` / ``stroke_styled_polygons``
+- ``fill_styled_line_segments`` / ``stroke_styled_line_segments``
 
 
-Styled rects
+Rects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: Python
@@ -310,7 +338,7 @@ Styled rects
 .. image:: images/draw_styled_rects.png
     :scale: 50 %
 
-Styled circles
+Circles
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: Python
@@ -336,7 +364,7 @@ Styled circles
 .. image:: images/draw_styled_circles.png
     :scale: 50 %
 
-Styled arcs
+Arcs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: Python
@@ -369,7 +397,9 @@ Styled arcs
     :scale: 50 %
 
 
-Styled polygons / line-segments
+.. _styled_polygons:
+
+Polygons / line-segments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Case 1: All polygons / line-segments have the same number of points
