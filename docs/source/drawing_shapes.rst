@@ -357,7 +357,7 @@ Circles
     with hold_canvas(canvas):
         canvas.fill_styled_circles(x, y, r, color=colors_fill, alpha=alphas)
         canvas.line_width = 2
-        canvas.stroke_styled_circles(x, y, r, color=colors_outline, alpha=1)
+        canvas.stroke_styled_circles(x, y, r, color=colors_outline)
     canvas
 
 
@@ -441,7 +441,7 @@ Case 1: All polygons / line-segments have the same number of points
 
     points_per_polygon = np.ones([n_polygons]) * n_points_per_polygon
     with hold_canvas(canvas):
-        canvas.stroke_styled_polygons(polygons, color=colors_fill, alpha=1)
+        canvas.stroke_styled_polygons(polygons, color=colors_fill)
     canvas
 
 
@@ -474,7 +474,7 @@ Case 1: All polygons / line-segments have the same number of points
                                           num=n_line_segments)[:, None]
 
     with hold_canvas(canvas):
-        canvas.stroke_styled_line_segments(line_segments, color=colors_fill, alpha=1)
+        canvas.stroke_styled_line_segments(line_segments, color=colors_fill)
     canvas
 
 
@@ -501,7 +501,7 @@ Polygons can be given as a list of ndarrays:
     colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
 
     with hold_canvas(canvas):
-        canvas.fill_styled_polygons(polygons, color=colors, alpha=1)
+        canvas.fill_styled_polygons(polygons, color=colors)
     canvas
 
 .. image:: images/draw_styled_polygons_from_list.png
