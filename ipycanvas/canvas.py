@@ -519,7 +519,7 @@ class Canvas(_CanvasBase):
 
         self._send_canvas_command(COMMANDS['strokeRects'], args, buffers)
 
-    def fill_styled_rects(self, x, y, width, height, color, alpha):
+    def fill_styled_rects(self, x, y, width, height, color, alpha=1):
         """Draw filled and styled rectangles of sizes ``(width, height)`` at the ``(x, y)`` positions
 
         Where ``x``, ``y``, ``width`` and ``height`` arguments are NumPy arrays, lists or scalar values.
@@ -543,7 +543,7 @@ class Canvas(_CanvasBase):
         populate_args(alpha, args, buffers)
         self._send_canvas_command(COMMANDS['fillStyledRects'], args, buffers)
 
-    def stroke_styled_rects(self, x, y, width, height, color, alpha):
+    def stroke_styled_rects(self, x, y, width, height, color, alpha=1):
         """Draw rectangular styled outlines of sizes ``(width, height)`` at the ``(x, y)`` positions.of sizes ``(width, height)``
 
         Where ``x``, ``y``, ``width`` and ``height`` arguments are NumPy arrays, lists or scalar values.
@@ -653,7 +653,7 @@ class Canvas(_CanvasBase):
 
         self._send_canvas_command(COMMANDS['strokeCircles'], args, buffers)
 
-    def fill_styled_circles(self, x, y, radius, color, alpha):
+    def fill_styled_circles(self, x, y, radius, color, alpha=1):
         """Draw a filled circles centered at ``(x, y)`` with a radius of ``radius``.
 
         Where ``x``, ``y``, ``radius``  and ``alpha`  are NumPy arrays, lists or scalar values.
@@ -669,7 +669,7 @@ class Canvas(_CanvasBase):
         populate_args(alpha, args, buffers)
         self._send_canvas_command(COMMANDS['fillStyledCircles'], args, buffers)
 
-    def stroke_styled_circles(self, x, y, radius, color, alpha):
+    def stroke_styled_circles(self, x, y, radius, color, alpha=1):
         """Draw filled circles centered at ``(x, y)`` with a radius of ``radius``.
 
         Where ``x``, ``y``, ``radius``  and ``alpha``  are NumPy arrays, lists or scalar values.
@@ -685,7 +685,7 @@ class Canvas(_CanvasBase):
         populate_args(alpha, args, buffers)
         self._send_canvas_command(COMMANDS['strokeStyledCircles'], args, buffers)
 
-    def fill_styled_arcs(self, x, y, radius, start_angle, end_angle, color, alpha, anticlockwise=False):
+    def fill_styled_arcs(self, x, y, radius, start_angle, end_angle, color, alpha=1, anticlockwise=False):
         """Draw filled and styled arcs centered at ``(x, y)`` with a radius of ``radius``.
 
         Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
@@ -704,7 +704,7 @@ class Canvas(_CanvasBase):
 
         self._send_canvas_command(COMMANDS['fillStyledArcs'], args, buffers)
 
-    def stroke_styled_arcs(self, x, y, radius, start_angle, end_angle, color, alpha, anticlockwise=False):
+    def stroke_styled_arcs(self, x, y, radius, start_angle, end_angle, color, alpha=1, anticlockwise=False):
         """Draw an styled arc outlines centered at ``(x, y)`` with a radius of ``radius``.
 
         Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
@@ -791,7 +791,7 @@ class Canvas(_CanvasBase):
         """
         self._draw_polygons_or_linesegments('strokePolygons', points, None, None, points_per_polygon, False, 3, "polygon")
 
-    def fill_styled_polygons(self, points, color, alpha, points_per_polygon=None):
+    def fill_styled_polygons(self, points, color, alpha=1, points_per_polygon=None):
         """" Draw many filled polygons at once:
 
             Args:
@@ -821,7 +821,7 @@ class Canvas(_CanvasBase):
         """
         self._draw_polygons_or_linesegments('fillStyledPolygons', points, color, alpha, points_per_polygon, True, 3, "polygon")
 
-    def stroke_styled_polygons(self, points, color, alpha, points_per_polygon=None):
+    def stroke_styled_polygons(self, points, color, alpha=1, points_per_polygon=None):
         """" Draw many stroked polygons at once:
 
             Args:
@@ -865,7 +865,7 @@ class Canvas(_CanvasBase):
 
         self._send_canvas_command(COMMANDS['strokeLines'], args, buffers)
 
-    def stroke_styled_line_segments(self, points, color, alpha, points_per_line_segment=None):
+    def stroke_styled_line_segments(self, points, color, alpha=1, points_per_line_segment=None):
         """ Draw many line segments at once:
 
             Args:
