@@ -500,7 +500,7 @@ class Canvas(_CanvasBase):
         self._send_canvas_command(COMMANDS['fillRects'], args, buffers)
 
     def stroke_rects(self, x, y, width, height=None):
-        """Draw a rectangular outlines of sizes ``(width, height)`` at the ``(x, y)`` positions.of sizes ``(width, height)`
+        """Draw a rectangular outlines of sizes ``(width, height)`` at the ``(x, y)`` positions.
 
         Where ``x``, ``y``, ``width`` and ``height`` arguments are NumPy arrays, lists or scalar values.
         If ``height`` is None, it is set to the same value as width.
@@ -544,7 +544,7 @@ class Canvas(_CanvasBase):
         self._send_canvas_command(COMMANDS['fillStyledRects'], args, buffers)
 
     def stroke_styled_rects(self, x, y, width, height, color, alpha):
-        """Draw rectangular styled outlines of sizes ``(width, height)`` at the ``(x, y)`` positions.of sizes ``(width, height)`
+        """Draw rectangular styled outlines of sizes ``(width, height)`` at the ``(x, y)`` positions.of sizes ``(width, height)``
 
         Where ``x``, ``y``, ``width`` and ``height`` arguments are NumPy arrays, lists or scalar values.
         If ``height`` is None, it is set to the same value as width.
@@ -656,8 +656,8 @@ class Canvas(_CanvasBase):
     def fill_styled_circles(self, x, y, radius, color, alpha):
         """Draw a filled circles centered at ``(x, y)`` with a radius of ``radius``.
 
-        Where ``x``, ``y``, ``radius``  ``and `alpha`  are NumPy arrays, lists or scalar values.
-        ``color`` must be an nx3 NumPy arrays with the color for each circle
+        Where ``x``, ``y``, ``radius``  and ``alpha`  are NumPy arrays, lists or scalar values.
+        ``color`` must be an (nx3) NumPy arrays with the color for each circle.
         """
         args = []
         buffers = []
@@ -672,7 +672,7 @@ class Canvas(_CanvasBase):
     def stroke_styled_circles(self, x, y, radius, color, alpha):
         """Draw filled circles centered at ``(x, y)`` with a radius of ``radius``.
 
-        Where ``x``, ``y``, ``radius``  ``and `alpha`  are NumPy arrays, lists or scalar values.
+        Where ``x``, ``y``, ``radius``  and ``alpha``  are NumPy arrays, lists or scalar values.
         ``color`` must be an nx3 NumPy arrays with the color for each circle
         """
         args = []
@@ -753,11 +753,13 @@ class Canvas(_CanvasBase):
                     where each ndarray is a nx2 array of coordinates
                     (n can be different for each entry)
                     If the points are given as ndarray it must be either:
-                        * a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
-                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
-                            must be specified st. we know the the number of points for each individual polygon.
-                            Note that the number of points in ``points`` must match the points_per_polygon.
-                            array: ie: `np.sum(points_per_polygon) == points.shape[0]`
+
+                    - a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
+                    - a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
+                      must be specified st. we know the the number of points for each individual polygon.
+                      Note that the number of points in ``points`` must match the points_per_polygon.
+                      array: ie: `np.sum(points_per_polygon) == points.shape[0]`
+
                 points_per_polygon (ndarray):
                     ndarray with number of points for each polygon. Must **only** be given if points are
                     given as `flat` 2D array.
@@ -776,11 +778,13 @@ class Canvas(_CanvasBase):
                     where each ndarray is a nx2 array of coordinates
                     (n can be different for each entry)
                     If the points are given as ndarray it must be either:
-                        * a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
-                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
-                            must be specified st. we know the the number of points for each individual polygon.
-                            Note that the number of points in ``points`` must match the points_per_polygon.
-                            array: ie: `np.sum(points_per_polygon) == points.shape[0]`
+
+                    - a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
+                    - a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
+                      must be specified st. we know the the number of points for each individual polygon.
+                      Note that the number of points in ``points`` must match the points_per_polygon.
+                      array: ie: `np.sum(points_per_polygon) == points.shape[0]`
+
                 points_per_polygon (ndarray):
                     ndarray with number of points for each polygon. Must **only** be given if points are
                     given as `flat` 2D array.
@@ -798,11 +802,13 @@ class Canvas(_CanvasBase):
                     where each ndarray is a nx2 array of coordinates
                     (n can be different for each entry)
                     If the points are given as ndarray it must be either:
-                        * a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
-                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
-                            must be specified st. we know the the number of points for each individual polygon.
-                            Note that the number of points in ``points`` must match the points_per_polygon.
-                            array: ie: `np.sum(points_per_polygon) == points.shape[0]`
+
+                    - a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
+                    - a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
+                      must be specified st. we know the the number of points for each individual polygon.
+                      Note that the number of points in ``points`` must match the points_per_polygon.
+                      array: ie: `np.sum(points_per_polygon) == points.shape[0]`
+
                 color (ndarray)
                     An (n_polyons,3) array with the color for each polygon
                 alpha (ndarray,list,scalar):
@@ -826,11 +832,13 @@ class Canvas(_CanvasBase):
                     where each ndarray is a nx2 array of coordinates
                     (n can be different for each entry)
                     If the points are given as ndarray it must be either:
-                        * a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
-                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
-                            must be specified st. we know the the number of points for each individual polygon.
-                            Note that the number of points in ``points`` must match the points_per_polygon.
-                            array: ie: `np.sum(points_per_polygon) == points.shape[0]`
+
+                    - a 3d array: the shape of the array is (n_polyons, n_points_per_polygon, 2)
+                    - a 2d array: the shape of the array is (n,  2) and in additional  `points_per_polygon`
+                      must be specified st. we know the the number of points for each individual polygon.
+                      Note that the number of points in ``points`` must match the points_per_polygon.
+                      array: ie: `np.sum(points_per_polygon) == points.shape[0]`
+
                 color (ndarray)
                     An (n_polyons,3) array with the color for each polygon
                 alpha (ndarray,list,scalar):
@@ -858,7 +866,7 @@ class Canvas(_CanvasBase):
         self._send_canvas_command(COMMANDS['strokeLines'], args, buffers)
 
     def stroke_styled_line_segments(self, points, color, alpha, points_per_line_segment=None):
-        """" Draw many line segments at once:
+        """ Draw many line segments at once:
 
             Args:
                 points (list or ndarray): The line_segments points:
@@ -868,11 +876,13 @@ class Canvas(_CanvasBase):
                     where each ndarray is a nx2 array of coordinates
                     (n can be different for each entry)
                     If the points are given as ndarray it must be either:
-                        * a 3d array: the shape of the array is (n_line_segments, n_points_per_polygon, 2)
-                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_line_segment`
-                            must be specified st. we know the the number of points for each individual line_segment.
-                            Note that the number of points in ``points`` must match the points_per_line_segment.
-                            array: ie: `np.sum(points_per_line_segment) == points.shape[0]`
+
+                    - a 3d array: the shape of the array is (n_line_segments, n_points_per_polygon, 2)
+                    - a 2d array: the shape of the array is (n,  2) and in additional  `points_per_line_segment`
+                        must be specified st. we know the the number of points for each individual line_segment.
+                        Note that the number of points in ``points`` must match the points_per_line_segment.
+                        array: ie: `np.sum(points_per_line_segment) == points.shape[0]`
+
                 color (ndarray)
                     An (n_line_segments,3) array with the color for each line_segment
                 alpha (ndarray,list,scalar):
@@ -896,11 +906,13 @@ class Canvas(_CanvasBase):
                     where each ndarray is a nx2 array of coordinates
                     (n can be different for each entry)
                     If the points are given as ndarray it must be either:
-                        * a 3d array: the shape of the array is (n_line_segments, n_points_per_polygon, 2)
-                        * a 2d array: the shape of the array is (n,  2) and in additional  `points_per_line_segment `
-                            must be specified st. we know the the number of points for each individual polygon.
-                            Note that the number of points in ``points`` must match the points_per_line_segment .
-                            array: ie: `np.sum(points_per_line_segment  ) == points.shape[0]`
+
+                    - a 3d array: the shape of the array is (n_line_segments, n_points_per_polygon, 2)
+                    - a 2d array: the shape of the array is (n,  2) and in additional  `points_per_line_segment `
+                      must be specified st. we know the the number of points for each individual polygon.
+                      Note that the number of points in ``points`` must match the points_per_line_segment .
+                      array: ie: `np.sum(points_per_line_segment  ) == points.shape[0]`\
+
                 points_per_line_segment  (ndarray):
                     ndarray with number of points for each polygon. Must **only** be given if points are
                     given as `flat` 2D array.
