@@ -32,7 +32,7 @@ There are six methods that draw rectangles on the canvas:
 - ``stroke_rects(x, y, width, height=None)``:
     Draws rectangular outlines. Where ``x``, ``y``, ``width`` and ``height`` are either integers, lists of integers or NumPy arrays.
     If ``height`` is None, it is set to the same value as ``width``.
-- ``fill_styled_rect(x, y, width, height, color, alpha)``:
+- ``fill_styled_rects(x, y, width, height, color, alpha)``:
     Same as ``fill_rects``  but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
 - ``stroke_styled_rects(x, y, width, height, color, alpha)``:
     Same as ``stroke_rects`` but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
