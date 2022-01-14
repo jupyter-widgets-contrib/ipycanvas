@@ -264,6 +264,7 @@ class CanvasModel extends DOMWidgetModel {
     'textBaseline', 'direction', 'globalCompositeOperation',
     'lineWidth', 'lineCap', 'lineJoin', 'miterLimit', 'lineDashOffset',
     'shadowOffsetX', 'shadowOffsetY', 'shadowBlur', 'shadowColor',
+    'filter',
   ];
 
   initialize(attributes: any, options: any) {
@@ -637,7 +638,7 @@ class CanvasModel extends DOMWidgetModel {
     // a scalar
     const numPolygons = args[0];
 
-    // always array 
+    // always array
     const points = getArg(args[1], buffers);
 
     // array or scalar
@@ -666,7 +667,7 @@ class CanvasModel extends DOMWidgetModel {
         this.ctx.beginPath();
         this.ctx.moveTo(points.getItem(start), points.getItem(start+1));
 
-        // draw all points of the polygon (except start) 
+        // draw all points of the polygon (except start)
         for(let idp = start+2; idp < stop; idp += 2){
           this.ctx.lineTo(points.getItem(idp), points.getItem(idp + 1));
         }
@@ -684,7 +685,7 @@ class CanvasModel extends DOMWidgetModel {
     // a scalar
     const numPolygons = args[0];
 
-    // always array 
+    // always array
     const points = getArg(args[1], buffers);
 
     // array or scalar
@@ -701,7 +702,7 @@ class CanvasModel extends DOMWidgetModel {
         this.ctx.beginPath();
         this.ctx.moveTo(points.getItem(start), points.getItem(start+1));
 
-        // draw all points of the polygon (except start) 
+        // draw all points of the polygon (except start)
         for(let idp = start+2; idp < stop; idp += 2){
           this.ctx.lineTo(points.getItem(idp), points.getItem(idp + 1));
         }

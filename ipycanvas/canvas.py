@@ -514,6 +514,10 @@ class Canvas(_CanvasBase):
     #: the junction becomes. Default to ``10.``.
     miter_limit = Float(10.0)
 
+    #: (str) Filter effects such as blurring and grayscaling. It is similar to the CSS filter property and accepts the same values.
+    #: This property has no effect on Safari, see https://bugs.webkit.org/show_bug.cgi?id=198416
+    filter = Unicode("none")
+
     _line_dash = List()
 
     #: (float) Specifies where to start a dash array on a line. Default is ``0.``.
@@ -549,6 +553,7 @@ class Canvas(_CanvasBase):
         "shadow_offset_y": 14,
         "shadow_blur": 15,
         "shadow_color": 16,
+        "filter": 17,
     }
 
     def __init__(self, *args, **kwargs):
