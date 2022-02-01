@@ -53,7 +53,7 @@ jobs:
         jupyter labextension list 2>&1 | grep -ie "ipycanvas.*enabled.*ok" -
 
     - name: Test PEP8
-      run: flake8 ipycanvas --ignore=E501,W504,W503
+      run: black --check ipycanvas
 
     - name: Test PEP8 on example notebooks
       run: jupytext examples/*.ipynb --check 'black --check {}'

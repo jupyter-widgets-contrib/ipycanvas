@@ -7,9 +7,11 @@ import numpy as np
 
 try:
     import orjson
+
     ORJSON_AVAILABLE = True
 except ImportError:
     import json
+
     ORJSON_AVAILABLE = False
 
 
@@ -43,7 +45,7 @@ def binary_image(ar):
         ar = add_alpha
     if not ar.flags["C_CONTIGUOUS"]:  # make sure it's contiguous
         ar = np.ascontiguousarray(ar, dtype=np.uint8)
-    return {'shape': ar.shape, 'dtype': str(ar.dtype)}, memoryview(ar)
+    return {"shape": ar.shape, "dtype": str(ar.dtype)}, memoryview(ar)
 
 
 def array_to_binary(ar):
@@ -60,13 +62,13 @@ def array_to_binary(ar):
     if not ar.flags["C_CONTIGUOUS"]:
         ar = np.ascontiguousarray(ar)
 
-    return {'shape': ar.shape, 'dtype': str(ar.dtype)}, memoryview(ar)
+    return {"shape": ar.shape, "dtype": str(ar.dtype)}, memoryview(ar)
 
 
 def populate_args(arg, args, buffers):
     if isinstance(arg, (list, np.ndarray)):
         arg_metadata, arg_buffer = array_to_binary(np.asarray(arg))
-        arg_metadata['idx'] = len(buffers)
+        arg_metadata["idx"] = len(buffers)
 
         args.append(arg_metadata)
         buffers.append(arg_buffer)
@@ -77,11 +79,13 @@ def populate_args(arg, args, buffers):
 def commands_to_buffer(commands):
     # Turn the commands list into a binary buffer
     if ORJSON_AVAILABLE:
-        return array_to_binary(np.frombuffer(
-            bytes(orjson.dumps(commands, option=orjson.OPT_SERIALIZE_NUMPY)),
-            dtype=np.uint8)
+        return array_to_binary(
+            np.frombuffer(
+                bytes(orjson.dumps(commands, option=orjson.OPT_SERIALIZE_NUMPY)),
+                dtype=np.uint8,
+            )
         )
     else:
-        return array_to_binary(np.frombuffer(
-            bytes(json.dumps(commands), encoding='utf8'), dtype=np.uint8
-        ))
+        return array_to_binary(
+            np.frombuffer(bytes(json.dumps(commands), encoding="utf8"), dtype=np.uint8)
+        )
