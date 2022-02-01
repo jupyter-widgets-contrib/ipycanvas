@@ -68,6 +68,7 @@
   },
   "jupyterlab": {
     "extension": "lib/plugin",
+    "webpackConfig": "webpack.lab.config.js",
     "outputDir": "ipycanvas/labextension",
     "sharedPackages": {
       "@jupyter-widgets/base": {

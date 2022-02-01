@@ -53,7 +53,7 @@ jobs:
         jupyter labextension list 2>&1 | grep -ie "ipycanvas.*enabled.*ok" -
 
     - name: Test PEP8
-      run: flake8 ipycanvas --ignore=E501,W504,W503
+      run: black --check ipycanvas
 
     - name: Test PEP8 on example notebooks
       run: jupytext examples/*.ipynb --check 'black --check {}'
@@ -133,6 +133,8 @@ jobs:
       - name: Manually install labextension for lab2
         if: ${{ matrix.jlab_version }} == 2.3.2
         run: jupyter labextension install --debug .
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
 
       - name: Test installation files
         run: |
