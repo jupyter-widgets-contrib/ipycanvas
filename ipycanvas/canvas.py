@@ -531,6 +531,8 @@ class Canvas(_CanvasBase):
     _touch_move_callbacks = Instance(CallbackDispatcher, ())
     _touch_cancel_callbacks = Instance(CallbackDispatcher, ())
 
+    _key_down_callbacks = Instance(CallbackDispatcher, ())
+
     ATTRS = {
         "fill_style": 0,
         "stroke_style": 1,
@@ -1408,6 +1410,10 @@ class Canvas(_CanvasBase):
         """Register a callback that will be called on touch cancel."""
         self._touch_cancel_callbacks.register_callback(callback, remove=remove)
 
+    def on_key_down(self, callback, remove=False):
+        """Register a callback that will be called on keyboard event."""
+        self._key_down_callbacks.register_callback(callback, remove=remove)
+
     def __setattr__(self, name, value):
         super(Canvas, self).__setattr__(name, value)
 
@@ -1462,6 +1468,14 @@ class Canvas(_CanvasBase):
         if content.get("event", "") == "touch_cancel":
             self._touch_cancel_callbacks(
                 [(touch["x"], touch["y"]) for touch in content["touches"]]
+            )
+
+        if content.get("event", "") == "key_down":
+            self._key_down_callbacks(
+                content["key"],
+                content["shift_key"],
+                content["ctrl_key"],
+                content["meta_key"],
             )
 
     def _draw_polygons_or_linesegments(
@@ -1635,6 +1649,10 @@ class MultiCanvas(_CanvasBase):
     def on_touch_cancel(self, callback, remove=False):
         """Register a callback that will be called on touch cancel."""
         self._canvases[-1].on_touch_cancel(callback, remove=remove)
+
+    def on_key_down(self, callback, remove=False):
+        """Register a callback that will be called on keyboard event."""
+        self._canvases[-1].on_key_down(callback, remove=remove)
 
     def clear(self):
         """Clear the Canvas."""

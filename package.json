@@ -30,7 +30,7 @@
     "url": "https://github.com/martinRenou/ipycanvas"
   },
   "scripts": {
-    "build": "yarn run build:lib && yarn run build:nbextension",
+    "build": "yarn run build:lib && yarn run build:nbextension && yarn run build:labextension",
     "build:lib": "tsc",
     "build:nbextension": "webpack",
     "build:labextension": "jupyter labextension build .",

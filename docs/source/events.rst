@@ -10,17 +10,23 @@ Those methods take a callback function as single argument, this callback functio
 
 .. code:: Python
 
+    from ipywidgets import Output
+
+    out = Output()
+
+    @out.capture()
     def handle_mouse_move(x, y):
-        # Do something
-        pass
+        print('Mouse move event:', x, y)
 
     canvas.on_mouse_move(handle_mouse_move)
 
+    @out.capture()
     def handle_mouse_down(x, y):
-        # Do something else
-        pass
+        print('Mouse down event:', x, y)
 
     canvas.on_mouse_down(handle_mouse_down)
+
+    display(out)
 
 Built-in touch events
 ---------------------
@@ -40,6 +46,23 @@ Those methods take a callback function as single argument, this callback functio
 
 .. note::
     Please open an issue or a Pull Request if you want more events to be supported by ipycanvas
+
+Keyboard events
+---------------
+
+.. code:: Python
+
+    from ipywidgets import Output
+
+    out = Output()
+
+    @out.capture()
+    def on_keyboard_event(key, shift_key, ctrl_key, meta_key):
+        print('Keyboard event:', key, shift_key, ctrl_key, meta_key)
+
+    canvas.on_key_down(on_keyboard_event)
+
+    display(out)
 
 ipyevents
 ---------

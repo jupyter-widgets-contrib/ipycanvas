@@ -1036,6 +1036,9 @@ class CanvasView extends DOMWidgetView {
     this.el.addEventListener('touchend', { handleEvent: this.onTouchEnd.bind(this) });
     this.el.addEventListener('touchmove', { handleEvent: this.onTouchMove.bind(this) });
     this.el.addEventListener('touchcancel', { handleEvent: this.onTouchCancel.bind(this) });
+    this.el.addEventListener('keydown', { handleEvent: this.onKeyDown.bind(this) });
+
+    this.el.setAttribute('tabindex', '0');
 
     this.updateCanvas();
   }
@@ -1059,6 +1062,9 @@ class CanvasView extends DOMWidgetView {
   }
 
   private onMouseDown(event: MouseEvent) {
+    // Bring focus to the canvas element, so keyboard events can be triggered
+    this.el.focus();
+
     this.model.send({ event: 'mouse_down', ...this.getCoordinates(event) }, {});
   }
 
@@ -1088,6 +1094,19 @@ class CanvasView extends DOMWidgetView {
   private onTouchCancel(event: TouchEvent) {
     const touches: Touch[] = Array.from(event.touches);
     this.model.send({ event: 'touch_cancel', touches: touches.map(this.getCoordinates.bind(this)) }, {});
+  }
+
+  private onKeyDown(event: KeyboardEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.model.send({
+      event: 'key_down',
+      key: event.key,
+      shift_key: event.shiftKey,
+      ctrl_key: event.ctrlKey,
+      meta_key: event.metaKey
+    }, {});
   }
 
   protected getCoordinates(event: MouseEvent | Touch) {
