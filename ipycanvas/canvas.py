@@ -1592,7 +1592,7 @@ class MultiCanvas(_CanvasBase):
         if name in ("caching", "width", "height"):
             return getattr(self._canvases[0], name)
 
-        return super(MultiCanvas, self).__getattr__(name)
+        raise AttributeError(f"'MultiCanvas' object has no attribute '{name}'")
 
     def on_client_ready(self, callback, remove=False):
         """Register a callback that will be called when a new client is ready to receive draw commands.
@@ -1602,9 +1602,39 @@ class MultiCanvas(_CanvasBase):
         this function is useful for replaying your drawing whenever a new client connects and is
         ready to receive draw commands.
         """
-        self._canvases[-1]._client_ready_callbacks.register_callback(
-            callback, remove=remove
-        )
+        self._canvases[-1].on_client_ready(callback, remove=remove)
+
+    def on_mouse_move(self, callback, remove=False):
+        """Register a callback that will be called on mouse move."""
+        self._canvases[-1].on_mouse_move(callback, remove=remove)
+
+    def on_mouse_down(self, callback, remove=False):
+        """Register a callback that will be called on mouse click down."""
+        self._canvases[-1].on_mouse_down(callback, remove=remove)
+
+    def on_mouse_up(self, callback, remove=False):
+        """Register a callback that will be called on mouse click up."""
+        self._canvases[-1].on_mouse_up(callback, remove=remove)
+
+    def on_mouse_out(self, callback, remove=False):
+        """Register a callback that will be called on mouse out of the canvas."""
+        self._canvases[-1].on_mouse_out(callback, remove=remove)
+
+    def on_touch_start(self, callback, remove=False):
+        """Register a callback that will be called on touch start (new finger on the screen)."""
+        self._canvases[-1].on_touch_start(callback, remove=remove)
+
+    def on_touch_end(self, callback, remove=False):
+        """Register a callback that will be called on touch end (a finger is not touching the screen anymore)."""
+        self._canvases[-1].on_touch_end(callback, remove=remove)
+
+    def on_touch_move(self, callback, remove=False):
+        """Register a callback that will be called on touch move (finger moving on the screen)."""
+        self._canvases[-1].on_touch_move(callback, remove=remove)
+
+    def on_touch_cancel(self, callback, remove=False):
+        """Register a callback that will be called on touch cancel."""
+        self._canvases[-1].on_touch_cancel(callback, remove=remove)
 
     def clear(self):
         """Clear the Canvas."""
