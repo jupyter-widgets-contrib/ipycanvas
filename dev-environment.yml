@@ -11,4 +11,4 @@ dependencies:
     - wheel
     - twine
     - jupytext
-    - black=21
+    - black=22.1.0
