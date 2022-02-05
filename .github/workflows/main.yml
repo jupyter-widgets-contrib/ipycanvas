@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: [3.8]
+        python-version: ['3.10']
 
     steps:
     - name: Checkout
@@ -95,14 +95,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu, macos]
-        python: ['3.6', '3.9']
+        python: ['3.7', '3.10']
         include:
-          - python: '3.6'
+          - python: '3.7'
             dist: 'ipycanvas*.tar.gz'
-            jlab_version: 3
-          - python: '3.9'
+          - python: '3.10'
             dist: 'ipycanvas*.whl'
-            jlab_version: 2.3.2
 
     steps:
 
@@ -118,7 +116,7 @@ jobs:
           channels: conda-forge
 
       - name: Install dependencies
-        run: mamba install python=${{ matrix.python-version }} pip yarn jupyterlab=${{ matrix.jlab_version }} ipywidgets jupyter-packaging
+        run: mamba install python=${{ matrix.python-version }} pip yarn jupyterlab ipywidgets jupyter-packaging
 
       - uses: actions/download-artifact@v2
         with:
@@ -129,12 +127,6 @@ jobs:
         run: |
           cd dist
           pip install -vv ${{ matrix.dist }}
-
-      - name: Manually install labextension for lab2
-        if: ${{ matrix.jlab_version }} == 2.3.2
-        run: jupyter labextension install --debug .
-        env:
-          NODE_OPTIONS: --openssl-legacy-provider
 
       - name: Test installation files
         run: |
