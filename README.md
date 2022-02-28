@@ -48,7 +48,7 @@ conda install -c conda-forge yarn
 jupyter labextension install @jupyter-widgets/jupyterlab-manager ipycanvas
 ```
 
- An development installation guide, can be found [here](https://ipycanvas.readthedocs.io/en/latest/installation.html#development-installation)
+ A development installation guide, can be found [here](https://ipycanvas.readthedocs.io/en/latest/installation.html#development-installation)
 
 ## Examples
 
