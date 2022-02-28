@@ -16,7 +16,7 @@ You can try ipycanvas, without the need of installing anything on your computer,
 
 Or you can try it directly in this documentation page thanks to JupyterLite!!
 
-.. retrolite:: source/ipycanvas.ipynb
+.. retrolite:: ipycanvas.ipynb
 
 Questions?
 ----------
