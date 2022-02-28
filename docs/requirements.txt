@@ -1,2 +1,3 @@
 ipycanvas
-git+https://github.com/pandas-dev/pydata-sphinx-theme@master
+jupyterlite-sphinx
+pydata-sphinx-theme
