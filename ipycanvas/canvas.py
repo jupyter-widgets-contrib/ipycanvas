@@ -102,6 +102,7 @@ _CMD_LIST = [
     "fillStyledPolygons",
     "strokeStyledPolygons",
     "strokeStyledLineSegments",
+    "switchCanvas",
 ]
 COMMANDS = {v: i for i, v in enumerate(_CMD_LIST)}
 
@@ -191,6 +192,73 @@ def _serialize_list_of_polygons_or_linestrokes(
     else:
         raise RuntimeError("points must be a list or an ndarray")
     return num_polygons, flat_points, points_per_item
+
+
+class _CanvasManager(Widget):
+    """Private Canvas manager."""
+
+    _model_module = Unicode(module_name).tag(sync=True)
+    _model_module_version = Unicode(module_version).tag(sync=True)
+
+    _model_name = Unicode("CanvasManagerModel").tag(sync=True)
+
+    def __init__(self, *args, **kwargs):
+        self._caching = kwargs.get("caching", False)
+        self._commands_cache = []
+        self._buffers_cache = []
+        self._current_canvas = None
+
+        super(_CanvasManager, self).__init__()
+
+    def send_draw_command(self, canvas, name, args=[], buffers=[]):
+        while len(args) and args[len(args) - 1] is None:
+            args.pop()
+        self.send_command(canvas, [name, args, len(buffers)], buffers)
+
+    def send_command(self, canvas, command, buffers=[]):
+        if self._caching:
+            if self._current_canvas is not canvas:
+                self._commands_cache.append(
+                    [
+                        COMMANDS["switchCanvas"],
+                        [widget_serialization["to_json"](canvas, None)],
+                    ]
+                )
+                self._current_canvas = canvas
+            self._commands_cache.append(command)
+            self._buffers_cache += buffers
+
+            return
+
+        # TODO Send the switch and the message in one batch?
+        if self._current_canvas is not canvas:
+            self._send_custom(
+                [
+                    COMMANDS["switchCanvas"],
+                    [widget_serialization["to_json"](canvas, None)],
+                ]
+            )
+            self._current_canvas = canvas
+
+        self._send_custom(command, buffers)
+
+    def flush(self):
+        """Flush all the cached commands and clear the cache."""
+        if not self._caching or not len(self._commands_cache):
+            return
+
+        self._send_custom(self._commands_cache, self._buffers_cache)
+
+        self._commands_cache = []
+        self._buffers_cache = []
+
+    def _send_custom(self, command, buffers=[]):
+        metadata, command_buffer = commands_to_buffer(command)
+        self.send(metadata, buffers=[command_buffer] + buffers)
+
+
+# Main canvas manager
+_CANVAS_MANAGER = _CanvasManager()
 
 
 class Path2D(Widget):
@@ -386,20 +454,6 @@ class _CanvasBase(DOMWidget):
         image_data = image_bytes_to_array(self.image_data)
         return image_data[y : y + height, x : x + width]
 
-    @property
-    def size(self):
-        """Get the canvas size."""
-        return (self.width, self.height)
-
-    @size.setter
-    def size(self, value):
-        """Set the size of the canvas, this is deprecated, use width and height attributes instead."""
-        warnings.warn(
-            "size is deprecated and will be removed in a future release, please use width and height instead.",
-            DeprecationWarning,
-        )
-        (self.width, self.height) = value
-
 
 class Canvas(_CanvasBase):
     """Create a Canvas widget.
@@ -407,7 +461,6 @@ class Canvas(_CanvasBase):
     Args:
         width (int): The width (in pixels) of the canvas
         height (int): The height (in pixels) of the canvas
-        caching (boolean): Whether commands should be cached or not
     """
 
     _model_name = Unicode("CanvasModel").tag(sync=True)
@@ -560,31 +613,21 @@ class Canvas(_CanvasBase):
 
     def __init__(self, *args, **kwargs):
         """Create a Canvas widget."""
-        #: Whether commands should be cached or not
-        self.caching = kwargs.get("caching", False)
-        self._commands_cache = []
-        self._buffers_cache = []
+        super(Canvas, self).__init__(*args, **kwargs)
 
-        if "size" in kwargs:
-            size = kwargs["size"]
-
-            kwargs["width"] = size[0]
-            kwargs["height"] = size[1]
-
-            del kwargs["size"]
+        if "caching" in kwargs:
+            _CANVAS_MANAGER._caching = kwargs["caching"]
 
             warnings.warn(
-                "size is deprecated and will be removed in a future release, please use width and height instead.",
+                "caching is deprecated and will be removed in a future release, please use hold_canvas() instead.",
                 DeprecationWarning,
             )
-
-        super(Canvas, self).__init__(*args, **kwargs)
 
         self.on_msg(self._handle_frontend_event)
 
     def sleep(self, time):
         """Make the Canvas sleep for `time` milliseconds."""
-        self._send_canvas_command(COMMANDS["sleep"], [time])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["sleep"], [time])
 
     # Gradient methods
     def create_linear_gradient(self, x0, y0, x1, y1, color_stops):
@@ -629,14 +672,18 @@ class Canvas(_CanvasBase):
         if height is None:
             height = width
 
-        self._send_canvas_command(COMMANDS["fillRect"], [x, y, width, height])
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["fillRect"], [x, y, width, height]
+        )
 
     def stroke_rect(self, x, y, width, height=None):
         """Draw a rectangular outline of size ``(width, height)`` at the ``(x, y)`` position."""
         if height is None:
             height = width
 
-        self._send_canvas_command(COMMANDS["strokeRect"], [x, y, width, height])
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["strokeRect"], [x, y, width, height]
+        )
 
     def fill_rects(self, x, y, width, height=None):
         """Draw filled rectangles of sizes ``(width, height)`` at the ``(x, y)`` positions.
@@ -656,7 +703,7 @@ class Canvas(_CanvasBase):
         else:
             populate_args(height, args, buffers)
 
-        self._send_canvas_command(COMMANDS["fillRects"], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["fillRects"], args, buffers)
 
     def stroke_rects(self, x, y, width, height=None):
         """Draw a rectangular outlines of sizes ``(width, height)`` at the ``(x, y)`` positions.
@@ -676,7 +723,7 @@ class Canvas(_CanvasBase):
         else:
             populate_args(height, args, buffers)
 
-        self._send_canvas_command(COMMANDS["strokeRects"], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["strokeRects"], args, buffers)
 
     def fill_styled_rects(self, x, y, width, height, color, alpha=1):
         """Draw filled and styled rectangles of sizes ``(width, height)`` at the ``(x, y)`` positions
@@ -700,7 +747,9 @@ class Canvas(_CanvasBase):
 
         populate_args(color, args, buffers)
         populate_args(alpha, args, buffers)
-        self._send_canvas_command(COMMANDS["fillStyledRects"], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["fillStyledRects"], args, buffers
+        )
 
     def stroke_styled_rects(self, x, y, width, height, color, alpha=1):
         """Draw rectangular styled outlines of sizes ``(width, height)`` at the ``(x, y)`` positions.of sizes ``(width, height)``
@@ -724,35 +773,45 @@ class Canvas(_CanvasBase):
 
         populate_args(color, args, buffers)
         populate_args(alpha, args, buffers)
-        self._send_canvas_command(COMMANDS["strokeStyledRects"], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["strokeStyledRects"], args, buffers
+        )
 
     def clear_rect(self, x, y, width, height=None):
         """Clear the specified rectangular area of size ``(width, height)`` at the ``(x, y)`` position, making it fully transparent."""
         if height is None:
             height = width
 
-        self._send_canvas_command(COMMANDS["clearRect"], [x, y, width, height])
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["clearRect"], [x, y, width, height]
+        )
 
     # Arc methods
     def fill_arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Draw a filled arc centered at ``(x, y)`` with a radius of ``radius`` from ``start_angle`` to ``end_angle``."""
-        self._send_canvas_command(
-            COMMANDS["fillArc"], [x, y, radius, start_angle, end_angle, anticlockwise]
+        _CANVAS_MANAGER.send_draw_command(
+            self,
+            COMMANDS["fillArc"],
+            [x, y, radius, start_angle, end_angle, anticlockwise],
         )
 
     def fill_circle(self, x, y, radius):
         """Draw a filled circle centered at ``(x, y)`` with a radius of ``radius``."""
-        self._send_canvas_command(COMMANDS["fillCircle"], [x, y, radius])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["fillCircle"], [x, y, radius])
 
     def stroke_arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Draw an arc outline centered at ``(x, y)`` with a radius of ``radius``."""
-        self._send_canvas_command(
-            COMMANDS["strokeArc"], [x, y, radius, start_angle, end_angle, anticlockwise]
+        _CANVAS_MANAGER.send_draw_command(
+            self,
+            COMMANDS["strokeArc"],
+            [x, y, radius, start_angle, end_angle, anticlockwise],
         )
 
     def stroke_circle(self, x, y, radius):
         """Draw a circle centered at ``(x, y)`` with a radius of ``radius``."""
-        self._send_canvas_command(COMMANDS["strokeCircle"], [x, y, radius])
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["strokeCircle"], [x, y, radius]
+        )
 
     def fill_arcs(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Draw filled arcs centered at ``(x, y)`` with a radius of ``radius``.
@@ -769,7 +828,7 @@ class Canvas(_CanvasBase):
         populate_args(end_angle, args, buffers)
         args.append(anticlockwise)
 
-        self._send_canvas_command(COMMANDS["fillArcs"], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["fillArcs"], args, buffers)
 
     def stroke_arcs(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Draw an arc outlines centered at ``(x, y)`` with a radius of ``radius``.
@@ -786,7 +845,7 @@ class Canvas(_CanvasBase):
         populate_args(end_angle, args, buffers)
         args.append(anticlockwise)
 
-        self._send_canvas_command(COMMANDS["strokeArcs"], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["strokeArcs"], args, buffers)
 
     def fill_circles(self, x, y, radius):
         """Draw filled circles centered at ``(x, y)`` with a radius of ``radius``.
@@ -800,7 +859,7 @@ class Canvas(_CanvasBase):
         populate_args(y, args, buffers)
         populate_args(radius, args, buffers)
 
-        self._send_canvas_command(COMMANDS["fillCircles"], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["fillCircles"], args, buffers)
 
     def stroke_circles(self, x, y, radius):
         """Draw a circle outlines centered at ``(x, y)`` with a radius of ``radius``.
@@ -814,7 +873,9 @@ class Canvas(_CanvasBase):
         populate_args(y, args, buffers)
         populate_args(radius, args, buffers)
 
-        self._send_canvas_command(COMMANDS["strokeCircles"], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["strokeCircles"], args, buffers
+        )
 
     def fill_styled_circles(self, x, y, radius, color, alpha=1):
         """Draw a filled circles centered at ``(x, y)`` with a radius of ``radius``.
@@ -830,7 +891,9 @@ class Canvas(_CanvasBase):
         populate_args(radius, args, buffers)
         populate_args(color, args, buffers)
         populate_args(alpha, args, buffers)
-        self._send_canvas_command(COMMANDS["fillStyledCircles"], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["fillStyledCircles"], args, buffers
+        )
 
     def stroke_styled_circles(self, x, y, radius, color, alpha=1):
         """Draw filled circles centered at ``(x, y)`` with a radius of ``radius``.
@@ -846,7 +909,10 @@ class Canvas(_CanvasBase):
         populate_args(radius, args, buffers)
         populate_args(color, args, buffers)
         populate_args(alpha, args, buffers)
-        self._send_canvas_command(COMMANDS["strokeStyledCircles"], args, buffers)
+
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["strokeStyledCircles"], args, buffers
+        )
 
     def fill_styled_arcs(
         self, x, y, radius, start_angle, end_angle, color, alpha=1, anticlockwise=False
@@ -867,7 +933,9 @@ class Canvas(_CanvasBase):
         populate_args(color, args, buffers)
         populate_args(alpha, args, buffers)
 
-        self._send_canvas_command(COMMANDS["fillStyledArcs"], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["fillStyledArcs"], args, buffers
+        )
 
     def stroke_styled_arcs(
         self, x, y, radius, start_angle, end_angle, color, alpha=1, anticlockwise=False
@@ -888,7 +956,9 @@ class Canvas(_CanvasBase):
         populate_args(color, args, buffers)
         populate_args(alpha, args, buffers)
 
-        self._send_canvas_command(COMMANDS["strokeStyledArcs"], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["strokeStyledArcs"], args, buffers
+        )
 
     # Polygon methods
     def fill_polygon(self, points):
@@ -898,7 +968,7 @@ class Canvas(_CanvasBase):
 
         populate_args(points, args, buffers)
 
-        self._send_canvas_command(COMMANDS["fillPolygon"], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["fillPolygon"], args, buffers)
 
     def stroke_polygon(self, points):
         """Draw polygon outline from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``."""
@@ -907,7 +977,9 @@ class Canvas(_CanvasBase):
 
         populate_args(points, args, buffers)
 
-        self._send_canvas_command(COMMANDS["strokePolygon"], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["strokePolygon"], args, buffers
+        )
 
     def fill_polygons(self, points, points_per_polygon=None):
         """ " Draw many filled polygons at once:
@@ -1050,7 +1122,9 @@ class Canvas(_CanvasBase):
     # Lines methods
     def stroke_line(self, x1, y1, x2, y2):
         """Draw a line from ``(x1, y1)`` to ``(x2, y2)``."""
-        self._send_canvas_command(COMMANDS["strokeLine"], [x1, y1, x2, y2])
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["strokeLine"], [x1, y1, x2, y2]
+        )
 
     def stroke_lines(self, points):
         """Draw a path of consecutive lines from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``."""
@@ -1059,7 +1133,7 @@ class Canvas(_CanvasBase):
 
         populate_args(points, args, buffers)
 
-        self._send_canvas_command(COMMANDS["strokeLines"], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["strokeLines"], args, buffers)
 
     def stroke_styled_line_segments(
         self, points, color, alpha=1, points_per_line_segment=None
@@ -1138,7 +1212,7 @@ class Canvas(_CanvasBase):
     # Paths methods
     def begin_path(self):
         """Call this method when you want to create a new path."""
-        self._send_canvas_command(COMMANDS["beginPath"])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["beginPath"])
 
     def close_path(self):
         """Add a straight line from the current point to the start of the current path.
@@ -1146,11 +1220,11 @@ class Canvas(_CanvasBase):
         If the shape has already been closed or has only one point, this function does nothing.
         This method doesn't draw anything to the canvas directly. You can render the path using the stroke() or fill() methods.
         """
-        self._send_canvas_command(COMMANDS["closePath"])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["closePath"])
 
     def stroke(self):
         """Stroke (outlines) the current path with the current ``stroke_style``."""
-        self._send_canvas_command(COMMANDS["stroke"])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["stroke"])
 
     def fill(self, rule_or_path="nonzero"):
         """Fill the current path with the current ``fill_style`` and given the rule, or fill the given Path2D.
@@ -1158,16 +1232,17 @@ class Canvas(_CanvasBase):
         Possible rules are ``nonzero`` and ``evenodd``.
         """
         if isinstance(rule_or_path, Path2D):
-            self._send_canvas_command(
+            _CANVAS_MANAGER.send_draw_command(
+                self,
                 COMMANDS["fillPath"],
                 [widget_serialization["to_json"](rule_or_path, None)],
             )
         else:
-            self._send_canvas_command(COMMANDS["fill"], [rule_or_path])
+            _CANVAS_MANAGER.send_draw_command(self, COMMANDS["fill"], [rule_or_path])
 
     def move_to(self, x, y):
         """Move the "pen" to the given ``(x, y)`` coordinates."""
-        self._send_canvas_command(COMMANDS["moveTo"], [x, y])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["moveTo"], [x, y])
 
     def line_to(self, x, y):
         """Add a straight line to the current path by connecting the path's last point to the specified ``(x, y)`` coordinates.
@@ -1175,11 +1250,11 @@ class Canvas(_CanvasBase):
         Like other methods that modify the current path, this method does not directly render anything. To
         draw the path onto the canvas, you can use the fill() or stroke() methods.
         """
-        self._send_canvas_command(COMMANDS["lineTo"], [x, y])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["lineTo"], [x, y])
 
     def rect(self, x, y, width, height):
         """Add a rectangle of size ``(width, height)`` at the ``(x, y)`` position in the current path."""
-        self._send_canvas_command(COMMANDS["rect"], [x, y, width, height])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["rect"], [x, y, width, height])
 
     def arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Add a circular arc centered at ``(x, y)`` with a radius of ``radius`` to the current path.
@@ -1187,8 +1262,8 @@ class Canvas(_CanvasBase):
         The path starts at ``start_angle`` and ends at ``end_angle``, and travels in the direction given by
         ``anticlockwise`` (defaulting to clockwise: ``False``).
         """
-        self._send_canvas_command(
-            COMMANDS["arc"], [x, y, radius, start_angle, end_angle, anticlockwise]
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["arc"], [x, y, radius, start_angle, end_angle, anticlockwise]
         )
 
     def ellipse(
@@ -1207,7 +1282,8 @@ class Canvas(_CanvasBase):
         The path starts at ``start_angle`` and ends at ``end_angle``, and travels in the direction given by
         ``anticlockwise`` (defaulting to clockwise: ``False``).
         """
-        self._send_canvas_command(
+        _CANVAS_MANAGER.send_draw_command(
+            self,
             COMMANDS["ellipse"],
             [x, y, radius_x, radius_y, rotation, start_angle, end_angle, anticlockwise],
         )
@@ -1217,7 +1293,9 @@ class Canvas(_CanvasBase):
 
         Using the given control points ``(x1, y1)`` and ``(x2, y2)`` and the ``radius``.
         """
-        self._send_canvas_command(COMMANDS["arcTo"], [x1, y1, x2, y2, radius])
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["arcTo"], [x1, y1, x2, y2, radius]
+        )
 
     def quadratic_curve_to(self, cp1x, cp1y, x, y):
         """Add a quadratic Bezier curve to the current path.
@@ -1226,7 +1304,9 @@ class Canvas(_CanvasBase):
         The starting point is the latest point in the current path, which can be changed using move_to()
         before creating the quadratic Bezier curve.
         """
-        self._send_canvas_command(COMMANDS["quadraticCurveTo"], [cp1x, cp1y, x, y])
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["quadraticCurveTo"], [cp1x, cp1y, x, y]
+        )
 
     def bezier_curve_to(self, cp1x, cp1y, cp2x, cp2y, x, y):
         """Add a cubic Bezier curve to the current path.
@@ -1235,18 +1315,22 @@ class Canvas(_CanvasBase):
         The starting point is the latest point in the current path, which can be changed using move_to()
         before creating the Bezier curve.
         """
-        self._send_canvas_command(
-            COMMANDS["bezierCurveTo"], [cp1x, cp1y, cp2x, cp2y, x, y]
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["bezierCurveTo"], [cp1x, cp1y, cp2x, cp2y, x, y]
         )
 
     # Text methods
     def fill_text(self, text, x, y, max_width=None):
         """Fill a given text at the given ``(x, y)`` position. Optionally with a maximum width to draw."""
-        self._send_canvas_command(COMMANDS["fillText"], [text, x, y, max_width])
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["fillText"], [text, x, y, max_width]
+        )
 
     def stroke_text(self, text, x, y, max_width=None):
         """Stroke a given text at the given ``(x, y)`` position. Optionally with a maximum width to draw."""
-        self._send_canvas_command(COMMANDS["strokeText"], [text, x, y, max_width])
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["strokeText"], [text, x, y, max_width]
+        )
 
     # Line methods
     def get_line_dash(self):
@@ -1259,7 +1343,9 @@ class Canvas(_CanvasBase):
             self._line_dash = segments + segments
         else:
             self._line_dash = segments
-        self._send_canvas_command(COMMANDS["setLineDash"], [self._line_dash])
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["setLineDash"], [self._line_dash]
+        )
 
     # Image methods
     def draw_image(self, image, x=0, y=0, width=None, height=None):
@@ -1274,8 +1360,8 @@ class Canvas(_CanvasBase):
 
         serialized_image = widget_serialization["to_json"](image, None)
 
-        self._send_canvas_command(
-            COMMANDS["drawImage"], [serialized_image, x, y, width, height]
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["drawImage"], [serialized_image, x, y, width, height]
         )
 
     def put_image_data(self, image_data, x=0, y=0):
@@ -1286,8 +1372,8 @@ class Canvas(_CanvasBase):
         matrix, and supports transparency.
         """
         image_metadata, image_buffer = binary_image(image_data)
-        self._send_canvas_command(
-            COMMANDS["putImageData"], [image_metadata, x, y], [image_buffer]
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["putImageData"], [image_metadata, x, y], [image_buffer]
         )
 
     def create_image_data(self, width, height):
@@ -1301,16 +1387,16 @@ class Canvas(_CanvasBase):
         You can use clip() instead of close_path() to close a path and turn it into a clipping
         path instead of stroking or filling the path.
         """
-        self._send_canvas_command(COMMANDS["clip"])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["clip"])
 
     # Transformation methods
     def save(self):
         """Save the entire state of the canvas."""
-        self._send_canvas_command(COMMANDS["save"])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["save"])
 
     def restore(self):
         """Restore the most recently saved canvas state."""
-        self._send_canvas_command(COMMANDS["restore"])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["restore"])
 
     def translate(self, x, y):
         """Move the canvas and its origin on the grid.
@@ -1318,11 +1404,11 @@ class Canvas(_CanvasBase):
         ``x`` indicates the horizontal distance to move,
         and ``y`` indicates how far to move the grid vertically.
         """
-        self._send_canvas_command(COMMANDS["translate"], [x, y])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["translate"], [x, y])
 
     def rotate(self, angle):
         """Rotate the canvas clockwise around the current origin by the ``angle`` number of radians."""
-        self._send_canvas_command(COMMANDS["rotate"], [angle])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["rotate"], [angle])
 
     def scale(self, x, y=None):
         """Scale the canvas units by ``x`` horizontally and by ``y`` vertically. Both parameters are real numbers.
@@ -1333,7 +1419,7 @@ class Canvas(_CanvasBase):
         """
         if y is None:
             y = x
-        self._send_canvas_command(COMMANDS["scale"], [x, y])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["scale"], [x, y])
 
     def transform(self, a, b, c, d, e, f):
         """Multiply the current transformation matrix with the matrix described by its arguments.
@@ -1341,36 +1427,34 @@ class Canvas(_CanvasBase):
         The transformation matrix is described by:
         ``[[a, c, e], [b, d, f], [0, 0, 1]]``.
         """
-        self._send_canvas_command(COMMANDS["transform"], [a, b, c, d, e, f])
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["transform"], [a, b, c, d, e, f]
+        )
 
     def set_transform(self, a, b, c, d, e, f):
         """Reset the current transform to the identity matrix, and then invokes the transform() method with the same arguments.
 
         This basically undoes the current transformation, then sets the specified transform, all in one step.
         """
-        self._send_canvas_command(COMMANDS["setTransform"], [a, b, c, d, e, f])
+        _CANVAS_MANAGER.send_draw_command(
+            self, COMMANDS["setTransform"], [a, b, c, d, e, f]
+        )
 
     def reset_transform(self):
         """Reset the current transform to the identity matrix.
 
         This is the same as calling: set_transform(1, 0, 0, 1, 0, 0).
         """
-        self._send_canvas_command(COMMANDS["resetTransform"])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["resetTransform"])
 
     # Extras
     def clear(self):
         """Clear the entire canvas. This is the same as calling ``clear_rect(0, 0, canvas.width, canvas.height)``."""
-        self._send_command([COMMANDS["clear"]])
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS["clear"])
 
     def flush(self):
         """Flush all the cached commands and clear the cache."""
-        if not self.caching or not len(self._commands_cache):
-            return
-
-        self._send_custom(self._commands_cache, self._buffers_cache)
-
-        self._commands_cache = []
-        self._buffers_cache = []
+        _CANVAS_MANAGER.flush()
 
     # Events
     def on_client_ready(self, callback, remove=False):
@@ -1427,23 +1511,9 @@ class Canvas(_CanvasBase):
             if isinstance(value, Widget):
                 value = widget_serialization["to_json"](value, None)
 
-            self._send_command([COMMANDS["set"], [self.ATTRS[name], value]])
-
-    def _send_canvas_command(self, name, args=[], buffers=[]):
-        while len(args) and args[len(args) - 1] is None:
-            args.pop()
-        self._send_command([name, args, len(buffers)], buffers)
-
-    def _send_command(self, command, buffers=[]):
-        if self.caching:
-            self._commands_cache.append(command)
-            self._buffers_cache += buffers
-        else:
-            self._send_custom(command, buffers)
-
-    def _send_custom(self, command, buffers=[]):
-        metadata, command_buffer = commands_to_buffer(command)
-        self.send(metadata, buffers=[command_buffer] + buffers)
+            _CANVAS_MANAGER.send_command(
+                self, [COMMANDS["set"], [self.ATTRS[name], value]]
+            )
 
     def _handle_frontend_event(self, _, content, buffers):
         if content.get("event", "") == "client_ready":
@@ -1519,7 +1589,7 @@ class Canvas(_CanvasBase):
         if with_style:
             populate_args(color, args, buffers)
             populate_args(alpha, args, buffers)
-        self._send_canvas_command(COMMANDS[cmd], args, buffers)
+        _CANVAS_MANAGER.send_draw_command(self, COMMANDS[cmd], args, buffers)
 
 
 class RoughCanvas(Canvas):
@@ -1528,7 +1598,6 @@ class RoughCanvas(Canvas):
     Args:
         width (int): The width (in pixels) of the canvas
         height (int): The height (in pixels) of the canvas
-        caching (boolean): Whether commands should be cached or not
     """
 
     _model_name = Unicode("RoughCanvasModel").tag(sync=True)
@@ -1570,7 +1639,9 @@ class RoughCanvas(Canvas):
         super(RoughCanvas, self).__setattr__(name, value)
 
         if name in self.ROUGH_ATTRS:
-            self._send_command([COMMANDS["set"], [self.ROUGH_ATTRS[name], value]])
+            _CANVAS_MANAGER.send_command(
+                self, [COMMANDS["set"], [self.ROUGH_ATTRS[name], value]]
+            )
 
 
 class MultiCanvas(_CanvasBase):
@@ -1603,13 +1674,28 @@ class MultiCanvas(_CanvasBase):
     def __setattr__(self, name, value):
         super(MultiCanvas, self).__setattr__(name, value)
 
-        if name in ("caching", "width", "height"):
+        if name in ("width", "height"):
             for layer in self._canvases:
                 setattr(layer, name, value)
 
+        if name == "caching":
+            _CANVAS_MANAGER._caching = value
+
+            warnings.warn(
+                "caching is deprecated and will be removed in a future release, please use hold_canvas() instead.",
+                DeprecationWarning,
+            )
+
     def __getattr__(self, name):
-        if name in ("caching", "width", "height"):
+        if name in ("width", "height"):
             return getattr(self._canvases[0], name)
+
+        if name == "caching":
+            warnings.warn(
+                "caching is deprecated and will be removed in a future release, please use hold_canvas() instead.",
+                DeprecationWarning,
+            )
+            return _CANVAS_MANAGER._caching
 
         raise AttributeError(f"'MultiCanvas' object has no attribute '{name}'")
 
@@ -1666,8 +1752,7 @@ class MultiCanvas(_CanvasBase):
 
     def flush(self):
         """Flush all the cached commands and clear the cache."""
-        for layer in self._canvases:
-            layer.flush()
+        _CANVAS_MANAGER.flush()
 
 
 class MultiRoughCanvas(MultiCanvas):
@@ -1689,19 +1774,22 @@ class MultiRoughCanvas(MultiCanvas):
 
 
 @contextmanager
-def hold_canvas(canvas):
-    """Hold any drawing on the canvas, and perform all commands in a single shot at the end.
+def hold_canvas(canvas=None):
+    """Hold any drawing, and perform all commands in a single shot at the end.
 
     This is way more efficient than sending commands one by one.
-
-    Args:
-        canvas (ipycanvas.canvas.Canvas): The canvas widget on which to hold the commands
     """
-    orig_caching = canvas.caching
+    if canvas is not None:
+        warnings.warn(
+            "hold_canvas does not take a canvas as parameter anymore, please use hold_canvas() instead.",
+            DeprecationWarning,
+        )
 
-    canvas.caching = True
+    orig_caching = _CANVAS_MANAGER._caching
+
+    _CANVAS_MANAGER._caching = True
     yield
-    canvas.flush()
+    _CANVAS_MANAGER.flush()
 
     if not orig_caching:
-        canvas.caching = False
+        _CANVAS_MANAGER._caching = False

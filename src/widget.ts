@@ -120,8 +120,251 @@ const COMMANDS = [
   'strokeStyledArcs',
   'fillStyledPolygons',
   'strokeStyledPolygons',
-  'strokeStyledLineSegments'
+  'strokeStyledLineSegments',
+  'switchCanvas'
 ];
+
+export class CanvasManagerModel extends WidgetModel {
+  defaults() {
+    return {
+      ...super.defaults(),
+      _model_name: CanvasManagerModel.model_name,
+      _model_module: CanvasManagerModel.model_module,
+      _model_module_version: CanvasManagerModel.model_module_version
+    };
+  }
+
+  initialize(attributes: any, options: any) {
+    super.initialize(attributes, options);
+
+    this.on('msg:custom', this.onCommand.bind(this));
+  }
+
+  private async onCommand(command: any, buffers: any) {
+    // Retrieve the commands buffer as an object (list of commands)
+    const commands = JSON.parse(
+      Buffer.from(getTypedArray(buffers[0], command)).toString('utf-8')
+    );
+
+    this.canvasesToUpdate =
+      this.currentCanvas !== undefined ? [this.currentCanvas] : [];
+
+    await this.processCommand(commands, buffers.slice(1, buffers.length));
+
+    for (const canvas of this.canvasesToUpdate) {
+      canvas.syncViews();
+    }
+  }
+
+  private async processCommand(command: any, buffers: any) {
+    // If it's a list of commands
+    if (command instanceof Array && command[0] instanceof Array) {
+      let remainingBuffers = buffers;
+
+      for (const subcommand of command) {
+        let subbuffers = [];
+        const nBuffers: Number = subcommand[2];
+        if (nBuffers) {
+          subbuffers = remainingBuffers.slice(0, nBuffers);
+          remainingBuffers = remainingBuffers.slice(nBuffers);
+        }
+        await this.processCommand(subcommand, subbuffers);
+      }
+      return;
+    }
+
+    const name: string = COMMANDS[command[0]];
+    const args: any[] = command[1];
+    switch (name) {
+      case 'switchCanvas':
+        await this.switchCanvas(args[0]);
+        this.canvasesToUpdate.push(this.currentCanvas);
+        break;
+      case 'sleep':
+        await this.currentCanvas.sleep(args[0]);
+        break;
+      case 'fillRect':
+        this.currentCanvas.fillRect(args[0], args[1], args[2], args[3]);
+        break;
+      case 'strokeRect':
+        this.currentCanvas.strokeRect(args[0], args[1], args[2], args[3]);
+        break;
+      case 'fillRects':
+        this.currentCanvas.drawRects(
+          args,
+          buffers,
+          this.currentCanvas.fillRect.bind(this.currentCanvas)
+        );
+        break;
+      case 'strokeRects':
+        this.currentCanvas.drawRects(
+          args,
+          buffers,
+          this.currentCanvas.strokeRect.bind(this.currentCanvas)
+        );
+        break;
+      case 'fillArc':
+        this.currentCanvas.fillArc(
+          args[0],
+          args[1],
+          args[2],
+          args[3],
+          args[4],
+          args[5]
+        );
+        break;
+      case 'strokeArc':
+        this.currentCanvas.strokeArc(
+          args[0],
+          args[1],
+          args[2],
+          args[3],
+          args[4],
+          args[5]
+        );
+        break;
+      case 'fillArcs':
+        this.currentCanvas.drawArcs(
+          args,
+          buffers,
+          this.currentCanvas.fillArc.bind(this.currentCanvas)
+        );
+        break;
+      case 'strokeArcs':
+        this.currentCanvas.drawArcs(
+          args,
+          buffers,
+          this.currentCanvas.strokeArc.bind(this.currentCanvas)
+        );
+        break;
+      case 'fillCircle':
+        this.currentCanvas.fillCircle(args[0], args[1], args[2]);
+        break;
+      case 'strokeCircle':
+        this.currentCanvas.strokeCircle(args[0], args[1], args[2]);
+        break;
+      case 'fillCircles':
+        this.currentCanvas.drawCircles(
+          args,
+          buffers,
+          this.currentCanvas.fillCircle.bind(this.currentCanvas)
+        );
+        break;
+      case 'strokeCircles':
+        this.currentCanvas.drawCircles(
+          args,
+          buffers,
+          this.currentCanvas.strokeCircle.bind(this.currentCanvas)
+        );
+        break;
+      case 'strokeLine':
+        this.currentCanvas.strokeLine(args, buffers);
+        break;
+      case 'strokeLines':
+        this.currentCanvas.strokeLines(args, buffers);
+        break;
+      case 'fillPolygon':
+        this.currentCanvas.fillPolygon(args, buffers);
+        break;
+      case 'strokePolygon':
+        this.currentCanvas.strokePolygon(args, buffers);
+        break;
+      case 'fillPath':
+        await this.currentCanvas.fillPath(args, buffers);
+        break;
+      case 'drawImage':
+        await this.currentCanvas.drawImage(args, buffers);
+        break;
+      case 'putImageData':
+        this.currentCanvas.putImageData(args, buffers);
+        break;
+      case 'set':
+        await this.currentCanvas.setAttr(args[0], args[1]);
+        break;
+      case 'clear':
+        this.currentCanvas.clearCanvas();
+        break;
+      case 'fillPolygons':
+        this.currentCanvas.drawPolygonOrLineSegments(args, buffers, true, true);
+        break;
+      case 'strokePolygons':
+        this.currentCanvas.drawPolygonOrLineSegments(
+          args,
+          buffers,
+          false,
+          true
+        );
+        break;
+      case 'strokeLineSegments':
+        this.currentCanvas.drawPolygonOrLineSegments(
+          args,
+          buffers,
+          false,
+          false
+        );
+        break;
+      case 'fillStyledRects':
+        this.currentCanvas.drawStyledRects(args, buffers, true);
+        break;
+      case 'strokeStyledRects':
+        this.currentCanvas.drawStyledRects(args, buffers, false);
+        break;
+      case 'fillStyledCircles':
+        this.currentCanvas.drawStyledCircles(args, buffers, true);
+        break;
+      case 'strokeStyledCircles':
+        this.currentCanvas.drawStyledCircles(args, buffers, false);
+        break;
+      case 'fillStyledArcs':
+        this.currentCanvas.drawStyledArcs(args, buffers, true);
+        break;
+      case 'strokeStyledArcs':
+        this.currentCanvas.drawStyledArcs(args, buffers, false);
+        break;
+      case 'fillStyledPolygons':
+        this.currentCanvas.drawStyledPolygonOrLineSegments(
+          args,
+          buffers,
+          true,
+          true
+        );
+        break;
+      case 'strokeStyledPolygons':
+        this.currentCanvas.drawStyledPolygonOrLineSegments(
+          args,
+          buffers,
+          false,
+          true
+        );
+        break;
+      case 'strokeStyledLineSegments':
+        this.currentCanvas.drawStyledPolygonOrLineSegments(
+          args,
+          buffers,
+          false,
+          false
+        );
+        break;
+      default:
+        this.currentCanvas.executeCommand(name, args);
+        break;
+    }
+  }
+
+  private async switchCanvas(serializedCanvas: any) {
+    this.currentCanvas = await unpack_models(
+      serializedCanvas,
+      this.widget_manager
+    );
+  }
+
+  private currentCanvas: CanvasModel;
+  private canvasesToUpdate: CanvasModel[] = [];
+
+  static model_name = 'CanvasManagerModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+}
 
 export class Path2DModel extends WidgetModel {
   defaults() {
@@ -342,7 +585,7 @@ export class CanvasModel extends DOMWidgetModel {
 
     this.on_some_change(['width', 'height'], this.resizeCanvas, this);
     this.on('change:sync_image_data', this.syncImageData.bind(this));
-    this.on('msg:custom', this.onCommand.bind(this));
+    // this.on('msg:custom', this.onCommand.bind(this));
 
     if (this.get('_send_client_ready_event')) {
       this.send({ event: 'client_ready' }, {});
@@ -359,14 +602,7 @@ export class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  private async onCommand(command: any, buffers: any) {
-    // Retrieve the commands buffer as an object (list of commands)
-    const commands = JSON.parse(
-      Buffer.from(getTypedArray(buffers[0], command)).toString('utf-8')
-    );
-
-    await this.processCommand(commands, buffers.slice(1, buffers.length));
-
+  async syncViews() {
     this.forEachView((view: CanvasView) => {
       view.updateCanvas();
     });
@@ -375,135 +611,7 @@ export class CanvasModel extends DOMWidgetModel {
     this.syncImageData();
   }
 
-  private async processCommand(command: any, buffers: any) {
-    // If it's a list of commands
-    if (command instanceof Array && command[0] instanceof Array) {
-      let remainingBuffers = buffers;
-
-      for (const subcommand of command) {
-        let subbuffers = [];
-        const nBuffers: Number = subcommand[2];
-        if (nBuffers) {
-          subbuffers = remainingBuffers.slice(0, nBuffers);
-          remainingBuffers = remainingBuffers.slice(nBuffers);
-        }
-        await this.processCommand(subcommand, subbuffers);
-      }
-      return;
-    }
-
-    const name: string = COMMANDS[command[0]];
-    const args: any[] = command[1];
-    switch (name) {
-      case 'sleep':
-        await this.sleep(args[0]);
-        break;
-      case 'fillRect':
-        this.fillRect(args[0], args[1], args[2], args[3]);
-        break;
-      case 'strokeRect':
-        this.strokeRect(args[0], args[1], args[2], args[3]);
-        break;
-      case 'fillRects':
-        this.drawRects(args, buffers, this.fillRect.bind(this));
-        break;
-      case 'strokeRects':
-        this.drawRects(args, buffers, this.strokeRect.bind(this));
-        break;
-      case 'fillArc':
-        this.fillArc(args[0], args[1], args[2], args[3], args[4], args[5]);
-        break;
-      case 'strokeArc':
-        this.strokeArc(args[0], args[1], args[2], args[3], args[4], args[5]);
-        break;
-      case 'fillArcs':
-        this.drawArcs(args, buffers, this.fillArc.bind(this));
-        break;
-      case 'strokeArcs':
-        this.drawArcs(args, buffers, this.strokeArc.bind(this));
-        break;
-      case 'fillCircle':
-        this.fillCircle(args[0], args[1], args[2]);
-        break;
-      case 'strokeCircle':
-        this.strokeCircle(args[0], args[1], args[2]);
-        break;
-      case 'fillCircles':
-        this.drawCircles(args, buffers, this.fillCircle.bind(this));
-        break;
-      case 'strokeCircles':
-        this.drawCircles(args, buffers, this.strokeCircle.bind(this));
-        break;
-      case 'strokeLine':
-        this.strokeLine(args, buffers);
-        break;
-      case 'strokeLines':
-        this.strokeLines(args, buffers);
-        break;
-      case 'fillPolygon':
-        this.fillPolygon(args, buffers);
-        break;
-      case 'strokePolygon':
-        this.strokePolygon(args, buffers);
-        break;
-      case 'fillPath':
-        await this.fillPath(args, buffers);
-        break;
-      case 'drawImage':
-        await this.drawImage(args, buffers);
-        break;
-      case 'putImageData':
-        this.putImageData(args, buffers);
-        break;
-      case 'set':
-        await this.setAttr(args[0], args[1]);
-        break;
-      case 'clear':
-        this.clearCanvas();
-        break;
-      case 'fillPolygons':
-        await this.drawPolygonOrLineSegments(args, buffers, true, true);
-        break;
-      case 'strokePolygons':
-        await this.drawPolygonOrLineSegments(args, buffers, false, true);
-        break;
-      case 'strokeLineSegments':
-        await this.drawPolygonOrLineSegments(args, buffers, false, false);
-        break;
-      case 'fillStyledRects':
-        await this.drawStyledRects(args, buffers, true);
-        break;
-      case 'strokeStyledRects':
-        await this.drawStyledRects(args, buffers, false);
-        break;
-      case 'fillStyledCircles':
-        await this.drawStyledCircles(args, buffers, true);
-        break;
-      case 'strokeStyledCircles':
-        await this.drawStyledCircles(args, buffers, false);
-        break;
-      case 'fillStyledArcs':
-        await this.drawStyledArcs(args, buffers, true);
-        break;
-      case 'strokeStyledArcs':
-        await this.drawStyledArcs(args, buffers, false);
-        break;
-      case 'fillStyledPolygons':
-        await this.drawStyledPolygonOrLineSegments(args, buffers, true, true);
-        break;
-      case 'strokeStyledPolygons':
-        await this.drawStyledPolygonOrLineSegments(args, buffers, false, true);
-        break;
-      case 'strokeStyledLineSegments':
-        await this.drawStyledPolygonOrLineSegments(args, buffers, false, false);
-        break;
-      default:
-        this.executeCommand(name, args);
-        break;
-    }
-  }
-
-  private async sleep(time: number) {
+  async sleep(time: number) {
     this.forEachView((view: CanvasView) => {
       view.updateCanvas();
     });
@@ -514,15 +622,15 @@ export class CanvasModel extends DOMWidgetModel {
     await new Promise(resolve => setTimeout(resolve, time));
   }
 
-  protected fillRect(x: number, y: number, width: number, height: number) {
+  fillRect(x: number, y: number, width: number, height: number) {
     this.ctx.fillRect(x, y, width, height);
   }
 
-  protected strokeRect(x: number, y: number, width: number, height: number) {
+  strokeRect(x: number, y: number, width: number, height: number) {
     this.ctx.strokeRect(x, y, width, height);
   }
 
-  private drawRects(
+  drawRects(
     args: any[],
     buffers: any,
     callback: (x: number, y: number, width: number, height: number) => void
@@ -548,7 +656,8 @@ export class CanvasModel extends DOMWidgetModel {
       );
     }
   }
-  private drawStyledRects(args: any[], buffers: any, fill: boolean) {
+
+  drawStyledRects(args: any[], buffers: any, fill: boolean) {
     const x = getArg(args[0], buffers);
     const y = getArg(args[1], buffers);
     const width = getArg(args[2], buffers);
@@ -562,6 +671,7 @@ export class CanvasModel extends DOMWidgetModel {
       width.length,
       height.length
     );
+
     this.ctx.save();
     for (let idx = 0; idx < numberRects; ++idx) {
       // get color for this circle
@@ -589,7 +699,7 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.restore();
   }
 
-  protected fillArc(
+  fillArc(
     x: number,
     y: number,
     radius: number,
@@ -611,7 +721,7 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.closePath();
   }
 
-  protected strokeArc(
+  strokeArc(
     x: number,
     y: number,
     radius: number,
@@ -627,7 +737,7 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.closePath();
   }
 
-  private drawArcs(
+  drawArcs(
     args: any[],
     buffers: any,
     callback: (
@@ -666,7 +776,7 @@ export class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  protected fillCircle(x: number, y: number, radius: number) {
+  fillCircle(x: number, y: number, radius: number) {
     this.ctx.beginPath();
     this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
     this.ctx.fill();
@@ -674,7 +784,7 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.closePath();
   }
 
-  protected strokeCircle(x: number, y: number, radius: number) {
+  strokeCircle(x: number, y: number, radius: number) {
     this.ctx.beginPath();
     this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
     this.ctx.stroke();
@@ -682,7 +792,7 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.closePath();
   }
 
-  private drawCircles(
+  drawCircles(
     args: any[],
     buffers: any,
     callback: (x: number, y: number, radius: number) => void
@@ -698,7 +808,7 @@ export class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  private setStyle(style: any, fill: boolean) {
+  setStyle(style: any, fill: boolean) {
     if (fill) {
       this.ctx.fillStyle = style;
     } else {
@@ -706,7 +816,7 @@ export class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  private drawStyledCircles(args: any[], buffers: any, fill: boolean) {
+  drawStyledCircles(args: any[], buffers: any, fill: boolean) {
     const x = getArg(args[0], buffers);
     const y = getArg(args[1], buffers);
     const radius = getArg(args[2], buffers);
@@ -731,7 +841,7 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.restore();
   }
 
-  private drawStyledArcs(args: any[], buffers: any, fill: boolean) {
+  drawStyledArcs(args: any[], buffers: any, fill: boolean) {
     const x = getArg(args[0], buffers);
     const y = getArg(args[1], buffers);
     const radius = getArg(args[2], buffers);
@@ -748,6 +858,7 @@ export class CanvasModel extends DOMWidgetModel {
       startAngle.length,
       endAngle.length
     );
+
     this.ctx.save();
     for (let idx = 0; idx < numberArcs; ++idx) {
       // get color for this circle
@@ -779,30 +890,21 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.restore();
   }
 
-  private drawStyledPolygonOrLineSegments(
+  drawStyledPolygonOrLineSegments(
     args: any[],
     buffers: any,
     fill: boolean,
     close: boolean
   ) {
-    // a scalar
     const numPolygons = args[0];
-
-    // always array
     const points = getArg(args[1], buffers);
-
-    // array or scalar
     const sizes = getArg(args[2], buffers);
-
-    // always array
     const colors = getArg(args[3], buffers);
-
-    // array or scalar
     const alpha = getArg(args[4], buffers);
 
     this.ctx.save();
 
-    var start: number = 0;
+    let start = 0;
     for (let idx = 0; idx < numPolygons; ++idx) {
       // get color for this circle
       const ci = 3 * idx;
@@ -832,22 +934,17 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.restore();
   }
 
-  private drawPolygonOrLineSegments(
+  drawPolygonOrLineSegments(
     args: any[],
     buffers: any,
     fill: boolean,
     close: boolean
   ) {
-    // a scalar
     const numPolygons = args[0];
-
-    // always array
     const points = getArg(args[1], buffers);
-
-    // array or scalar
     const sizes = getArg(args[2], buffers);
 
-    var start: number = 0;
+    let start = 0;
     for (let idx = 0; idx < numPolygons; ++idx) {
       // start / stop in the points array fr this polygon
       const size = sizes.getItem(idx) * 2;
@@ -869,7 +966,7 @@ export class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  protected strokeLine(args: any[], buffers: any) {
+  strokeLine(args: any[], buffers: any) {
     this.ctx.beginPath();
     this.ctx.moveTo(args[0], args[1]);
     this.ctx.lineTo(args[2], args[3]);
@@ -878,7 +975,7 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.closePath();
   }
 
-  protected strokeLines(args: any[], buffers: any) {
+  strokeLines(args: any[], buffers: any) {
     this.ctx.beginPath();
     const points = getArg(args[0], buffers);
 
@@ -892,7 +989,7 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.closePath();
   }
 
-  protected fillPolygon(args: any[], buffers: any) {
+  fillPolygon(args: any[], buffers: any) {
     this.ctx.beginPath();
     const points = getArg(args[0], buffers);
 
@@ -906,7 +1003,7 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.fill();
   }
 
-  protected strokePolygon(args: any[], buffers: any) {
+  strokePolygon(args: any[], buffers: any) {
     this.ctx.beginPath();
     const points = getArg(args[0], buffers);
 
@@ -920,7 +1017,7 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.stroke();
   }
 
-  protected async fillPath(args: any[], buffers: any) {
+  async fillPath(args: any[], buffers: any) {
     const [serializedPath] = args;
 
     const path = await unpack_models(serializedPath, this.widget_manager);
@@ -928,7 +1025,7 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.fill(path.value);
   }
 
-  private async drawImage(args: any[], buffers: any) {
+  async drawImage(args: any[], buffers: any) {
     const [serializedImage, x, y, width, height] = args;
 
     const image = await unpack_models(serializedImage, this.widget_manager);
@@ -958,7 +1055,7 @@ export class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  private putImageData(args: any[], buffers: any) {
+  putImageData(args: any[], buffers: any) {
     const [bufferMetadata, dx, dy] = args;
 
     const width = bufferMetadata.shape[1];
@@ -976,7 +1073,7 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.drawImage(offscreenCanvas, dx, dy);
   }
 
-  protected async setAttr(attr: number, value: any) {
+  async setAttr(attr: number, value: any) {
     if (typeof value === 'string' && value.startsWith('IPY')) {
       const widgetModel: GradientModel = await unpack_models(
         value,
@@ -988,14 +1085,14 @@ export class CanvasModel extends DOMWidgetModel {
     (this.ctx as any)[CanvasModel.ATTRS[attr]] = value;
   }
 
-  private clearCanvas() {
+  clearCanvas() {
     this.forEachView((view: CanvasView) => {
       view.clear();
     });
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  protected executeCommand(name: string, args: any[] = []) {
+  executeCommand(name: string, args: any[] = []) {
     (this.ctx as any)[name](...args);
   }
 
@@ -1053,23 +1150,23 @@ export class RoughCanvasModel extends CanvasModel {
     this.roughCanvas = new RoughCanvas(this.canvas);
   }
 
-  protected fillRect(x: number, y: number, width: number, height: number) {
+  fillRect(x: number, y: number, width: number, height: number) {
     this.roughCanvas.rectangle(x, y, width, height, this.getRoughFillStyle());
   }
 
-  protected strokeRect(x: number, y: number, width: number, height: number) {
+  strokeRect(x: number, y: number, width: number, height: number) {
     this.roughCanvas.rectangle(x, y, width, height, this.getRoughStrokeStyle());
   }
 
-  protected fillCircle(x: number, y: number, radius: number) {
+  fillCircle(x: number, y: number, radius: number) {
     this.roughCanvas.circle(x, y, 2 * radius, this.getRoughFillStyle());
   }
 
-  protected strokeCircle(x: number, y: number, radius: number) {
+  strokeCircle(x: number, y: number, radius: number) {
     this.roughCanvas.circle(x, y, 2 * radius, this.getRoughStrokeStyle());
   }
 
-  protected strokeLine(args: any[], buffers: any) {
+  strokeLine(args: any[], buffers: any) {
     this.roughCanvas.line(
       args[0],
       args[1],
@@ -1079,7 +1176,7 @@ export class RoughCanvasModel extends CanvasModel {
     );
   }
 
-  protected strokeLines(args: any[], buffers: any) {
+  strokeLines(args: any[], buffers: any) {
     const points = getArg(args[0], buffers);
 
     const polygon: [number, number][] = [];
@@ -1090,7 +1187,7 @@ export class RoughCanvasModel extends CanvasModel {
     this.roughCanvas.linearPath(polygon, this.getRoughStrokeStyle());
   }
 
-  protected async fillPath(args: any[], buffers: any) {
+  async fillPath(args: any[], buffers: any) {
     const [serializedPath] = args;
 
     const path = await unpack_models(serializedPath, this.widget_manager);
@@ -1098,7 +1195,7 @@ export class RoughCanvasModel extends CanvasModel {
     this.roughCanvas.path(path.get('value'), this.getRoughFillStyle());
   }
 
-  protected fillArc(
+  fillArc(
     x: number,
     y: number,
     radius: number,
@@ -1124,7 +1221,7 @@ export class RoughCanvasModel extends CanvasModel {
     );
   }
 
-  protected strokeArc(
+  strokeArc(
     x: number,
     y: number,
     radius: number,
@@ -1150,7 +1247,7 @@ export class RoughCanvasModel extends CanvasModel {
     );
   }
 
-  protected fillPolygon(args: any[], buffers: any) {
+  fillPolygon(args: any[], buffers: any) {
     const points = getArg(args[0], buffers);
 
     const polygon: [number, number][] = [];
@@ -1161,7 +1258,7 @@ export class RoughCanvasModel extends CanvasModel {
     this.roughCanvas.polygon(polygon, this.getRoughFillStyle());
   }
 
-  protected strokePolygon(args: any[], buffers: any) {
+  strokePolygon(args: any[], buffers: any) {
     const points = getArg(args[0], buffers);
 
     const polygon: [number, number][] = [];
@@ -1172,7 +1269,7 @@ export class RoughCanvasModel extends CanvasModel {
     this.roughCanvas.polygon(polygon, this.getRoughStrokeStyle());
   }
 
-  protected async setAttr(attr: number, value: any) {
+  async setAttr(attr: number, value: any) {
     if (RoughCanvasModel.ROUGH_ATTRS[attr]) {
       (this as any)[RoughCanvasModel.ROUGH_ATTRS[attr]] = value;
 

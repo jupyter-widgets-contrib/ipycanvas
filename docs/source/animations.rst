@@ -25,7 +25,7 @@ A simple animation loop will look like the following:
     steps_number = 200
 
     for i in range(steps_number):
-        with hold_canvas(canvas):
+        with hold_canvas():
             # Clear the old animation step
             canvas.clear()
 
@@ -49,7 +49,7 @@ You can also make an infinite animation using a ``while`` loop:
     display(canvas)
 
     while(True):
-        with hold_canvas(canvas):
+        with hold_canvas():
             # Clear the old animation step
             canvas.clear()
 
@@ -93,7 +93,7 @@ to the Jupyter client, and the animation will run entirely without any communica
     steps_number = 200
 
     # Note how `hold_canvas` now wraps the entire for-loop
-    with hold_canvas(canvas):
+    with hold_canvas():
         for i in range(steps_number):
             # Clear the old animation step
             canvas.clear()

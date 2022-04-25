@@ -109,5 +109,5 @@ optimal performance you should try to use ``hold_canvas`` as much as possible.
 
     canvas = Canvas(width=200, height=200)
 
-    with hold_canvas(canvas):
+    with hold_canvas():
         # Perform drawings...
