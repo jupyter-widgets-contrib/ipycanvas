@@ -26,7 +26,6 @@ If you have any question, or if you want to share what you do with ipycanvas, [s
 
 Or join the gitter channel: [![Join the chat at https://gitter.im/martinRenou/ipycanvas](https://badges.gitter.im/martinRenou/ipycanvas.svg)](https://gitter.im/martinRenou/ipycanvas?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-
 ## Installation
 
 You can install using `pip`:
@@ -48,24 +47,30 @@ conda install -c conda-forge yarn
 jupyter labextension install @jupyter-widgets/jupyterlab-manager ipycanvas
 ```
 
- A development installation guide, can be found [here](https://ipycanvas.readthedocs.io/en/latest/installation.html#development-installation)
+A development installation guide, can be found [here](https://ipycanvas.readthedocs.io/en/latest/installation.html#development-installation)
 
 ## Examples
 
 ### Create John Conway's Game Of Life
+
 ![John Conway's Game Of Life](docs/source/images/ipycanvas_gameoflife.png)
 
 ### Give a "hand-drawn" style to your drawings using the RoughCanvas
+
 ![RoughCanvas](docs/source/images/ipycanvas_rough.png)
 
 ### Draw Particles from IPython
+
 ![Particles](docs/source/images/ipycanvas_particles.png)
 
 ### Custom Sprites
+
 ![Sprites](docs/source/images/ipycanvas_sprites.png)
 
 ### Draw data directly from a NumPy array
+
 ![NumPy](docs/source/images/ipycanvas_binary.png)
 
 ### Create your own plotting library **fully** in Python
+
 ![Plotting](docs/source/images/ipycanvas_scatter.png)

@@ -4,7 +4,7 @@ const crypto = require('crypto');
 
 // Workaround for loaders using "md4" by default, which is not supported in FIPS-compliant OpenSSL
 const cryptoOrigCreateHash = crypto.createHash;
-crypto.createHash = (algorithm) =>
+crypto.createHash = algorithm =>
   cryptoOrigCreateHash(algorithm == 'md4' ? 'sha256' : algorithm);
 
 // Custom webpack rules
@@ -18,7 +18,7 @@ const externals = ['@jupyter-widgets/base'];
 
 const resolve = {
   // Add '.ts' and '.tsx' as resolvable extensions.
-  extensions: [".webpack.js", ".web.js", ".ts", ".js"]
+  extensions: ['.webpack.js', '.web.js', '.ts', '.js']
 };
 
 module.exports = [
@@ -40,7 +40,7 @@ module.exports = [
     },
     devtool: 'source-map',
     externals,
-    resolve,
+    resolve
   },
 
   /**
@@ -56,20 +56,19 @@ module.exports = [
   {
     entry: './src/index.ts',
     output: {
-        filename: 'index.js',
-        path: path.resolve(__dirname, 'dist'),
-        libraryTarget: 'amd',
-        library: "ipycanvas",
-        publicPath: 'https://unpkg.com/ipycanvas@' + version + '/dist/'
+      filename: 'index.js',
+      path: path.resolve(__dirname, 'dist'),
+      libraryTarget: 'amd',
+      library: 'ipycanvas',
+      publicPath: 'https://unpkg.com/ipycanvas@' + version + '/dist/'
     },
     devtool: 'source-map',
     module: {
-        rules: rules
+      rules: rules
     },
     externals,
-    resolve,
+    resolve
   },
-
 
   /**
    * Documentation widget bundle
@@ -81,7 +80,7 @@ module.exports = [
     output: {
       filename: 'embed-bundle.js',
       path: path.resolve(__dirname, 'docs', 'source', '_static'),
-      library: "ipycanvas",
+      library: 'ipycanvas',
       libraryTarget: 'amd'
     },
     module: {
@@ -89,7 +88,6 @@ module.exports = [
     },
     devtool: 'source-map',
     externals,
-    resolve,
+    resolve
   }
-
 ];

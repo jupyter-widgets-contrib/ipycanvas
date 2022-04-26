@@ -161,3 +161,7 @@ package-lock.json
 
 # Untitled notebooks
 *Untitled*.ipynb
+
+# UI tests
+ui-tests/tests/notebooks/smoke_texture0.png
+ui-tests/tests/notebooks/smoke_texture1.png
