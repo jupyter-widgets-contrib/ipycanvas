@@ -1,0 +1,8 @@
+node_modules
+dist
+**/node_modules
+**/lib
+**/package.json
+ui-tests
+ipycanvas
+docs

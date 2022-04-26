@@ -13,7 +13,7 @@ defaults:
     shell: bash -l {0}
 
 jobs:
-  run:
+  lint:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -35,22 +35,6 @@ jobs:
         mamba-version: "*"
         auto-activate-base: false
         channels: conda-forge
-
-    - name: Install ipycanvas
-      run: pip install -e .
-
-    - name: Check installation files
-      run: |
-        test -d $CONDA_PREFIX/share/jupyter/nbextensions/ipycanvas
-        test -f $CONDA_PREFIX/share/jupyter/nbextensions/ipycanvas/extension.js
-        test -f $CONDA_PREFIX/share/jupyter/nbextensions/ipycanvas/index.js
-        test -d $CONDA_PREFIX/share/jupyter/labextensions/ipycanvas
-        test -f $CONDA_PREFIX/share/jupyter/labextensions/ipycanvas/package.json
-
-    - name: Check nbextension and labextension
-      run: |
-        jupyter nbextension list 2>&1 | grep -ie "ipycanvas/extension.*enabled" -
-        jupyter labextension list 2>&1 | grep -ie "ipycanvas.*enabled.*ok" -
 
     - name: Test PEP8
       run: black --check ipycanvas
