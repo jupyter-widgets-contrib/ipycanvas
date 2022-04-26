@@ -87,18 +87,16 @@ jobs:
         name: dist ${{ github.run_number }}
         path: ./dist
 
-  install:
+  tests:
     runs-on: ${{ matrix.os }}-latest
     needs: [build]
 
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, macos]
-        python: ['3.7', '3.10']
+        os: [ubuntu]
+        python: ['3.10']
         include:
-          - python: '3.7'
-            dist: 'ipycanvas*.tar.gz'
           - python: '3.10'
             dist: 'ipycanvas*.whl'
 
@@ -142,3 +140,32 @@ jobs:
 
       - name: Validate the labextension
         run: jupyter labextension list 2>&1 | grep ipycanvas
+
+      - name: Install Galata
+        run: |
+          yarn install
+          yarn playwright install chromium
+        working-directory: ui-tests
+
+      - name: Launch JupyterLab
+        run: yarn run start:detached
+        working-directory: ui-tests
+
+      - name: Wait for JupyterLab
+        uses: ifaxity/wait-on-action@v1
+        with:
+          resource: http-get://localhost:8888/api
+          timeout: 20000
+
+      - name: Run UI Tests
+        run: yarn run test
+        working-directory: ui-tests
+
+      - name: Upload UI Test artifacts
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: ui-test-output
+          path: |
+            ui-tests/playwright-report
+            ui-tests/test-results
