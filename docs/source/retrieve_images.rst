@@ -15,7 +15,7 @@ Save Canvas to a file
 
 You can dump the current ``Canvas`` or ``MultiCanvas`` image to a PNG file using the ``to_file`` method.
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
@@ -23,21 +23,23 @@ You can dump the current ``Canvas`` or ``MultiCanvas`` image to a PNG file using
 
     # Perform some drawings...
 
-    canvas.to_file('my_file.png')
+    canvas.to_file("my_file.png")
 
 Note that this won't work if executed in the same Notebook cell. Because the Canvas won't have drawn anything yet. If you want to put all your code in the same Notebook cell, you need to define a callback function that will be called when the Canvas is ready to be dumped to an image file.
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
     canvas = Canvas(width=200, height=200, sync_image_data=True)
 
+
     def save_to_file(*args, **kwargs):
-        canvas.to_file('my_file.png')
+        canvas.to_file("my_file.png")
+
 
     # Listen to changes on the ``image_data`` trait and call ``save_to_file`` when it changes.
-    canvas.observe(save_to_file, 'image_data')
+    canvas.observe(save_to_file, "image_data")
 
     # Perform some drawings...
 
@@ -46,7 +48,7 @@ Get image data as a NumPy array
 
 You can get the image data of the ``Canvas`` or ``MultiCanvas`` using the ``get_image_data`` method.
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
@@ -54,22 +56,26 @@ You can get the image data of the ``Canvas`` or ``MultiCanvas`` using the ``get_
 
     # Perform some drawings...
 
-    arr1 = canvas.get_image_data()                # Get the entire Canvas as a NumPy array
-    arr2 = canvas.get_image_data(50, 10, 40, 60)  # Get the subpart defined by the rectangle at position (x=50, y=10) and of size (width=40, height=60)
+    arr1 = canvas.get_image_data()  # Get the entire Canvas as a NumPy array
+    arr2 = canvas.get_image_data(
+        50, 10, 40, 60
+    )  # Get the subpart defined by the rectangle at position (x=50, y=10) and of size (width=40, height=60)
 
 Note that this won't work if executed in the same Notebook cell. Because the Canvas won't have drawn anything yet. If you want to put all your code in the same Notebook cell, you need to define a callback function that will be called when the Canvas has image data.
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
     canvas = Canvas(width=200, height=200, sync_image_data=True)
 
+
     def get_array(*args, **kwargs):
         arr = canvas.get_image_data()
         # Do something with arr
 
+
     # Listen to changes on the ``image_data`` trait and call ``get_array`` when it changes.
-    canvas.observe(get_array, 'image_data')
+    canvas.observe(get_array, "image_data")
 
     # Perform some drawings...

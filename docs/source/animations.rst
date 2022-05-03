@@ -12,7 +12,7 @@ It is essential that you use the ``hold_canvas`` context manager in order to imp
 
 A simple animation loop will look like the following:
 
-.. code:: Python
+.. code-block:: python
 
     from time import sleep
 
@@ -39,7 +39,7 @@ A simple animation loop will look like the following:
 
 You can also make an infinite animation using a ``while`` loop:
 
-.. code:: Python
+.. code-block:: python
 
     from time import sleep
 
@@ -48,7 +48,7 @@ You can also make an infinite animation using a ``while`` loop:
     canvas = Canvas()
     display(canvas)
 
-    while(True):
+    while True:
         with hold_canvas():
             # Clear the old animation step
             canvas.clear()
@@ -80,7 +80,7 @@ The ``sleep`` method will ask your canvas to sleep for a certain amount of time,
 Using this approach, it is recommended to wrap the entire animation in the ``hold_canvas`` context. This way, you will send the entire animation as a single message
 to the Jupyter client, and the animation will run entirely without any communication with the server.
 
-.. code:: Python
+.. code-block:: python
 
     from time import sleep
 
