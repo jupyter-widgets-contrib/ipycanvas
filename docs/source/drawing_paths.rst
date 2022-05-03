@@ -14,27 +14,27 @@ See https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths for document
 - ``Path2D(value)``:
     Creates a Path2D given the SVG path string value.
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas, Path2D
 
     canvas = Canvas(width=350, height=350)
 
-    path1 = Path2D('M80 80 A 45 45, 0, 0, 0, 125 125 L 125 80 Z')
-    path2 = Path2D('M230 80 A 45 45, 0, 1, 0, 275 125 L 275 80 Z')
-    path3 = Path2D('M80 230 A 45 45, 0, 0, 1, 125 275 L 125 230 Z')
-    path4 = Path2D('M230 230 A 45 45, 0, 1, 1, 275 275 L 275 230 Z')
+    path1 = Path2D("M80 80 A 45 45, 0, 0, 0, 125 125 L 125 80 Z")
+    path2 = Path2D("M230 80 A 45 45, 0, 1, 0, 275 125 L 275 80 Z")
+    path3 = Path2D("M80 230 A 45 45, 0, 0, 1, 125 275 L 125 230 Z")
+    path4 = Path2D("M230 230 A 45 45, 0, 1, 1, 275 275 L 275 230 Z")
 
-    canvas.fill_style = 'green'
+    canvas.fill_style = "green"
     canvas.fill(path1)
 
-    canvas.fill_style = 'purple'
+    canvas.fill_style = "purple"
     canvas.fill(path2)
 
-    canvas.fill_style = 'red'
+    canvas.fill_style = "red"
     canvas.fill(path3)
 
-    canvas.fill_style = 'blue'
+    canvas.fill_style = "blue"
     canvas.fill(path4)
 
     canvas
@@ -65,7 +65,7 @@ Here are the functions used to perform these steps:
 - ``fill(rule)``:
     Draws a solid shape by filling the path's content area. The given fill rule is applied, possible rules are `nonzero` and `evenodd`.
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
@@ -118,7 +118,7 @@ Examples
 Stroke arcs
 '''''''''''
 
-.. code:: Python
+.. code-block:: python
 
     from math import pi
 
@@ -128,13 +128,13 @@ Stroke arcs
 
     # Draw smiley face
     canvas.begin_path()
-    canvas.arc(75, 75, 50, 0, pi * 2, True) # Outer circle
+    canvas.arc(75, 75, 50, 0, pi * 2, True)  # Outer circle
     canvas.move_to(110, 75)
-    canvas.arc(75, 75, 35, 0, pi, False) # Mouth (clockwise)
+    canvas.arc(75, 75, 35, 0, pi, False)  # Mouth (clockwise)
     canvas.move_to(65, 65)
-    canvas.arc(60, 65, 5, 0, pi * 2, True) # Left eye
+    canvas.arc(60, 65, 5, 0, pi * 2, True)  # Left eye
     canvas.move_to(95, 65)
-    canvas.arc(90, 65, 5, 0, pi * 2, True) # Right eye
+    canvas.arc(90, 65, 5, 0, pi * 2, True)  # Right eye
     canvas.stroke()
 
     canvas
@@ -144,7 +144,7 @@ Stroke arcs
 Fill bezier curves
 ''''''''''''''''''
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
@@ -168,7 +168,7 @@ Fill bezier curves
 Change the fill rule
 ''''''''''''''''''''
 
-.. code:: Python
+.. code-block:: python
 
     from math import pi
     from ipycanvas import Canvas
@@ -178,7 +178,7 @@ Change the fill rule
     canvas.begin_path()
     canvas.arc(50, 50, 30, 0, pi * 2, True)
     canvas.arc(50, 50, 15, 0, pi * 2, True)
-    canvas.fill('evenodd')
+    canvas.fill("evenodd")
 
     canvas
 

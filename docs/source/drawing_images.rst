@@ -10,18 +10,18 @@ You can draw from an `Image <https://ipywidgets.readthedocs.io/en/stable/example
     Draw an ``image`` on the Canvas at the coordinates (``x``, ``y``) and scale it to (``width``, ``height``).
     The ``image`` must be an ``Image`` widget or another ``Canvas``. If ``width``/``height`` is ``None``, the natural image ``width``/``height`` is used.
 
-.. code:: Python
+.. code-block:: python
 
     from ipywidgets import Image
 
     from ipycanvas import Canvas
 
-    sprite1 = Image.from_file('sprites/smoke_texture0.png')
-    sprite2 = Image.from_file('sprites/smoke_texture1.png')
+    sprite1 = Image.from_file("sprites/smoke_texture0.png")
+    sprite2 = Image.from_file("sprites/smoke_texture1.png")
 
     canvas = Canvas(width=300, height=300)
 
-    canvas.fill_style = '#a9cafc'
+    canvas.fill_style = "#a9cafc"
     canvas.fill_rect(0, 0, 300, 300)
 
     canvas.draw_image(sprite1, 50, 50)
@@ -36,7 +36,7 @@ From another Canvas
 
 You can draw from another ``Canvas`` widget. This is the fastest way of drawing an image on the canvas.
 
-.. code:: Python
+.. code-block:: python
 
     canvas2 = Canvas(width=600, height=300)
 
@@ -57,7 +57,7 @@ You can directly draw a NumPy array of pixels on the ``Canvas``, it must be a 3-
     Draw an image on the Canvas. ``image_data`` should be  a NumPy array containing the image to
     draw and ``x`` and ``y`` the pixel position where to draw (top left pixel of the image).
 
-.. code:: python
+.. code-block:: python
 
     import numpy as np
 
@@ -86,7 +86,7 @@ Optimizing drawings
 
 Drawing from another ``Canvas`` is by far the fastest of the three solutions presented here. So if you want to draw the same image a thousand times, it is recommended to first draw this image on a temporary canvas, then draw from the temporary canvas a thousand times.
 
-.. code:: Python
+.. code-block:: python
 
     from random import choice, randint, uniform
     from math import pi
@@ -97,13 +97,13 @@ Drawing from another ``Canvas`` is by far the fastest of the three solutions pre
 
     # Create temporary Canvases
     canvas_sprite1 = Canvas(width=100, height=100)
-    canvas_sprite1.draw_image(Image.from_file('sprites/smoke_texture0.png'), 0, 0)
+    canvas_sprite1.draw_image(Image.from_file("sprites/smoke_texture0.png"), 0, 0)
 
     canvas_sprite2 = Canvas(width=100, height=100)
-    canvas_sprite2.draw_image(Image.from_file('sprites/smoke_texture1.png'), 0, 0)
+    canvas_sprite2.draw_image(Image.from_file("sprites/smoke_texture1.png"), 0, 0)
 
     canvas_sprite3 = Canvas(width=100, height=100)
-    canvas_sprite3.draw_image(Image.from_file('sprites/smoke_texture2.png'), 0, 0)
+    canvas_sprite3.draw_image(Image.from_file("sprites/smoke_texture2.png"), 0, 0)
 
     sprites = [canvas_sprite1, canvas_sprite2, canvas_sprite3]
 
@@ -112,7 +112,7 @@ Drawing from another ``Canvas`` is by far the fastest of the three solutions pre
 
 .. image:: images/sprites.png
 
-.. code:: Python
+.. code-block:: python
 
     canvas = Canvas(width=800, height=600)
 
@@ -129,13 +129,13 @@ Drawing from another ``Canvas`` is by far the fastest of the three solutions pre
 
             # Choose a random rotation angle (but first set the rotation center with `translate`)
             canvas.translate(pos_x, pos_y)
-            canvas.rotate(uniform(0., pi))
+            canvas.rotate(uniform(0.0, pi))
 
             # Choose a random sprite size
-            canvas.scale(uniform(0.2, 1.))
+            canvas.scale(uniform(0.2, 1.0))
 
             # Restore the canvas center
-            canvas.translate(- pos_x, - pos_y)
+            canvas.translate(-pos_x, -pos_y)
 
             # Draw the sprite
             canvas.draw_image(sprite, pos_x, pos_y)

@@ -42,7 +42,7 @@ You can also clear a certain canvas rectangle area:
 - ``clear_rect(x, y, width, height=None)``:
     Clears the specified rectangular area, making it fully transparent. If ``height`` is None, it is set to the same value as ``width``.
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
@@ -58,7 +58,7 @@ You can also clear a certain canvas rectangle area:
 
 ``fill_rects`` and ``stroke_rects`` are blazingly fast ways of drawing up to a million rectangles at once:
 
-.. code:: Python
+.. code-block:: python
 
     import numpy as np
 
@@ -72,7 +72,7 @@ You can also clear a certain canvas rectangle area:
 
     canvas = Canvas(width=800, height=500)
 
-    canvas.fill_style = 'green'
+    canvas.fill_style = "green"
     canvas.fill_rects(x, y, size)
 
     canvas
@@ -101,14 +101,14 @@ It's the fastest way to draw a polygon with ipycanvas.
     See :ref:`styled_polygons` for details.
 
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
     canvas = Canvas(width=200, height=200)
 
-    canvas.fill_style = '#63934e'
-    canvas.stroke_style = '#4e6393'
+    canvas.fill_style = "#63934e"
+    canvas.stroke_style = "#4e6393"
     canvas.line_width = 5
     canvas.fill_polygon([(20, 20), (180, 20), (100, 150)])
     canvas.stroke_polygon([(20, 20), (180, 20), (100, 150)])
@@ -117,11 +117,12 @@ It's the fastest way to draw a polygon with ipycanvas.
 
 .. image:: images/polygon.png
 
-.. code:: Python
+.. code-block:: python
 
     from math import pi
     import numpy as np
     from ipycanvas import Canvas
+
 
     def polygon(canvas, x, y, radius, n_points):
         angles = (2 * pi / n_points) * np.arange(n_points)
@@ -133,8 +134,9 @@ It's the fastest way to draw a polygon with ipycanvas.
 
         canvas.fill_polygon(points)
 
-    background_color = '#89c64f'
-    polygon_color = '#c6574f'
+
+    background_color = "#89c64f"
+    polygon_color = "#c6574f"
 
     canvas = Canvas(width=200, height=200)
 
@@ -179,7 +181,7 @@ There are methods that draw arcs/circles on the canvas:
 - ``stroke_styled_circles( x, y, radius, color, alpha)`` :
     Same as ``stroke_circles`` but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
 
-.. code:: Python
+.. code-block:: python
 
     from math import pi
 
@@ -187,8 +189,8 @@ There are methods that draw arcs/circles on the canvas:
 
     canvas = Canvas(width=200, height=200)
 
-    canvas.fill_style = 'red'
-    canvas.stroke_style = 'blue'
+    canvas.fill_style = "red"
+    canvas.stroke_style = "blue"
 
     canvas.fill_arc(60, 60, 50, 0, pi)
     canvas.stroke_circle(60, 60, 40)
@@ -211,26 +213,26 @@ There are two commands for drawing a straight line from one point to another:
 - ``stroke_styled_line_segments(points, color, alpha, points_per_line_segment=None)``:
     Draw multiple disconnected line-segments at once. See :ref:`styled_polygons` for details.
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
     canvas = Canvas(width=200, height=200)
 
-    canvas.stroke_style = 'blue'
+    canvas.stroke_style = "blue"
     canvas.stroke_line(0, 0, 150, 150)
 
-    canvas.stroke_style = 'red'
+    canvas.stroke_style = "red"
     canvas.stroke_line(200, 0, 0, 200)
 
-    canvas.stroke_style = 'green'
+    canvas.stroke_style = "green"
     canvas.stroke_line(150, 150, 0, 200)
 
     canvas
 
 .. image:: images/lines.png
 
-.. code:: Python
+.. code-block:: python
 
     import numpy as np
 
@@ -259,7 +261,7 @@ to use those methods when you want to draw the same shape multiple times with th
 
 For example, it is way faster to run:
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
@@ -276,7 +278,7 @@ For example, it is way faster to run:
 
 instead of running:
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
@@ -310,7 +312,7 @@ Ipycanvas provides methods to draw the same shape multiple times but with differ
 Rects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: Python
+.. code-block:: python
 
     import numpy as np
     from ipycanvas import Canvas, hold_canvas
@@ -325,13 +327,9 @@ Rects
     colors_outline = np.random.randint(0, 255, size=(n_rects, 3))
     alphas = np.random.random(n_rects)
     with hold_canvas():
-        canvas.fill_styled_rects(x, y, width, height,
-                                 color=colors_fill,
-                                 alpha=alphas)
+        canvas.fill_styled_rects(x, y, width, height, color=colors_fill, alpha=alphas)
         canvas.line_width = 2
-        canvas.stroke_styled_rects(x, y, width, height,
-                                   color=colors_outline,
-                                   alpha=alphas)
+        canvas.stroke_styled_rects(x, y, width, height, color=colors_outline, alpha=alphas)
     canvas
 
 
@@ -341,7 +339,7 @@ Rects
 Circles
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: Python
+.. code-block:: python
 
     import numpy as np
     from ipycanvas import Canvas, hold_canvas
@@ -367,7 +365,7 @@ Circles
 Arcs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: Python
+.. code-block:: python
 
     import numpy as np
     from ipycanvas import Canvas, hold_canvas
@@ -405,7 +403,7 @@ Polygons / line-segments
 Case 1: All polygons / line-segments have the same number of points
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-.. code:: Python
+.. code-block:: python
 
     import numpy as np
     from ipycanvas import Canvas, hold_canvas
@@ -449,7 +447,7 @@ Case 1: All polygons / line-segments have the same number of points
     :scale: 50 %
 
 
-.. code:: Python
+.. code-block:: python
 
     import numpy as np
     from ipycanvas import Canvas, hold_canvas
@@ -463,15 +461,15 @@ Case 1: All polygons / line-segments have the same number of points
     line_segments = np.zeros([n_line_segments, n_points_per_line_segment, 2])
 
     x = np.linspace(0, canvas.width, num=n_points_per_line_segment)[None, :]
-    line_segments[:, :, 0] = np.linspace(0, canvas.width,
-                                         num=n_points_per_line_segment)[None, :]
+    line_segments[:, :, 0] = np.linspace(0, canvas.width, num=n_points_per_line_segment)[
+        None, :
+    ]
     line_segments[:, :, 1] = (30.0 * np.sin(x * 0.1))[None, :]
 
     colors_outline = np.random.randint(0, 255, size=(n_polygons, 3))
 
     # translate line segments in y direction
-    line_segments[:, :, 1] += np.linspace(1.0, canvas.height,
-                                          num=n_line_segments)[:, None]
+    line_segments[:, :, 1] += np.linspace(1.0, canvas.height, num=n_line_segments)[:, None]
 
     with hold_canvas():
         canvas.stroke_styled_line_segments(line_segments, color=colors_fill)
@@ -487,7 +485,7 @@ Case 2: Polygons / line-segments can have different number of Points.
 
 Polygons can be given as a list of ndarrays:
 
-.. code:: Python
+.. code-block:: python
 
     import numpy as np
     from ipycanvas import Canvas, hold_canvas
@@ -510,7 +508,7 @@ Polygons can be given as a list of ndarrays:
 
 Polygons can be given as a flat ndarray:
 
-.. code:: Python
+.. code-block:: python
 
     import numpy as np
     from ipycanvas import Canvas, hold_canvas
@@ -527,8 +525,7 @@ Polygons can be given as a flat ndarray:
     with hold_canvas():
         # the filling
         canvas.fill_styled_polygons(
-            polygons, points_per_polygon=points_per_polygon,
-            color=colors_fill, alpha=alpha
+            polygons, points_per_polygon=points_per_polygon, color=colors_fill, alpha=alpha
         )
 
         # draw outlines ontop where each line has the same style
