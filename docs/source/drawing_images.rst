@@ -116,7 +116,7 @@ Drawing from another ``Canvas`` is by far the fastest of the three solutions pre
 
     canvas = Canvas(width=800, height=600)
 
-    with hold_canvas(canvas):
+    with hold_canvas():
         for _ in range(2_000):
             canvas.save()
 
@@ -124,8 +124,8 @@ Drawing from another ``Canvas`` is by far the fastest of the three solutions pre
             sprite = sprites[choice(range(3))]
 
             # Choose a random sprite position
-            pos_x = randint(0, canvas.size[0])
-            pos_y = randint(0, canvas.size[1])
+            pos_x = randint(0, canvas.width)
+            pos_y = randint(0, canvas.height)
 
             # Choose a random rotation angle (but first set the rotation center with `translate`)
             canvas.translate(pos_x, pos_y)

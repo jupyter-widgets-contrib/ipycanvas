@@ -324,7 +324,7 @@ Rects
     colors_fill = np.random.randint(0, 255, size=(n_rects, 3))
     colors_outline = np.random.randint(0, 255, size=(n_rects, 3))
     alphas = np.random.random(n_rects)
-    with hold_canvas(canvas):
+    with hold_canvas():
         canvas.fill_styled_rects(x, y, width, height,
                                  color=colors_fill,
                                  alpha=alphas)
@@ -354,7 +354,7 @@ Circles
     colors_fill = np.random.randint(0, 255, size=(n_circles, 3))
     colors_outline = np.random.randint(0, 255, size=(n_circles, 3))
     alphas = np.random.random(n_circles)
-    with hold_canvas(canvas):
+    with hold_canvas():
         canvas.fill_styled_circles(x, y, r, color=colors_fill, alpha=alphas)
         canvas.line_width = 2
         canvas.stroke_styled_circles(x, y, r, color=colors_outline)
@@ -385,7 +385,7 @@ Arcs
     start_angle = np.random.random(n_circles) * math.pi
     end_angle = np.random.random(n_circles) * math.pi
     alphas = np.random.random(n_circles)
-    with hold_canvas(canvas):
+    with hold_canvas():
         canvas.fill_style = "cyan"
         canvas.fill_arcs(x, y, r, start_angle, end_angle)
         canvas.line_width = 1
@@ -440,7 +440,7 @@ Case 1: All polygons / line-segments have the same number of points
     polygons += np.linspace(1.0, 100.0, num=n_polygons)[:, None, None]
 
     points_per_polygon = np.ones([n_polygons]) * n_points_per_polygon
-    with hold_canvas(canvas):
+    with hold_canvas():
         canvas.stroke_styled_polygons(polygons, color=colors_fill)
     canvas
 
@@ -473,7 +473,7 @@ Case 1: All polygons / line-segments have the same number of points
     line_segments[:, :, 1] += np.linspace(1.0, canvas.height,
                                           num=n_line_segments)[:, None]
 
-    with hold_canvas(canvas):
+    with hold_canvas():
         canvas.stroke_styled_line_segments(line_segments, color=colors_fill)
     canvas
 
@@ -500,7 +500,7 @@ Polygons can be given as a list of ndarrays:
     polygons = [triangle, rectangle, irregular]
     colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
 
-    with hold_canvas(canvas):
+    with hold_canvas():
         canvas.fill_styled_polygons(polygons, color=colors)
     canvas
 
@@ -524,7 +524,7 @@ Polygons can be given as a flat ndarray:
     colors_fill = np.random.randint(0, 255, size=(n_polygons, 3))
     colors_outline = np.random.randint(0, 255, size=(n_polygons, 3))
 
-    with hold_canvas(canvas):
+    with hold_canvas():
         # the filling
         canvas.fill_styled_polygons(
             polygons, points_per_polygon=points_per_polygon,
