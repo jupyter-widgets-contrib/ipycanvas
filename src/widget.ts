@@ -137,7 +137,11 @@ export class CanvasManagerModel extends WidgetModel {
   initialize(attributes: any, options: any) {
     super.initialize(attributes, options);
 
-    this.on('msg:custom', this.onCommand.bind(this));
+    this.on('msg:custom', (command: any, buffers: any) => {
+      this.currentProcessing = this.currentProcessing.then(async () => {
+        await this.onCommand(command, buffers);
+      });
+    });
   }
 
   private async onCommand(command: any, buffers: any) {
@@ -359,6 +363,7 @@ export class CanvasManagerModel extends WidgetModel {
   }
 
   private currentCanvas: CanvasModel;
+  private currentProcessing: Promise<void> = Promise.resolve();
   private canvasesToUpdate: CanvasModel[] = [];
 
   static model_name = 'CanvasManagerModel';
