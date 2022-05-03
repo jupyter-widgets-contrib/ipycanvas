@@ -1371,9 +1371,9 @@ class Canvas(_CanvasBase):
         draw. Unlike the CanvasRenderingContext2D.putImageData method, this method **is** affected by the canvas transformation
         matrix, and supports transparency.
         """
-        image_metadata, image_buffer = binary_image(image_data)
+        image_buffer = binary_image(image_data)
         _CANVAS_MANAGER.send_draw_command(
-            self, COMMANDS["putImageData"], [image_metadata, x, y], [image_buffer]
+            self, COMMANDS["putImageData"], [x, y], [image_buffer]
         )
 
     def create_image_data(self, width, height):
