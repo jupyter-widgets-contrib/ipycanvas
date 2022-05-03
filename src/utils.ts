@@ -151,3 +151,18 @@ export async function fromBytes(
     img.src = URL.createObjectURL(blob);
   });
 }
+
+export async function bufferToImage(buffer: any): Promise<HTMLImageElement> {
+  let url: string;
+
+  const blob = new Blob([buffer], { type: 'image/jpeg' });
+  url = URL.createObjectURL(blob);
+
+  const img = new Image();
+  return new Promise(resolve => {
+    img.onload = () => {
+      resolve(img);
+    };
+    img.src = url;
+  });
+}

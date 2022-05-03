@@ -16,7 +16,13 @@ import { RoughCanvas } from 'roughjs/bin/canvas';
 
 import { MODULE_NAME, MODULE_VERSION } from './version';
 
-import { getArg, toBytes, fromBytes, getTypedArray } from './utils';
+import {
+  getArg,
+  toBytes,
+  fromBytes,
+  getTypedArray,
+  bufferToImage
+} from './utils';
 
 function getContext(canvas: HTMLCanvasElement) {
   const context = canvas.getContext('2d');
@@ -280,7 +286,7 @@ export class CanvasManagerModel extends WidgetModel {
         await this.currentCanvas.drawImage(args, buffers);
         break;
       case 'putImageData':
-        this.currentCanvas.putImageData(args, buffers);
+        await this.currentCanvas.putImageData(args, buffers);
         break;
       case 'set':
         await this.currentCanvas.setAttr(args[0], args[1]);
@@ -1050,8 +1056,8 @@ export class CanvasModel extends DOMWidgetModel {
     image: HTMLCanvasElement | HTMLImageElement,
     x: number,
     y: number,
-    width: number | undefined,
-    height: number | undefined
+    width?: number,
+    height?: number
   ) {
     if (width === undefined || height === undefined) {
       this.ctx.drawImage(image, x, y);
@@ -1060,22 +1066,12 @@ export class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  putImageData(args: any[], buffers: any) {
-    const [bufferMetadata, dx, dy] = args;
+  async putImageData(args: any[], buffers: any) {
+    const [x, y] = args;
 
-    const width = bufferMetadata.shape[1];
-    const height = bufferMetadata.shape[0];
+    const image = await bufferToImage(buffers[0]);
 
-    const data = new Uint8ClampedArray(buffers[0].buffer);
-    const imageData = new ImageData(data, width, height);
-
-    // Draw on a temporary off-screen canvas. This is a workaround for `putImageData` to support transparency.
-    const offscreenCanvas = document.createElement('canvas');
-    offscreenCanvas.width = width;
-    offscreenCanvas.height = height;
-    getContext(offscreenCanvas).putImageData(imageData, 0, 0);
-
-    this.ctx.drawImage(offscreenCanvas, dx, dy);
+    this._drawImage(image, x, y);
   }
 
   async setAttr(attr: number, value: any) {
