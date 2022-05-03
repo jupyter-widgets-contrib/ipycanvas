@@ -2,5 +2,5 @@ name: ipycanvas
 channels:
   - conda-forge
 dependencies:
-  - ipycanvas=0.11.0
+  - ipycanvas=0.12.0
   - branca
