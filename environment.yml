@@ -2,5 +2,7 @@ name: ipycanvas
 channels:
   - conda-forge
 dependencies:
+  - jupyterlab=3
   - ipycanvas=0.12.0
+  - ipyevents
   - branca
