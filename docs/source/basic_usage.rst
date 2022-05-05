@@ -6,7 +6,7 @@ Create Canvas
 
 You can provide the width and height of the ``Canvas`` in pixels in the constructor.
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
@@ -16,14 +16,14 @@ You can provide the width and height of the ``Canvas`` in pixels in the construc
 You can also create a multi-layer canvas. This is useful when you have a background
 that does not need to update much while other objects moves a lot on the screen.
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import MultiCanvas
 
     # Create a multi-layer canvas with 4 layers
     multi_canvas = MultiCanvas(4, width=200, height=200)
-    multi_canvas[0] #  Access first layer (background)
-    multi_canvas[3] #  Access last layer
+    multi_canvas[0]  #  Access first layer (background)
+    multi_canvas[3]  #  Access last layer (foreground)
     multi_canvas
 
 .. note::
@@ -44,7 +44,7 @@ Color buffer size
 
 The color buffer size can dynamically be updated through the ``width`` and ``height`` properties (value in pixels), note that this will clear the canvas.
 
-.. code:: Python
+.. code-block:: python
 
     canvas.width = 300
     canvas.height = 600
@@ -57,32 +57,32 @@ The size on the screen can be updated through the ``layout`` property, which com
 The default value for the ``width`` and ``height`` of the layout is "auto", this means the canvas will take the same screen size as the actual color buffer size: a ``Canvas`` of
 size ``800x600`` will take ``800x600`` pixels on the screen.
 
-.. code:: Python
+.. code-block:: python
 
-    canvas.layout.width = 'auto'
-    canvas.layout.height = 'auto'
+    canvas.layout.width = "auto"
+    canvas.layout.height = "auto"
 
 In order to get a "responsive" ``Canvas`` which takes as much space as available while still respecting the aspect ratio, you will need to set the ``width``
 property to ``100%``, the ``height`` will automatically get computed:
 
-.. code:: Python
+.. code-block:: python
 
-    canvas.layout.width = '100%'
-    canvas.layout.height = 'auto'
+    canvas.layout.width = "100%"
+    canvas.layout.height = "auto"
 
 One can also set the screen size value in pixels:
 
-.. code:: Python
+.. code-block:: python
 
-    canvas.layout.width = '200px'
-    canvas.layout.height = '500px'
+    canvas.layout.width = "200px"
+    canvas.layout.height = "500px"
 
 Clear Canvas
 ------------
 
 The ``Canvas`` and ``MultiCanvas`` classes have a ``clear`` method which allows to clear the entire canvas.
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
@@ -103,11 +103,12 @@ however this is not recommended as it can lead to instability. Instead we provid
 context manager which allows you to hold all the commands and send them in a single batch at the end. For
 optimal performance you should try to use ``hold_canvas`` as much as possible.
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas, hold_canvas
 
     canvas = Canvas(width=200, height=200)
 
-    with hold_canvas(canvas):
+    with hold_canvas():
         # Perform drawings...
+        pass

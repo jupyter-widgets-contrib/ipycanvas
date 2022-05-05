@@ -12,15 +12,17 @@ This limitation results in ipycanvas not working with `Voilà <https://github.co
 
 A way to work around this is to perform your drawings in a callback that gets called when the client is ready to receive drawings, using the ``on_client_ready`` method:
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
     canvas = Canvas(width=100, height=50)
 
+
     def perform_drawings():
-        canvas.font = '32px serif'
-        canvas.fill_text('Voilà!', 10, 32)
+        canvas.font = "32px serif"
+        canvas.fill_text("Voilà!", 10, 32)
+
 
     canvas.on_client_ready(perform_drawings)
 

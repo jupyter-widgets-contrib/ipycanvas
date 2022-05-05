@@ -4,24 +4,28 @@
 import { Buffer } from 'buffer';
 
 import {
-  DOMWidgetModel, DOMWidgetView, WidgetModel, ISerializers, Dict, unpack_models
+  DOMWidgetModel,
+  DOMWidgetView,
+  WidgetModel,
+  ISerializers,
+  Dict,
+  unpack_models
 } from '@jupyter-widgets/base';
 
-import {
-  RoughCanvas
-} from 'roughjs/bin/canvas';
+import { RoughCanvas } from 'roughjs/bin/canvas';
+
+import { MODULE_NAME, MODULE_VERSION } from './version';
 
 import {
-  MODULE_NAME, MODULE_VERSION
-} from './version';
-
-import {
-  getArg, toBytes, fromBytes, getTypedArray
+  getArg,
+  toBytes,
+  fromBytes,
+  getTypedArray,
+  bufferToImage
 } from './utils';
 
-
 function getContext(canvas: HTMLCanvasElement) {
-  const context = canvas.getContext("2d");
+  const context = canvas.getContext('2d');
   if (context === null) {
     throw 'Could not create 2d context.';
   }
@@ -40,20 +44,22 @@ function deserializeImageData(dataview: DataView | null) {
   return new Uint8ClampedArray(dataview.buffer);
 }
 
-async function createImageFromWidget(image: DOMWidgetModel): Promise<HTMLImageElement> {
+async function createImageFromWidget(
+  image: DOMWidgetModel
+): Promise<HTMLImageElement> {
   // Create the image manually instead of creating an ImageView
   let url: string;
   const format = image.get('format');
   const value = image.get('value');
   if (format !== 'url') {
-      const blob = new Blob([value], {type: `image/${format}`});
-      url = URL.createObjectURL(blob);
+    const blob = new Blob([value], { type: `image/${format}` });
+    url = URL.createObjectURL(blob);
   } else {
-      url = (new TextDecoder('utf-8')).decode(value.buffer);
+    url = new TextDecoder('utf-8').decode(value.buffer);
   }
 
   const img = new Image();
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     img.onload = () => {
       resolve(img);
     };
@@ -61,29 +67,324 @@ async function createImageFromWidget(image: DOMWidgetModel): Promise<HTMLImageEl
   });
 }
 
-
 const COMMANDS = [
-  'fillRect', 'strokeRect', 'fillRects', 'strokeRects', 'clearRect', 'fillArc',
-  'fillCircle', 'strokeArc', 'strokeCircle', 'fillArcs', 'strokeArcs',
-  'fillCircles', 'strokeCircles', 'strokeLine', 'beginPath', 'closePath',
-  'stroke', 'fillPath', 'fill', 'moveTo', 'lineTo',
-  'rect', 'arc', 'ellipse', 'arcTo', 'quadraticCurveTo',
-  'bezierCurveTo', 'fillText', 'strokeText', 'setLineDash', 'drawImage',
-  'putImageData', 'clip', 'save', 'restore', 'translate',
-  'rotate', 'scale', 'transform', 'setTransform', 'resetTransform',
-  'set', 'clear', 'sleep', 'fillPolygon', 'strokePolygon',
+  'fillRect',
+  'strokeRect',
+  'fillRects',
+  'strokeRects',
+  'clearRect',
+  'fillArc',
+  'fillCircle',
+  'strokeArc',
+  'strokeCircle',
+  'fillArcs',
+  'strokeArcs',
+  'fillCircles',
+  'strokeCircles',
+  'strokeLine',
+  'beginPath',
+  'closePath',
+  'stroke',
+  'fillPath',
+  'fill',
+  'moveTo',
+  'lineTo',
+  'rect',
+  'arc',
+  'ellipse',
+  'arcTo',
+  'quadraticCurveTo',
+  'bezierCurveTo',
+  'fillText',
+  'strokeText',
+  'setLineDash',
+  'drawImage',
+  'putImageData',
+  'clip',
+  'save',
+  'restore',
+  'translate',
+  'rotate',
+  'scale',
+  'transform',
+  'setTransform',
+  'resetTransform',
+  'set',
+  'clear',
+  'sleep',
+  'fillPolygon',
+  'strokePolygon',
   'strokeLines',
+  'fillPolygons',
+  'strokePolygons',
+  'strokeLineSegments',
+  'fillStyledRects',
+  'strokeStyledRects',
+  'fillStyledCircles',
+  'strokeStyledCircles',
+  'fillStyledArcs',
+  'strokeStyledArcs',
+  'fillStyledPolygons',
+  'strokeStyledPolygons',
+  'strokeStyledLineSegments',
+  'switchCanvas'
 ];
 
-
-export
-class Path2DModel extends WidgetModel {
+export class CanvasManagerModel extends WidgetModel {
   defaults() {
-    return {...super.defaults(),
+    return {
+      ...super.defaults(),
+      _model_name: CanvasManagerModel.model_name,
+      _model_module: CanvasManagerModel.model_module,
+      _model_module_version: CanvasManagerModel.model_module_version
+    };
+  }
+
+  initialize(attributes: any, options: any) {
+    super.initialize(attributes, options);
+
+    this.on('msg:custom', (command: any, buffers: any) => {
+      this.currentProcessing = this.currentProcessing.then(async () => {
+        await this.onCommand(command, buffers);
+      });
+    });
+  }
+
+  private async onCommand(command: any, buffers: any) {
+    // Retrieve the commands buffer as an object (list of commands)
+    const commands = JSON.parse(
+      Buffer.from(getTypedArray(buffers[0], command)).toString('utf-8')
+    );
+
+    this.canvasesToUpdate =
+      this.currentCanvas !== undefined ? [this.currentCanvas] : [];
+
+    await this.processCommand(commands, buffers.slice(1, buffers.length));
+
+    for (const canvas of this.canvasesToUpdate) {
+      canvas.syncViews();
+    }
+  }
+
+  private async processCommand(command: any, buffers: any) {
+    // If it's a list of commands
+    if (command instanceof Array && command[0] instanceof Array) {
+      let remainingBuffers = buffers;
+
+      for (const subcommand of command) {
+        let subbuffers = [];
+        const nBuffers: Number = subcommand[2];
+        if (nBuffers) {
+          subbuffers = remainingBuffers.slice(0, nBuffers);
+          remainingBuffers = remainingBuffers.slice(nBuffers);
+        }
+        await this.processCommand(subcommand, subbuffers);
+      }
+      return;
+    }
+
+    const name: string = COMMANDS[command[0]];
+    const args: any[] = command[1];
+    switch (name) {
+      case 'switchCanvas':
+        await this.switchCanvas(args[0]);
+        this.canvasesToUpdate.push(this.currentCanvas);
+        break;
+      case 'sleep':
+        await this.currentCanvas.sleep(args[0]);
+        break;
+      case 'fillRect':
+        this.currentCanvas.fillRect(args[0], args[1], args[2], args[3]);
+        break;
+      case 'strokeRect':
+        this.currentCanvas.strokeRect(args[0], args[1], args[2], args[3]);
+        break;
+      case 'fillRects':
+        this.currentCanvas.drawRects(
+          args,
+          buffers,
+          this.currentCanvas.fillRect.bind(this.currentCanvas)
+        );
+        break;
+      case 'strokeRects':
+        this.currentCanvas.drawRects(
+          args,
+          buffers,
+          this.currentCanvas.strokeRect.bind(this.currentCanvas)
+        );
+        break;
+      case 'fillArc':
+        this.currentCanvas.fillArc(
+          args[0],
+          args[1],
+          args[2],
+          args[3],
+          args[4],
+          args[5]
+        );
+        break;
+      case 'strokeArc':
+        this.currentCanvas.strokeArc(
+          args[0],
+          args[1],
+          args[2],
+          args[3],
+          args[4],
+          args[5]
+        );
+        break;
+      case 'fillArcs':
+        this.currentCanvas.drawArcs(
+          args,
+          buffers,
+          this.currentCanvas.fillArc.bind(this.currentCanvas)
+        );
+        break;
+      case 'strokeArcs':
+        this.currentCanvas.drawArcs(
+          args,
+          buffers,
+          this.currentCanvas.strokeArc.bind(this.currentCanvas)
+        );
+        break;
+      case 'fillCircle':
+        this.currentCanvas.fillCircle(args[0], args[1], args[2]);
+        break;
+      case 'strokeCircle':
+        this.currentCanvas.strokeCircle(args[0], args[1], args[2]);
+        break;
+      case 'fillCircles':
+        this.currentCanvas.drawCircles(
+          args,
+          buffers,
+          this.currentCanvas.fillCircle.bind(this.currentCanvas)
+        );
+        break;
+      case 'strokeCircles':
+        this.currentCanvas.drawCircles(
+          args,
+          buffers,
+          this.currentCanvas.strokeCircle.bind(this.currentCanvas)
+        );
+        break;
+      case 'strokeLine':
+        this.currentCanvas.strokeLine(args, buffers);
+        break;
+      case 'strokeLines':
+        this.currentCanvas.strokeLines(args, buffers);
+        break;
+      case 'fillPolygon':
+        this.currentCanvas.fillPolygon(args, buffers);
+        break;
+      case 'strokePolygon':
+        this.currentCanvas.strokePolygon(args, buffers);
+        break;
+      case 'fillPath':
+        await this.currentCanvas.fillPath(args, buffers);
+        break;
+      case 'drawImage':
+        await this.currentCanvas.drawImage(args, buffers);
+        break;
+      case 'putImageData':
+        await this.currentCanvas.putImageData(args, buffers);
+        break;
+      case 'set':
+        await this.currentCanvas.setAttr(args[0], args[1]);
+        break;
+      case 'clear':
+        this.currentCanvas.clearCanvas();
+        break;
+      case 'fillPolygons':
+        this.currentCanvas.drawPolygonOrLineSegments(args, buffers, true, true);
+        break;
+      case 'strokePolygons':
+        this.currentCanvas.drawPolygonOrLineSegments(
+          args,
+          buffers,
+          false,
+          true
+        );
+        break;
+      case 'strokeLineSegments':
+        this.currentCanvas.drawPolygonOrLineSegments(
+          args,
+          buffers,
+          false,
+          false
+        );
+        break;
+      case 'fillStyledRects':
+        this.currentCanvas.drawStyledRects(args, buffers, true);
+        break;
+      case 'strokeStyledRects':
+        this.currentCanvas.drawStyledRects(args, buffers, false);
+        break;
+      case 'fillStyledCircles':
+        this.currentCanvas.drawStyledCircles(args, buffers, true);
+        break;
+      case 'strokeStyledCircles':
+        this.currentCanvas.drawStyledCircles(args, buffers, false);
+        break;
+      case 'fillStyledArcs':
+        this.currentCanvas.drawStyledArcs(args, buffers, true);
+        break;
+      case 'strokeStyledArcs':
+        this.currentCanvas.drawStyledArcs(args, buffers, false);
+        break;
+      case 'fillStyledPolygons':
+        this.currentCanvas.drawStyledPolygonOrLineSegments(
+          args,
+          buffers,
+          true,
+          true
+        );
+        break;
+      case 'strokeStyledPolygons':
+        this.currentCanvas.drawStyledPolygonOrLineSegments(
+          args,
+          buffers,
+          false,
+          true
+        );
+        break;
+      case 'strokeStyledLineSegments':
+        this.currentCanvas.drawStyledPolygonOrLineSegments(
+          args,
+          buffers,
+          false,
+          false
+        );
+        break;
+      default:
+        this.currentCanvas.executeCommand(name, args);
+        break;
+    }
+  }
+
+  private async switchCanvas(serializedCanvas: any) {
+    this.currentCanvas = await unpack_models(
+      serializedCanvas,
+      this.widget_manager
+    );
+  }
+
+  private currentCanvas: CanvasModel;
+  private currentProcessing: Promise<void> = Promise.resolve();
+  private canvasesToUpdate: CanvasModel[] = [];
+
+  static model_name = 'CanvasManagerModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+}
+
+export class Path2DModel extends WidgetModel {
+  defaults() {
+    return {
+      ...super.defaults(),
       _model_name: Path2DModel.model_name,
       _model_module: Path2DModel.model_module,
       _model_module_version: Path2DModel.model_module_version,
-      value: '',
+      value: ''
     };
   }
 
@@ -100,16 +401,15 @@ class Path2DModel extends WidgetModel {
   static model_module_version = MODULE_VERSION;
 }
 
-
-export
-class PatternModel extends WidgetModel {
+export class PatternModel extends WidgetModel {
   defaults() {
-    return {...super.defaults(),
+    return {
+      ...super.defaults(),
       _model_name: PatternModel.model_name,
       _model_module: PatternModel.model_module,
       _model_module_version: PatternModel.model_module_version,
       image: '',
-      repetition: 'repeat',
+      repetition: 'repeat'
     };
   }
 
@@ -117,7 +417,8 @@ class PatternModel extends WidgetModel {
     super.initialize(attributes, options);
 
     const image = this.get('image');
-    let patternSource: HTMLCanvasElement | HTMLImageElement | undefined = undefined;
+    let patternSource: HTMLCanvasElement | HTMLImageElement | undefined =
+      undefined;
 
     if (image instanceof CanvasModel || image instanceof MultiCanvasModel) {
       patternSource = image.canvas;
@@ -129,13 +430,16 @@ class PatternModel extends WidgetModel {
     }
 
     if (patternSource == undefined) {
-      throw "Could not understand the souce for the pattern";
+      throw 'Could not understand the souce for the pattern';
     }
 
-    const pattern = PatternModel.ctx.createPattern(patternSource, this.get('repetition'));
+    const pattern = PatternModel.ctx.createPattern(
+      patternSource,
+      this.get('repetition')
+    );
 
     if (pattern == null) {
-      throw "Could not initialize pattern object";
+      throw 'Could not initialize pattern object';
     }
 
     this.value = pattern;
@@ -143,8 +447,8 @@ class PatternModel extends WidgetModel {
 
   static serializers: ISerializers = {
     ...WidgetModel.serializers,
-    image: { deserialize: (unpack_models as any) },
-  }
+    image: { deserialize: unpack_models as any }
+  };
 
   value: CanvasPattern;
 
@@ -153,20 +457,22 @@ class PatternModel extends WidgetModel {
   static model_module_version = MODULE_VERSION;
 
   // Global context for creating the gradients
-  static ctx: CanvasRenderingContext2D = getContext(document.createElement('canvas'));
+  static ctx: CanvasRenderingContext2D = getContext(
+    document.createElement('canvas')
+  );
 }
-
 
 class GradientModel extends WidgetModel {
   defaults() {
-    return {...super.defaults(),
+    return {
+      ...super.defaults(),
       _model_module: GradientModel.model_module,
       _model_module_version: GradientModel.model_module_version,
-      x0: 0.,
-      y0: 0.,
-      x1: 0.,
-      y1: 0.,
-      color_stops: [],
+      x0: 0,
+      y0: 0,
+      x1: 0,
+      y1: 0,
+      color_stops: []
     };
   }
 
@@ -182,8 +488,10 @@ class GradientModel extends WidgetModel {
 
   protected createGradient() {
     this.value = GradientModel.ctx.createLinearGradient(
-      this.get('x0'), this.get('y0'),
-      this.get('x1'), this.get('y1')
+      this.get('x0'),
+      this.get('y0'),
+      this.get('x1'),
+      this.get('y1')
     );
   }
 
@@ -193,47 +501,47 @@ class GradientModel extends WidgetModel {
   static model_module_version = MODULE_VERSION;
 
   // Global context for creating the gradients
-  static ctx: CanvasRenderingContext2D = getContext(document.createElement('canvas'));
+  static ctx: CanvasRenderingContext2D = getContext(
+    document.createElement('canvas')
+  );
 }
 
-
-export
-class LinearGradientModel extends GradientModel {
+export class LinearGradientModel extends GradientModel {
   defaults() {
-    return {...super.defaults(),
-      _model_name: LinearGradientModel.model_name,
-    };
+    return { ...super.defaults(), _model_name: LinearGradientModel.model_name };
   }
 
   static model_name = 'LinearGradientModel';
 }
 
-
-export
-class RadialGradientModel extends GradientModel {
+export class RadialGradientModel extends GradientModel {
   defaults() {
-    return {...super.defaults(),
+    return {
+      ...super.defaults(),
       _model_name: RadialGradientModel.model_name,
-      r0: 0.,
-      r1: 0.,
+      r0: 0,
+      r1: 0
     };
   }
 
   protected createGradient() {
     this.value = GradientModel.ctx.createRadialGradient(
-      this.get('x0'), this.get('y0'), this.get('r0'),
-      this.get('x1'), this.get('y1'), this.get('r1')
+      this.get('x0'),
+      this.get('y0'),
+      this.get('r0'),
+      this.get('x1'),
+      this.get('y1'),
+      this.get('r1')
     );
   }
 
   static model_name = 'RadialGradientModel';
 }
 
-
-export
-class CanvasModel extends DOMWidgetModel {
+export class CanvasModel extends DOMWidgetModel {
   defaults() {
-    return {...super.defaults(),
+    return {
+      ...super.defaults(),
       _model_name: CanvasModel.model_name,
       _model_module: CanvasModel.model_module,
       _model_module_version: CanvasModel.model_module_version,
@@ -244,6 +552,7 @@ class CanvasModel extends DOMWidgetModel {
       height: 500,
       sync_image_data: false,
       image_data: null,
+      _send_client_ready_event: true
     };
   }
 
@@ -253,13 +562,27 @@ class CanvasModel extends DOMWidgetModel {
       serialize: serializeImageData,
       deserialize: deserializeImageData
     }
-  }
+  };
 
   static ATTRS = [
-    'fillStyle', 'strokeStyle', 'globalAlpha', 'font', 'textAlign',
-    'textBaseline', 'direction', 'globalCompositeOperation',
-    'lineWidth', 'lineCap', 'lineJoin', 'miterLimit', 'lineDashOffset',
-    'shadowOffsetX', 'shadowOffsetY', 'shadowBlur', 'shadowColor',
+    'fillStyle',
+    'strokeStyle',
+    'globalAlpha',
+    'font',
+    'textAlign',
+    'textBaseline',
+    'direction',
+    'globalCompositeOperation',
+    'lineWidth',
+    'lineCap',
+    'lineJoin',
+    'miterLimit',
+    'lineDashOffset',
+    'shadowOffsetX',
+    'shadowOffsetY',
+    'shadowBlur',
+    'shadowColor',
+    'filter'
   ];
 
   initialize(attributes: any, options: any) {
@@ -273,9 +596,11 @@ class CanvasModel extends DOMWidgetModel {
 
     this.on_some_change(['width', 'height'], this.resizeCanvas, this);
     this.on('change:sync_image_data', this.syncImageData.bind(this));
-    this.on('msg:custom', this.onCommand.bind(this));
+    // this.on('msg:custom', this.onCommand.bind(this));
 
-    this.send({ event: 'client_ready' }, {});
+    if (this.get('_send_client_ready_event')) {
+      this.send({ event: 'client_ready' }, {});
+    }
   }
 
   private async drawImageData() {
@@ -288,12 +613,7 @@ class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  private async onCommand(command: any, buffers: any) {
-    // Retrieve the commands buffer as an object (list of commands)
-    const commands = JSON.parse(Buffer.from(getTypedArray(buffers[0], command)).toString('utf-8'));
-
-    await this.processCommand(commands, buffers.slice(1, buffers.length));
-
+  async syncViews() {
     this.forEachView((view: CanvasView) => {
       view.updateCanvas();
     });
@@ -302,99 +622,7 @@ class CanvasModel extends DOMWidgetModel {
     this.syncImageData();
   }
 
-  private async processCommand(command: any, buffers: any) {
-    // If it's a list of commands
-    if (command instanceof Array && command[0] instanceof Array) {
-      let remainingBuffers = buffers;
-
-      for (const subcommand of command) {
-        let subbuffers = [];
-        const nBuffers: Number = subcommand[2];
-        if (nBuffers) {
-          subbuffers = remainingBuffers.slice(0, nBuffers);
-          remainingBuffers = remainingBuffers.slice(nBuffers)
-        }
-        await this.processCommand(subcommand, subbuffers);
-      }
-      return;
-    }
-
-    const name: string = COMMANDS[command[0]];
-    const args: any[] = command[1];
-    switch (name) {
-      case 'sleep':
-        await this.sleep(args[0]);
-        break;
-      case 'fillRect':
-        this.fillRect(args[0], args[1], args[2], args[3]);
-        break;
-      case 'strokeRect':
-        this.strokeRect(args[0], args[1], args[2], args[3]);
-        break;
-      case 'fillRects':
-        this.drawRects(args, buffers, this.fillRect.bind(this));
-        break;
-      case 'strokeRects':
-        this.drawRects(args, buffers, this.strokeRect.bind(this));
-        break;
-      case 'fillArc':
-        this.fillArc(args[0], args[1], args[2], args[3], args[4], args[5]);
-        break;
-      case 'strokeArc':
-        this.strokeArc(args[0], args[1], args[2], args[3], args[4], args[5]);
-        break;
-      case 'fillArcs':
-        this.drawArcs(args, buffers, this.fillArc.bind(this));
-        break;
-      case 'strokeArcs':
-        this.drawArcs(args, buffers, this.strokeArc.bind(this));
-        break;
-      case 'fillCircle':
-        this.fillCircle(args[0], args[1], args[2]);
-        break;
-      case 'strokeCircle':
-        this.strokeCircle(args[0], args[1], args[2]);
-        break;
-      case 'fillCircles':
-        this.drawCircles(args, buffers, this.fillCircle.bind(this));
-        break;
-      case 'strokeCircles':
-        this.drawCircles(args, buffers, this.strokeCircle.bind(this));
-        break;
-      case 'strokeLine':
-        this.strokeLine(args, buffers);
-        break;
-      case 'strokeLines':
-        this.strokeLines(args, buffers);
-        break;
-      case 'fillPolygon':
-        this.fillPolygon(args, buffers);
-        break;
-      case 'strokePolygon':
-        this.strokePolygon(args, buffers);
-        break;
-      case 'fillPath':
-        await this.fillPath(args, buffers);
-        break;
-      case 'drawImage':
-        await this.drawImage(args, buffers);
-        break;
-      case 'putImageData':
-        this.putImageData(args, buffers);
-        break;
-      case 'set':
-        await this.setAttr(args[0], args[1]);
-        break;
-      case 'clear':
-        this.clearCanvas();
-        break;
-      default:
-        this.executeCommand(name, args);
-        break;
-    }
-  }
-
-  private async sleep(time: number) {
+  async sleep(time: number) {
     this.forEachView((view: CanvasView) => {
       view.updateCanvas();
     });
@@ -405,40 +633,113 @@ class CanvasModel extends DOMWidgetModel {
     await new Promise(resolve => setTimeout(resolve, time));
   }
 
-  protected fillRect(x: number, y: number, width: number, height: number) {
+  fillRect(x: number, y: number, width: number, height: number) {
     this.ctx.fillRect(x, y, width, height);
   }
 
-  protected strokeRect(x: number, y: number, width: number, height: number) {
+  strokeRect(x: number, y: number, width: number, height: number) {
     this.ctx.strokeRect(x, y, width, height);
   }
 
-  private drawRects(args: any[], buffers: any, callback: (x: number, y: number, width: number, height: number) => void) {
+  drawRects(
+    args: any[],
+    buffers: any,
+    callback: (x: number, y: number, width: number, height: number) => void
+  ) {
     const x = getArg(args[0], buffers);
     const y = getArg(args[1], buffers);
     const width = getArg(args[2], buffers);
     const height = getArg(args[3], buffers);
 
-    const numberRects = Math.min(x.length, y.length, width.length, height.length);
+    const numberRects = Math.min(
+      x.length,
+      y.length,
+      width.length,
+      height.length
+    );
 
     for (let idx = 0; idx < numberRects; ++idx) {
-      callback(x.getItem(idx), y.getItem(idx), width.getItem(idx), height.getItem(idx));
+      callback(
+        x.getItem(idx),
+        y.getItem(idx),
+        width.getItem(idx),
+        height.getItem(idx)
+      );
     }
   }
 
-  protected fillArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {
+  drawStyledRects(args: any[], buffers: any, fill: boolean) {
+    const x = getArg(args[0], buffers);
+    const y = getArg(args[1], buffers);
+    const width = getArg(args[2], buffers);
+    const height = getArg(args[3], buffers);
+    const colors = getArg(args[4], buffers);
+    const alpha = getArg(args[5], buffers);
+
+    const numberRects = Math.min(
+      x.length,
+      y.length,
+      width.length,
+      height.length
+    );
+
+    this.ctx.save();
+    for (let idx = 0; idx < numberRects; ++idx) {
+      // get color for this circle
+      const ci = 3 * idx;
+      const color = `rgba(${colors.getItem(ci)}, ${colors.getItem(
+        ci + 1
+      )}, ${colors.getItem(ci + 2)}, ${alpha.getItem(idx)})`;
+      this.setStyle(color, fill);
+      if (fill) {
+        this.fillRect(
+          x.getItem(idx),
+          y.getItem(idx),
+          width.getItem(idx),
+          height.getItem(idx)
+        );
+      } else {
+        this.strokeRect(
+          x.getItem(idx),
+          y.getItem(idx),
+          width.getItem(idx),
+          height.getItem(idx)
+        );
+      }
+    }
+    this.ctx.restore();
+  }
+
+  fillArc(
+    x: number,
+    y: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    anticlockwise: boolean
+  ) {
     this.ctx.beginPath();
 
-    this.ctx.moveTo(x, y);  // Move to center
-    this.ctx.lineTo(x + radius * Math.cos(startAngle), y + radius * Math.sin(startAngle));  // Line to beginning of the arc
+    this.ctx.moveTo(x, y); // Move to center
+    this.ctx.lineTo(
+      x + radius * Math.cos(startAngle),
+      y + radius * Math.sin(startAngle)
+    ); // Line to beginning of the arc
     this.ctx.arc(x, y, radius, startAngle, endAngle, anticlockwise);
-    this.ctx.lineTo(x, y);  // Line to center
+    this.ctx.lineTo(x, y); // Line to center
     this.ctx.fill();
 
     this.ctx.closePath();
   }
 
-  protected strokeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {
+  strokeArc(
+    x: number,
+    y: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    anticlockwise: boolean
+  ) {
     this.ctx.beginPath();
 
     this.ctx.arc(x, y, radius, startAngle, endAngle, anticlockwise);
@@ -447,7 +748,18 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.closePath();
   }
 
-  private drawArcs(args: any[], buffers: any, callback: (x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) => void) {
+  drawArcs(
+    args: any[],
+    buffers: any,
+    callback: (
+      x: number,
+      y: number,
+      radius: number,
+      startAngle: number,
+      endAngle: number,
+      anticlockwise: boolean
+    ) => void
+  ) {
     const x = getArg(args[0], buffers);
     const y = getArg(args[1], buffers);
     const radius = getArg(args[2], buffers);
@@ -456,20 +768,26 @@ class CanvasModel extends DOMWidgetModel {
     const anticlockwise = getArg(args[5], buffers);
 
     const numberArcs = Math.min(
-      x.length, y.length, radius.length,
-      startAngle.length, endAngle.length
+      x.length,
+      y.length,
+      radius.length,
+      startAngle.length,
+      endAngle.length
     );
 
     for (let idx = 0; idx < numberArcs; ++idx) {
       callback(
-        x.getItem(idx), y.getItem(idx), radius.getItem(idx),
-        startAngle.getItem(idx), endAngle.getItem(idx),
+        x.getItem(idx),
+        y.getItem(idx),
+        radius.getItem(idx),
+        startAngle.getItem(idx),
+        endAngle.getItem(idx),
         anticlockwise.getItem(idx)
-      )
+      );
     }
   }
 
-  protected fillCircle(x: number, y: number, radius: number) {
+  fillCircle(x: number, y: number, radius: number) {
     this.ctx.beginPath();
     this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
     this.ctx.fill();
@@ -477,7 +795,7 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.closePath();
   }
 
-  protected strokeCircle(x: number, y: number, radius: number) {
+  strokeCircle(x: number, y: number, radius: number) {
     this.ctx.beginPath();
     this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
     this.ctx.stroke();
@@ -485,7 +803,11 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.closePath();
   }
 
-  private drawCircles(args: any[], buffers: any, callback: (x: number, y: number, radius: number) => void) {
+  drawCircles(
+    args: any[],
+    buffers: any,
+    callback: (x: number, y: number, radius: number) => void
+  ) {
     const x = getArg(args[0], buffers);
     const y = getArg(args[1], buffers);
     const radius = getArg(args[2], buffers);
@@ -493,11 +815,169 @@ class CanvasModel extends DOMWidgetModel {
     const numberCircles = Math.min(x.length, y.length, radius.length);
 
     for (let idx = 0; idx < numberCircles; ++idx) {
-      callback(x.getItem(idx), y.getItem(idx), radius.getItem(idx))
+      callback(x.getItem(idx), y.getItem(idx), radius.getItem(idx));
     }
   }
 
-  protected strokeLine(args: any[], buffers: any) {
+  setStyle(style: any, fill: boolean) {
+    if (fill) {
+      this.ctx.fillStyle = style;
+    } else {
+      this.ctx.strokeStyle = style;
+    }
+  }
+
+  drawStyledCircles(args: any[], buffers: any, fill: boolean) {
+    const x = getArg(args[0], buffers);
+    const y = getArg(args[1], buffers);
+    const radius = getArg(args[2], buffers);
+    const colors = getArg(args[3], buffers);
+    const alpha = getArg(args[4], buffers);
+
+    const numberCircles = Math.min(x.length, y.length, radius.length);
+    this.ctx.save();
+    for (let idx = 0; idx < numberCircles; ++idx) {
+      // get color for this circle
+      const ci = 3 * idx;
+      const color = `rgba(${colors.getItem(ci)}, ${colors.getItem(
+        ci + 1
+      )}, ${colors.getItem(ci + 2)}, ${alpha.getItem(idx)})`;
+      this.setStyle(color, fill);
+      if (fill) {
+        this.fillCircle(x.getItem(idx), y.getItem(idx), radius.getItem(idx));
+      } else {
+        this.strokeCircle(x.getItem(idx), y.getItem(idx), radius.getItem(idx));
+      }
+    }
+    this.ctx.restore();
+  }
+
+  drawStyledArcs(args: any[], buffers: any, fill: boolean) {
+    const x = getArg(args[0], buffers);
+    const y = getArg(args[1], buffers);
+    const radius = getArg(args[2], buffers);
+    const startAngle = getArg(args[3], buffers);
+    const endAngle = getArg(args[4], buffers);
+    const anticlockwise = getArg(args[5], buffers);
+    const colors = getArg(args[6], buffers);
+    const alpha = getArg(args[7], buffers);
+
+    const numberArcs = Math.min(
+      x.length,
+      y.length,
+      radius.length,
+      startAngle.length,
+      endAngle.length
+    );
+
+    this.ctx.save();
+    for (let idx = 0; idx < numberArcs; ++idx) {
+      // get color for this circle
+      const ci = 3 * idx;
+      const color = `rgba(${colors.getItem(ci)}, ${colors.getItem(
+        ci + 1
+      )}, ${colors.getItem(ci + 2)}, ${alpha.getItem(idx)})`;
+      this.setStyle(color, fill);
+      if (fill) {
+        this.fillArc(
+          x.getItem(idx),
+          y.getItem(idx),
+          radius.getItem(idx),
+          startAngle.getItem(idx),
+          endAngle.getItem(idx),
+          anticlockwise.getItem(idx)
+        );
+      } else {
+        this.strokeArc(
+          x.getItem(idx),
+          y.getItem(idx),
+          radius.getItem(idx),
+          startAngle.getItem(idx),
+          endAngle.getItem(idx),
+          anticlockwise.getItem(idx)
+        );
+      }
+    }
+    this.ctx.restore();
+  }
+
+  drawStyledPolygonOrLineSegments(
+    args: any[],
+    buffers: any,
+    fill: boolean,
+    close: boolean
+  ) {
+    const numPolygons = args[0];
+    const points = getArg(args[1], buffers);
+    const sizes = getArg(args[2], buffers);
+    const colors = getArg(args[3], buffers);
+    const alpha = getArg(args[4], buffers);
+
+    this.ctx.save();
+
+    let start = 0;
+    for (let idx = 0; idx < numPolygons; ++idx) {
+      // get color for this circle
+      const ci = 3 * idx;
+      const color = `rgba(${colors.getItem(ci)}, ${colors.getItem(
+        ci + 1
+      )}, ${colors.getItem(ci + 2)}, ${alpha.getItem(idx)})`;
+      this.setStyle(color, fill);
+
+      // start / stop in the points array fr this polygon
+      const size = sizes.getItem(idx) * 2;
+      const stop = start + size;
+
+      // Move to the first point, then create lines between points
+      this.ctx.beginPath();
+      this.ctx.moveTo(points.getItem(start), points.getItem(start + 1));
+
+      // draw all points of the polygon (except start)
+      for (let idp = start + 2; idp < stop; idp += 2) {
+        this.ctx.lineTo(points.getItem(idp), points.getItem(idp + 1));
+      }
+      start = stop;
+      if (close) {
+        this.ctx.closePath();
+      }
+      fill ? this.ctx.fill() : this.ctx.stroke();
+    }
+    this.ctx.restore();
+  }
+
+  drawPolygonOrLineSegments(
+    args: any[],
+    buffers: any,
+    fill: boolean,
+    close: boolean
+  ) {
+    const numPolygons = args[0];
+    const points = getArg(args[1], buffers);
+    const sizes = getArg(args[2], buffers);
+
+    let start = 0;
+    for (let idx = 0; idx < numPolygons; ++idx) {
+      // start / stop in the points array fr this polygon
+      const size = sizes.getItem(idx) * 2;
+      const stop = start + size;
+
+      // Move to the first point, then create lines between points
+      this.ctx.beginPath();
+      this.ctx.moveTo(points.getItem(start), points.getItem(start + 1));
+
+      // draw all points of the polygon (except start)
+      for (let idp = start + 2; idp < stop; idp += 2) {
+        this.ctx.lineTo(points.getItem(idp), points.getItem(idp + 1));
+      }
+      start = stop;
+      if (close) {
+        this.ctx.closePath();
+      }
+      fill ? this.ctx.fill() : this.ctx.stroke();
+    }
+  }
+
+  strokeLine(args: any[], buffers: any) {
     this.ctx.beginPath();
     this.ctx.moveTo(args[0], args[1]);
     this.ctx.lineTo(args[2], args[3]);
@@ -506,7 +986,7 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.closePath();
   }
 
-  protected strokeLines(args: any[], buffers: any) {
+  strokeLines(args: any[], buffers: any) {
     this.ctx.beginPath();
     const points = getArg(args[0], buffers);
 
@@ -520,7 +1000,7 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.closePath();
   }
 
-  protected fillPolygon(args: any[], buffers: any) {
+  fillPolygon(args: any[], buffers: any) {
     this.ctx.beginPath();
     const points = getArg(args[0], buffers);
 
@@ -534,7 +1014,7 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.fill();
   }
 
-  protected strokePolygon(args: any[], buffers: any) {
+  strokePolygon(args: any[], buffers: any) {
     this.ctx.beginPath();
     const points = getArg(args[0], buffers);
 
@@ -548,7 +1028,7 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.stroke();
   }
 
-  protected async fillPath(args: any[], buffers: any) {
+  async fillPath(args: any[], buffers: any) {
     const [serializedPath] = args;
 
     const path = await unpack_models(serializedPath, this.widget_manager);
@@ -556,7 +1036,7 @@ class CanvasModel extends DOMWidgetModel {
     this.ctx.fill(path.value);
   }
 
-  private async drawImage(args: any[], buffers: any) {
+  async drawImage(args: any[], buffers: any) {
     const [serializedImage, x, y, width, height] = args;
 
     const image = await unpack_models(serializedImage, this.widget_manager);
@@ -572,9 +1052,13 @@ class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  private _drawImage(image: HTMLCanvasElement | HTMLImageElement,
-                     x: number, y: number,
-                     width: number | undefined, height: number | undefined) {
+  private _drawImage(
+    image: HTMLCanvasElement | HTMLImageElement,
+    x: number,
+    y: number,
+    width?: number,
+    height?: number
+  ) {
     if (width === undefined || height === undefined) {
       this.ctx.drawImage(image, x, y);
     } else {
@@ -582,41 +1066,34 @@ class CanvasModel extends DOMWidgetModel {
     }
   }
 
-  private putImageData(args: any[], buffers: any) {
-    const [bufferMetadata, dx, dy] = args;
+  async putImageData(args: any[], buffers: any) {
+    const [x, y] = args;
 
-    const width = bufferMetadata.shape[1];
-    const height = bufferMetadata.shape[0];
+    const image = await bufferToImage(buffers[0]);
 
-    const data = new Uint8ClampedArray(buffers[0].buffer);
-    const imageData = new ImageData(data, width, height);
-
-    // Draw on a temporary off-screen canvas. This is a workaround for `putImageData` to support transparency.
-    const offscreenCanvas = document.createElement('canvas');
-    offscreenCanvas.width = width;
-    offscreenCanvas.height = height;
-    getContext(offscreenCanvas).putImageData(imageData, 0, 0);
-
-    this.ctx.drawImage(offscreenCanvas, dx, dy);
+    this._drawImage(image, x, y);
   }
 
-  protected async setAttr(attr: number, value: any) {
+  async setAttr(attr: number, value: any) {
     if (typeof value === 'string' && value.startsWith('IPY')) {
-      const widgetModel: GradientModel = await unpack_models(value, this.widget_manager);
+      const widgetModel: GradientModel = await unpack_models(
+        value,
+        this.widget_manager
+      );
       value = widgetModel.value;
     }
 
     (this.ctx as any)[CanvasModel.ATTRS[attr]] = value;
   }
 
-  private clearCanvas() {
+  clearCanvas() {
     this.forEachView((view: CanvasView) => {
       view.clear();
     });
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  protected executeCommand(name: string, args: any[] = []) {
+  executeCommand(name: string, args: any[] = []) {
     (this.ctx as any)[name](...args);
   }
 
@@ -657,15 +1134,15 @@ class CanvasModel extends DOMWidgetModel {
   views: Dict<Promise<CanvasView>>;
 }
 
-
-export
-class RoughCanvasModel extends CanvasModel {
-  static ROUGH_ATTRS: string[] = new Array(100).concat(['roughFillStyle', 'roughness', 'bowing']);
+export class RoughCanvasModel extends CanvasModel {
+  static ROUGH_ATTRS: string[] = new Array(100).concat([
+    'roughFillStyle',
+    'roughness',
+    'bowing'
+  ]);
 
   defaults() {
-    return {...super.defaults(),
-      _model_name: RoughCanvasModel.model_name,
-    };
+    return { ...super.defaults(), _model_name: RoughCanvasModel.model_name };
   }
 
   initialize(attributes: any, options: any) {
@@ -674,27 +1151,33 @@ class RoughCanvasModel extends CanvasModel {
     this.roughCanvas = new RoughCanvas(this.canvas);
   }
 
-  protected fillRect(x: number, y: number, width: number, height: number) {
+  fillRect(x: number, y: number, width: number, height: number) {
     this.roughCanvas.rectangle(x, y, width, height, this.getRoughFillStyle());
   }
 
-  protected strokeRect(x: number, y: number, width: number, height: number) {
+  strokeRect(x: number, y: number, width: number, height: number) {
     this.roughCanvas.rectangle(x, y, width, height, this.getRoughStrokeStyle());
   }
 
-  protected fillCircle(x: number, y: number, radius: number) {
-    this.roughCanvas.circle(x, y, 2. * radius, this.getRoughFillStyle());
+  fillCircle(x: number, y: number, radius: number) {
+    this.roughCanvas.circle(x, y, 2 * radius, this.getRoughFillStyle());
   }
 
-  protected strokeCircle(x: number, y: number, radius: number) {
-    this.roughCanvas.circle(x, y, 2. * radius, this.getRoughStrokeStyle());
+  strokeCircle(x: number, y: number, radius: number) {
+    this.roughCanvas.circle(x, y, 2 * radius, this.getRoughStrokeStyle());
   }
 
-  protected strokeLine(args: any[], buffers: any) {
-    this.roughCanvas.line(args[0], args[1], args[2], args[3], this.getRoughStrokeStyle());
+  strokeLine(args: any[], buffers: any) {
+    this.roughCanvas.line(
+      args[0],
+      args[1],
+      args[2],
+      args[3],
+      this.getRoughStrokeStyle()
+    );
   }
 
-  protected strokeLines(args: any[], buffers: any) {
+  strokeLines(args: any[], buffers: any) {
     const points = getArg(args[0], buffers);
 
     const polygon: [number, number][] = [];
@@ -705,7 +1188,7 @@ class RoughCanvasModel extends CanvasModel {
     this.roughCanvas.linearPath(polygon, this.getRoughStrokeStyle());
   }
 
-  protected async fillPath(args: any[], buffers: any) {
+  async fillPath(args: any[], buffers: any) {
     const [serializedPath] = args;
 
     const path = await unpack_models(serializedPath, this.widget_manager);
@@ -713,27 +1196,59 @@ class RoughCanvasModel extends CanvasModel {
     this.roughCanvas.path(path.get('value'), this.getRoughFillStyle());
   }
 
-  protected fillArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {
-    const ellipseSize = 2. * radius;
+  fillArc(
+    x: number,
+    y: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    anticlockwise: boolean
+  ) {
+    const ellipseSize = 2 * radius;
 
     // The following is needed because roughjs does not allow a clockwise draw
     const start = anticlockwise ? endAngle : startAngle;
-    const end = anticlockwise ? startAngle + 2. * Math.PI : endAngle;
+    const end = anticlockwise ? startAngle + 2 * Math.PI : endAngle;
 
-    this.roughCanvas.arc(x, y, ellipseSize, ellipseSize, start, end, true, this.getRoughFillStyle());
+    this.roughCanvas.arc(
+      x,
+      y,
+      ellipseSize,
+      ellipseSize,
+      start,
+      end,
+      true,
+      this.getRoughFillStyle()
+    );
   }
 
-  protected strokeArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise: boolean) {
-    const ellipseSize = 2. * radius;
+  strokeArc(
+    x: number,
+    y: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    anticlockwise: boolean
+  ) {
+    const ellipseSize = 2 * radius;
 
     // The following is needed because roughjs does not allow a clockwise draw
     const start = anticlockwise ? endAngle : startAngle;
-    const end = anticlockwise ? startAngle + 2. * Math.PI : endAngle;
+    const end = anticlockwise ? startAngle + 2 * Math.PI : endAngle;
 
-    this.roughCanvas.arc(x, y, ellipseSize, ellipseSize, start, end, false, this.getRoughStrokeStyle());
+    this.roughCanvas.arc(
+      x,
+      y,
+      ellipseSize,
+      ellipseSize,
+      start,
+      end,
+      false,
+      this.getRoughStrokeStyle()
+    );
   }
 
-  protected fillPolygon(args: any[], buffers: any) {
+  fillPolygon(args: any[], buffers: any) {
     const points = getArg(args[0], buffers);
 
     const polygon: [number, number][] = [];
@@ -744,7 +1259,7 @@ class RoughCanvasModel extends CanvasModel {
     this.roughCanvas.polygon(polygon, this.getRoughFillStyle());
   }
 
-  protected strokePolygon(args: any[], buffers: any) {
+  strokePolygon(args: any[], buffers: any) {
     const points = getArg(args[0], buffers);
 
     const polygon: [number, number][] = [];
@@ -755,7 +1270,7 @@ class RoughCanvasModel extends CanvasModel {
     this.roughCanvas.polygon(polygon, this.getRoughStrokeStyle());
   }
 
-  protected async setAttr(attr: number, value: any) {
+  async setAttr(attr: number, value: any) {
     if (RoughCanvasModel.ROUGH_ATTRS[attr]) {
       (this as any)[RoughCanvasModel.ROUGH_ATTRS[attr]] = value;
 
@@ -772,12 +1287,12 @@ class RoughCanvasModel extends CanvasModel {
     return {
       fill,
       fillStyle: this.roughFillStyle,
-      fillWeight: lineWidth / 2.,
-      hachureGap: lineWidth * 4.,
+      fillWeight: lineWidth / 2,
+      hachureGap: lineWidth * 4,
       curveStepCount: 18,
       strokeWidth: 0.001, // This is to ensure there is no stroke,
       roughness: this.roughness,
-      bowing: this.bowing,
+      bowing: this.bowing
     };
   }
 
@@ -790,7 +1305,7 @@ class RoughCanvasModel extends CanvasModel {
       strokeWidth: lineWidth,
       roughness: this.roughness,
       bowing: this.bowing,
-      curveStepCount: 18,
+      curveStepCount: 18
     };
   }
 
@@ -799,27 +1314,46 @@ class RoughCanvasModel extends CanvasModel {
   roughCanvas: RoughCanvas;
 
   roughFillStyle: string = 'hachure';
-  roughness: number = 1.;
-  bowing: number = 1.;
+  roughness: number = 1;
+  bowing: number = 1;
 }
 
-
-export
-class CanvasView extends DOMWidgetView {
+export class CanvasView extends DOMWidgetView {
   render() {
     this.ctx = getContext(this.el);
 
     this.resizeCanvas();
     this.model.on_some_change(['width', 'height'], this.resizeCanvas, this);
 
-    this.el.addEventListener('mousemove', { handleEvent: this.onMouseMove.bind(this) });
-    this.el.addEventListener('mousedown', { handleEvent: this.onMouseDown.bind(this) });
-    this.el.addEventListener('mouseup', { handleEvent: this.onMouseUp.bind(this) });
-    this.el.addEventListener('mouseout', { handleEvent: this.onMouseOut.bind(this) });
-    this.el.addEventListener('touchstart', { handleEvent: this.onTouchStart.bind(this) });
-    this.el.addEventListener('touchend', { handleEvent: this.onTouchEnd.bind(this) });
-    this.el.addEventListener('touchmove', { handleEvent: this.onTouchMove.bind(this) });
-    this.el.addEventListener('touchcancel', { handleEvent: this.onTouchCancel.bind(this) });
+    this.el.addEventListener('mousemove', {
+      handleEvent: this.onMouseMove.bind(this)
+    });
+    this.el.addEventListener('mousedown', {
+      handleEvent: this.onMouseDown.bind(this)
+    });
+    this.el.addEventListener('mouseup', {
+      handleEvent: this.onMouseUp.bind(this)
+    });
+    this.el.addEventListener('mouseout', {
+      handleEvent: this.onMouseOut.bind(this)
+    });
+    this.el.addEventListener('touchstart', {
+      handleEvent: this.onTouchStart.bind(this)
+    });
+    this.el.addEventListener('touchend', {
+      handleEvent: this.onTouchEnd.bind(this)
+    });
+    this.el.addEventListener('touchmove', {
+      handleEvent: this.onTouchMove.bind(this)
+    });
+    this.el.addEventListener('touchcancel', {
+      handleEvent: this.onTouchCancel.bind(this)
+    });
+    this.el.addEventListener('keydown', {
+      handleEvent: this.onKeyDown.bind(this)
+    });
+
+    this.el.setAttribute('tabindex', '0');
 
     this.updateCanvas();
   }
@@ -843,6 +1377,9 @@ class CanvasView extends DOMWidgetView {
   }
 
   private onMouseDown(event: MouseEvent) {
+    // Bring focus to the canvas element, so keyboard events can be triggered
+    this.el.focus();
+
     this.model.send({ event: 'mouse_down', ...this.getCoordinates(event) }, {});
   }
 
@@ -856,29 +1393,69 @@ class CanvasView extends DOMWidgetView {
 
   private onTouchStart(event: TouchEvent) {
     const touches: Touch[] = Array.from(event.touches);
-    this.model.send({ event: 'touch_start', touches: touches.map(this.getCoordinates.bind(this)) }, {});
+    this.model.send(
+      {
+        event: 'touch_start',
+        touches: touches.map(this.getCoordinates.bind(this))
+      },
+      {}
+    );
   }
 
   private onTouchEnd(event: TouchEvent) {
     const touches: Touch[] = Array.from(event.touches);
-    this.model.send({ event: 'touch_end', touches: touches.map(this.getCoordinates.bind(this)) }, {});
+    this.model.send(
+      {
+        event: 'touch_end',
+        touches: touches.map(this.getCoordinates.bind(this))
+      },
+      {}
+    );
   }
 
   private onTouchMove(event: TouchEvent) {
     const touches: Touch[] = Array.from(event.touches);
-    this.model.send({ event: 'touch_move', touches: touches.map(this.getCoordinates.bind(this)) }, {});
+    this.model.send(
+      {
+        event: 'touch_move',
+        touches: touches.map(this.getCoordinates.bind(this))
+      },
+      {}
+    );
   }
 
   private onTouchCancel(event: TouchEvent) {
     const touches: Touch[] = Array.from(event.touches);
-    this.model.send({ event: 'touch_cancel', touches: touches.map(this.getCoordinates.bind(this)) }, {});
+    this.model.send(
+      {
+        event: 'touch_cancel',
+        touches: touches.map(this.getCoordinates.bind(this))
+      },
+      {}
+    );
+  }
+
+  private onKeyDown(event: KeyboardEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.model.send(
+      {
+        event: 'key_down',
+        key: event.key,
+        shift_key: event.shiftKey,
+        ctrl_key: event.ctrlKey,
+        meta_key: event.metaKey
+      },
+      {}
+    );
   }
 
   protected getCoordinates(event: MouseEvent | Touch) {
     const rect = this.el.getBoundingClientRect();
 
-    const x = this.el.width * (event.clientX - rect.left) / rect.width;
-    const y = this.el.height * (event.clientY - rect.top) / rect.height;
+    const x = (this.el.width * (event.clientX - rect.left)) / rect.width;
+    const y = (this.el.height * (event.clientY - rect.top)) / rect.height;
 
     return { x, y };
   }
@@ -893,11 +1470,10 @@ class CanvasView extends DOMWidgetView {
   model: CanvasModel | MultiCanvasModel;
 }
 
-
-export
-class MultiCanvasModel extends DOMWidgetModel {
+export class MultiCanvasModel extends DOMWidgetModel {
   defaults() {
-    return {...super.defaults(),
+    return {
+      ...super.defaults(),
       _model_name: MultiCanvasModel.model_name,
       _model_module: MultiCanvasModel.model_module,
       _model_module_version: MultiCanvasModel.model_module_version,
@@ -908,17 +1484,19 @@ class MultiCanvasModel extends DOMWidgetModel {
       sync_image_data: false,
       image_data: null,
       width: 700,
-      height: 500,
+      height: 500
     };
   }
 
   static serializers: ISerializers = {
     ...DOMWidgetModel.serializers,
-    _canvases: { deserialize: (unpack_models as any) },
-    image_data: { serialize: (bytes: Uint8ClampedArray) => {
-      return new DataView(bytes.buffer.slice(0));
-    }}
-  }
+    _canvases: { deserialize: unpack_models as any },
+    image_data: {
+      serialize: (bytes: Uint8ClampedArray) => {
+        return new DataView(bytes.buffer.slice(0));
+      }
+    }
+  };
 
   initialize(attributes: any, options: any) {
     super.initialize(attributes, options);
@@ -999,8 +1577,6 @@ class MultiCanvasModel extends DOMWidgetModel {
   static view_module_version = MODULE_VERSION;
 }
 
-
-export
-class MultiCanvasView extends CanvasView {
+export class MultiCanvasView extends CanvasView {
   model: MultiCanvasModel;
 }

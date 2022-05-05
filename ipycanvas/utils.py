@@ -5,7 +5,14 @@ from PIL import Image as PILImage
 
 import numpy as np
 
-import orjson
+try:
+    import orjson
+
+    ORJSON_AVAILABLE = True
+except ImportError:
+    import json
+
+    ORJSON_AVAILABLE = False
 
 
 def image_bytes_to_array(im_bytes):
@@ -17,28 +24,12 @@ def image_bytes_to_array(im_bytes):
     return np.array(im)
 
 
-def binary_image(ar):
-    """Turn a NumPy array representing an array of pixels into a binary buffer."""
-    if ar is None:
-        return None
-    if ar.dtype != np.uint8:
-        ar = ar.astype(np.uint8)
-    if ar.ndim == 1:
-        ar = ar[np.newaxis, :]
-    if ar.ndim == 2:
-        # extend grayscale to RGBA
-        add_alpha = np.full((ar.shape[0], ar.shape[1], 4), 255, dtype=np.uint8)
-        add_alpha[:, :, :3] = np.repeat(ar[:, :, np.newaxis], repeats=3, axis=2)
-        ar = add_alpha
-    if ar.ndim != 3:
-        raise ValueError("Please supply an RGBA array with shape (width, height, 4).")
-    if ar.shape[2] != 4 and ar.shape[2] == 3:
-        add_alpha = np.full((ar.shape[0], ar.shape[1], 4), 255, dtype=np.uint8)
-        add_alpha[:, :, :3] = ar
-        ar = add_alpha
-    if not ar.flags["C_CONTIGUOUS"]:  # make sure it's contiguous
-        ar = np.ascontiguousarray(ar, dtype=np.uint8)
-    return {'shape': ar.shape, 'dtype': str(ar.dtype)}, memoryview(ar)
+def binary_image(ar, quality=75):
+    f = BytesIO()
+    PILImage.fromarray(ar.astype(np.uint8), "RGB" if ar.shape[2] == 3 else "RGBA").save(
+        f, "JPEG", quality=quality
+    )
+    return f.getvalue()
 
 
 def array_to_binary(ar):
@@ -55,13 +46,13 @@ def array_to_binary(ar):
     if not ar.flags["C_CONTIGUOUS"]:
         ar = np.ascontiguousarray(ar)
 
-    return {'shape': ar.shape, 'dtype': str(ar.dtype)}, memoryview(ar)
+    return {"shape": ar.shape, "dtype": str(ar.dtype)}, memoryview(ar)
 
 
 def populate_args(arg, args, buffers):
     if isinstance(arg, (list, np.ndarray)):
         arg_metadata, arg_buffer = array_to_binary(np.asarray(arg))
-        arg_metadata['idx'] = len(buffers)
+        arg_metadata["idx"] = len(buffers)
 
         args.append(arg_metadata)
         buffers.append(arg_buffer)
@@ -71,7 +62,14 @@ def populate_args(arg, args, buffers):
 
 def commands_to_buffer(commands):
     # Turn the commands list into a binary buffer
-    return array_to_binary(np.frombuffer(
-        bytes(orjson.dumps(commands, option=orjson.OPT_SERIALIZE_NUMPY)),
-        dtype=np.uint8)
-    )
+    if ORJSON_AVAILABLE:
+        return array_to_binary(
+            np.frombuffer(
+                bytes(orjson.dumps(commands, option=orjson.OPT_SERIALIZE_NUMPY)),
+                dtype=np.uint8,
+            )
+        )
+    else:
+        return array_to_binary(
+            np.frombuffer(bytes(json.dumps(commands), encoding="utf8"), dtype=np.uint8)
+        )

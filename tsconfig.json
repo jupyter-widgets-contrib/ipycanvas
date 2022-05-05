@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "esModuleInterop":true,
+    "esModuleInterop": true,
     "lib": ["es2015", "dom"],
     "module": "commonjs",
     "moduleResolution": "node",
@@ -17,8 +17,5 @@
     "strict": true,
     "target": "es2015"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-  ]
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

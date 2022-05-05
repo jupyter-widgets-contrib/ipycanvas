@@ -20,7 +20,7 @@ left corner of the blue square becomes x pixels from the left and y pixels from 
 Drawing rectangles
 ------------------
 
-There are four methods that draw rectangles on the canvas:
+There are six methods that draw rectangles on the canvas:
 
 - ``fill_rect(x, y, width, height=None)``:
     Draws a filled rectangle. If ``height`` is None, it is set to the same value as ``width``.
@@ -32,13 +32,17 @@ There are four methods that draw rectangles on the canvas:
 - ``stroke_rects(x, y, width, height=None)``:
     Draws rectangular outlines. Where ``x``, ``y``, ``width`` and ``height`` are either integers, lists of integers or NumPy arrays.
     If ``height`` is None, it is set to the same value as ``width``.
+- ``fill_styled_rects(x, y, width, height, color, alpha)``:
+    Same as ``fill_rects``  but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
+- ``stroke_styled_rects(x, y, width, height, color, alpha)``:
+    Same as ``stroke_rects`` but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
 
 You can also clear a certain canvas rectangle area:
 
 - ``clear_rect(x, y, width, height=None)``:
     Clears the specified rectangular area, making it fully transparent. If ``height`` is None, it is set to the same value as ``width``.
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
@@ -54,7 +58,7 @@ You can also clear a certain canvas rectangle area:
 
 ``fill_rects`` and ``stroke_rects`` are blazingly fast ways of drawing up to a million rectangles at once:
 
-.. code:: Python
+.. code-block:: python
 
     import numpy as np
 
@@ -68,7 +72,7 @@ You can also clear a certain canvas rectangle area:
 
     canvas = Canvas(width=800, height=500)
 
-    canvas.fill_style = 'green'
+    canvas.fill_style = "green"
     canvas.fill_rects(x, y, size)
 
     canvas
@@ -83,17 +87,28 @@ It's the fastest way to draw a polygon with ipycanvas.
 
 - ``fill_polygon(points)``:
     Fill a polygon from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
-- ``stroke_polygon(points)``:
-    Draw polygon outline from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
+- ``stroke_polygon(points)``:    Draw polygon outline from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
 
-.. code:: Python
+- ``fill_polygons(points, points_per_polygon=None)``:
+    Fill multiple polygons at once.
+- ``stroke_polygons(points, points_per_polygon=None)``:
+    Stroke multiple polygons at once. See :ref:`styled_polygons` for details.
+- ``fill_styled_polygons(points, color, alpha, points_per_polygon=None)``:
+    Fill multiple polygons at once where each polygon can have its own color.
+    See :ref:`styled_polygons` for details.
+- ``stroke_styled_polygons(points, color, alpha, points_per_polygon=None)``:
+    Stroke multiple polygons at once where each polygon can have its own color.
+    See :ref:`styled_polygons` for details.
+
+
+.. code-block:: python
 
     from ipycanvas import Canvas
 
     canvas = Canvas(width=200, height=200)
 
-    canvas.fill_style = '#63934e'
-    canvas.stroke_style = '#4e6393'
+    canvas.fill_style = "#63934e"
+    canvas.stroke_style = "#4e6393"
     canvas.line_width = 5
     canvas.fill_polygon([(20, 20), (180, 20), (100, 150)])
     canvas.stroke_polygon([(20, 20), (180, 20), (100, 150)])
@@ -102,11 +117,12 @@ It's the fastest way to draw a polygon with ipycanvas.
 
 .. image:: images/polygon.png
 
-.. code:: Python
+.. code-block:: python
 
     from math import pi
     import numpy as np
     from ipycanvas import Canvas
+
 
     def polygon(canvas, x, y, radius, n_points):
         angles = (2 * pi / n_points) * np.arange(n_points)
@@ -118,8 +134,9 @@ It's the fastest way to draw a polygon with ipycanvas.
 
         canvas.fill_polygon(points)
 
-    background_color = '#89c64f'
-    polygon_color = '#c6574f'
+
+    background_color = "#89c64f"
+    polygon_color = "#c6574f"
 
     canvas = Canvas(width=200, height=200)
 
@@ -146,6 +163,10 @@ There are methods that draw arcs/circles on the canvas:
     Draw filled arcs centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
 - ``stroke_arcs(x, y, radius, start_angle, end_angle, anticlockwise=False)``:
     Draw an arc outlines centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` and other arguments are NumPy arrays, lists or scalar values.
+- ``fill_styled_arcs( x, y, radius, start_angle, end_angle, color, alpha, anticlockwise=False)``:
+    Same as ``fill_arcs`` but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
+- ``stroke_styled_arcs( x, y, radius, start_angle, end_angle, color, alpha, anticlockwise=False)``:
+    Same as ``stroke_arcs`` but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
 
 - ``fill_circle(x, y, radius)``:
     Draw a filled circle centered at ``(x, y)`` with a radius of ``radius``.
@@ -155,9 +176,12 @@ There are methods that draw arcs/circles on the canvas:
     Draw filled circles centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` are NumPy arrays, lists or scalar values.
 - ``stroke_circles(x, y, radius)``:
     Draw a circle outlines centered at ``(x, y)`` with a radius of ``radius``. Where ``x``, ``y``, ``radius`` are NumPy arrays, lists or scalar values.
+- ``fill_styled_circles( x, y, radius color, alpha)`` :
+    Same as ``fill_circles`` but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
+- ``stroke_styled_circles( x, y, radius, color, alpha)`` :
+    Same as ``stroke_circles`` but with additional ``(n x 3)`` ``color`` ndarray and ``(n)`` ``alpha`` ndarray.
 
-
-.. code:: Python
+.. code-block:: python
 
     from math import pi
 
@@ -165,8 +189,8 @@ There are methods that draw arcs/circles on the canvas:
 
     canvas = Canvas(width=200, height=200)
 
-    canvas.fill_style = 'red'
-    canvas.stroke_style = 'blue'
+    canvas.fill_style = "red"
+    canvas.stroke_style = "blue"
 
     canvas.fill_arc(60, 60, 50, 0, pi)
     canvas.stroke_circle(60, 60, 40)
@@ -184,27 +208,31 @@ There are two commands for drawing a straight line from one point to another:
     Draw a line from ``(x1, y1)`` to ``(x2, y2)``.
 - ``stroke_lines(points)``:
     Draw a path of consecutive lines from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``.
+- ``stroke_styled_line_segments(points, points_per_line_segment=None)``:
+    Draw multiple disconnected line-segments at once. See :ref:`styled_polygons` for details.
+- ``stroke_styled_line_segments(points, color, alpha, points_per_line_segment=None)``:
+    Draw multiple disconnected line-segments at once. See :ref:`styled_polygons` for details.
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
     canvas = Canvas(width=200, height=200)
 
-    canvas.stroke_style = 'blue'
+    canvas.stroke_style = "blue"
     canvas.stroke_line(0, 0, 150, 150)
 
-    canvas.stroke_style = 'red'
+    canvas.stroke_style = "red"
     canvas.stroke_line(200, 0, 0, 200)
 
-    canvas.stroke_style = 'green'
+    canvas.stroke_style = "green"
     canvas.stroke_line(150, 150, 0, 200)
 
     canvas
 
 .. image:: images/lines.png
 
-.. code:: Python
+.. code-block:: python
 
     import numpy as np
 
@@ -228,12 +256,12 @@ There are two commands for drawing a straight line from one point to another:
 Vectorized methods
 ------------------
 
-Some methods like ``fill_rect`` and ``fill_circle`` have a vectorized counterpart: ``fill_rects`` and ``fill_cicles``. It is essential
+Most methods like ``fill_rect``/``stroke_rect`` and ``fill_circle``/``stroke_circle`` have vectorized counterparts: ``fill_rects``/``stroke_rects`` and ``fill_circles``/``stroke_circles``. It is essential
 to use those methods when you want to draw the same shape multiple times with the same style.
 
 For example, it is way faster to run:
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
@@ -250,7 +278,7 @@ For example, it is way faster to run:
 
 instead of running:
 
-.. code:: Python
+.. code-block:: python
 
     from ipycanvas import Canvas
 
@@ -265,3 +293,247 @@ instead of running:
         canvas.fill_rect(position, position, size)
 
     canvas
+
+
+.. _styled_vectorized_methods:
+
+Styled vectorized methods
+------------------------------------
+
+Ipycanvas provides methods to draw the same shape multiple times but with different colors:
+
+- ``fill_styled_rects`` / ``stroke_styled_rects``
+- ``fill_styled_circles`` / ``stroke_styled_circles``
+- ``fill_styled_arcs`` / ``stroke_styled_arcs``
+- ``fill_styled_polygons`` / ``stroke_styled_polygons``
+- ``fill_styled_line_segments`` / ``stroke_styled_line_segments``
+
+
+Rects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    import numpy as np
+    from ipycanvas import Canvas, hold_canvas
+
+    canvas = Canvas(width=400, height=300)
+    n_rects = 300
+    x = np.random.randint(0, canvas.width, size=(n_rects))
+    y = np.random.randint(0, canvas.width, size=(n_rects))
+    width = np.random.randint(10, 40, size=(n_rects))
+    height = np.random.randint(10, 40, size=(n_rects))
+    colors_fill = np.random.randint(0, 255, size=(n_rects, 3))
+    colors_outline = np.random.randint(0, 255, size=(n_rects, 3))
+    alphas = np.random.random(n_rects)
+    with hold_canvas():
+        canvas.fill_styled_rects(x, y, width, height, color=colors_fill, alpha=alphas)
+        canvas.line_width = 2
+        canvas.stroke_styled_rects(x, y, width, height, color=colors_outline, alpha=alphas)
+    canvas
+
+
+.. image:: images/draw_styled_rects.png
+    :scale: 50 %
+
+Circles
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    import numpy as np
+    from ipycanvas import Canvas, hold_canvas
+
+    canvas = Canvas(width=300, height=300)
+    n_circles = 100
+    x = np.random.randint(0, canvas.width, size=(n_circles))
+    y = np.random.randint(0, canvas.width, size=(n_circles))
+    r = np.random.randint(10, 20, size=(n_circles))
+    colors_fill = np.random.randint(0, 255, size=(n_circles, 3))
+    colors_outline = np.random.randint(0, 255, size=(n_circles, 3))
+    alphas = np.random.random(n_circles)
+    with hold_canvas():
+        canvas.fill_styled_circles(x, y, r, color=colors_fill, alpha=alphas)
+        canvas.line_width = 2
+        canvas.stroke_styled_circles(x, y, r, color=colors_outline)
+    canvas
+
+
+.. image:: images/draw_styled_circles.png
+    :scale: 50 %
+
+Arcs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    import numpy as np
+    from ipycanvas import Canvas, hold_canvas
+    import math
+
+    canvas = Canvas(width=300, height=300)
+    n_circles = 100
+    x = np.random.randint(0, canvas.width, size=(n_circles))
+    y = np.random.randint(0, canvas.width, size=(n_circles))
+    r = np.random.randint(10, 20, size=(n_circles))
+    start_angle = np.random.randint(0, 360, size=(n_circles))
+    end_angle = np.random.randint(0, 360, size=(n_circles))
+    start_angle = 0
+    end_angle = math.pi
+    start_angle = np.random.random(n_circles) * math.pi
+    end_angle = np.random.random(n_circles) * math.pi
+    alphas = np.random.random(n_circles)
+    with hold_canvas():
+        canvas.fill_style = "cyan"
+        canvas.fill_arcs(x, y, r, start_angle, end_angle)
+        canvas.line_width = 1
+        canvas.stroke_style = "black"
+        canvas.stroke_arcs(x, y, r, start_angle, end_angle)
+    canvas
+
+.. image:: images/draw_styled_arcs.png
+    :scale: 50 %
+
+
+.. _styled_polygons:
+
+Polygons / line-segments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Case 1: All polygons / line-segments have the same number of points
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+.. code-block:: python
+
+    import numpy as np
+    from ipycanvas import Canvas, hold_canvas
+
+    canvas = Canvas(width=300, height=300)
+    n_polygons = 50
+
+    # each polygon has 4 points
+    n_points_per_polygon = 4
+
+    polygons = np.zeros([n_polygons, n_points_per_polygon, 2])
+
+    polygons[:, 0, 0] = 0.0
+    polygons[:, 0, 1] = 0.0
+
+    polygons[:, 1, 0] = 1.0
+    polygons[:, 1, 1] = 0.0
+
+    polygons[:, 2, 0] = 1.0
+    polygons[:, 2, 1] = 1.0
+
+    polygons[:, 3, 0] = 0.0
+    polygons[:, 3, 1] = 1.0
+
+    colors_fill = np.random.randint(0, 255, size=(n_polygons, 3))
+    colors_outline = np.random.randint(0, 255, size=(n_polygons, 3))
+
+    # scale each polygon
+    polygons *= np.linspace(1.0, 200.0, num=n_polygons)[:, None, None]
+
+    # translate each polygon
+    polygons += np.linspace(1.0, 100.0, num=n_polygons)[:, None, None]
+
+    points_per_polygon = np.ones([n_polygons]) * n_points_per_polygon
+    with hold_canvas():
+        canvas.stroke_styled_polygons(polygons, color=colors_fill)
+    canvas
+
+
+.. image:: images/draw_styled_polygons.png
+    :scale: 50 %
+
+
+.. code-block:: python
+
+    import numpy as np
+    from ipycanvas import Canvas, hold_canvas
+
+    canvas = Canvas(width=300, height=300)
+
+    n_line_segments = 20
+
+    n_points_per_line_segment = 500
+
+    line_segments = np.zeros([n_line_segments, n_points_per_line_segment, 2])
+
+    x = np.linspace(0, canvas.width, num=n_points_per_line_segment)[None, :]
+    line_segments[:, :, 0] = np.linspace(0, canvas.width, num=n_points_per_line_segment)[
+        None, :
+    ]
+    line_segments[:, :, 1] = (30.0 * np.sin(x * 0.1))[None, :]
+
+    colors_outline = np.random.randint(0, 255, size=(n_polygons, 3))
+
+    # translate line segments in y direction
+    line_segments[:, :, 1] += np.linspace(1.0, canvas.height, num=n_line_segments)[:, None]
+
+    with hold_canvas():
+        canvas.stroke_styled_line_segments(line_segments, color=colors_fill)
+    canvas
+
+
+.. image:: images/draw_styled_line_segments.png
+    :scale: 50 %
+
+
+Case 2: Polygons / line-segments can have different number of Points.
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+Polygons can be given as a list of ndarrays:
+
+.. code-block:: python
+
+    import numpy as np
+    from ipycanvas import Canvas, hold_canvas
+
+    canvas = Canvas(width=400, height=400)
+
+    triangle = [(0, 0), (0, 40), (30, 40)]  # triangle
+    rectangle = [(100, 100), (300, 100), (300, 200), (100, 200)]  # rectangle
+    irregular = np.random.randint(0, 400, size=(5, 2))  # irregular with 5 sides
+    polygons = [triangle, rectangle, irregular]
+    colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
+
+    with hold_canvas():
+        canvas.fill_styled_polygons(polygons, color=colors)
+    canvas
+
+.. image:: images/draw_styled_polygons_from_list.png
+    :scale: 50 %
+
+
+Polygons can be given as a flat ndarray:
+
+.. code-block:: python
+
+    import numpy as np
+    from ipycanvas import Canvas, hold_canvas
+
+    canvas = Canvas(width=400, height=400)
+    n_polygons = 20
+    points_per_polygon = np.random.randint(3, 6, size=n_polygons)
+    total_points = np.sum(points_per_polygon)
+    polygons = np.random.randint(0, 400, size=[total_points, 2])
+    alpha = np.random.random(n_polygons)
+    colors_fill = np.random.randint(0, 255, size=(n_polygons, 3))
+    colors_outline = np.random.randint(0, 255, size=(n_polygons, 3))
+
+    with hold_canvas():
+        # the filling
+        canvas.fill_styled_polygons(
+            polygons, points_per_polygon=points_per_polygon, color=colors_fill, alpha=alpha
+        )
+
+        # draw outlines ontop where each line has the same style
+        canvas.stroke_style = "black"
+        canvas.line_width = 2
+        canvas.stroke_polygons(polygons, points_per_polygon=points_per_polygon)
+    canvas
+
+
+.. image:: images/draw_styled_polygons_flat_array.png
+    :scale: 50 %

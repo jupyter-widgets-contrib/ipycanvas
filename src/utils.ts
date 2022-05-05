@@ -4,13 +4,19 @@ export function getTypedArray(dataview: any, metadata: any) {
       return new Int8Array(dataview.buffer);
       break;
     case 'uint8':
-        return new Uint8Array(dataview.buffer);
-        break;
+      return new Uint8Array(dataview.buffer);
+      break;
     case 'int16':
       return new Int16Array(dataview.buffer);
       break;
+    case 'uint16':
+      return new Uint16Array(dataview.buffer);
+      break;
     case 'int32':
       return new Int32Array(dataview.buffer);
+      break;
+    case 'uint32':
+      return new Uint32Array(dataview.buffer);
       break;
     case 'float32':
       return new Float32Array(dataview.buffer);
@@ -28,18 +34,30 @@ export function getTypedArray(dataview: any, metadata: any) {
 type Scalar = null | boolean | number | string;
 
 namespace Scalar {
-  export
-  function isScalar(x: any): x is Scalar {
-      return x === null || typeof x === "boolean" || typeof x === "number" || typeof x === "string";
+  export function isScalar(x: any): x is Scalar {
+    return (
+      x === null ||
+      typeof x === 'boolean' ||
+      typeof x === 'number' ||
+      typeof x === 'string'
+    );
   }
 }
 
-type TypedArray = Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array;
+type TypedArray =
+  | Int8Array
+  | Uint8Array
+  | Int16Array
+  | Uint16Array
+  | Int32Array
+  | Uint32Array
+  | Uint8ClampedArray
+  | Float32Array
+  | Float64Array;
 
 // Buffered argument
-export
-abstract class Arg {
-  abstract getItem(idx: number) : any;
+export abstract class Arg {
+  abstract getItem(idx: number): any;
 
   length: number;
 }
@@ -52,7 +70,7 @@ class ScalarArg extends Arg {
     this.length = Infinity;
   }
 
-  getItem(idx: number) : any {
+  getItem(idx: number): any {
     return this.value;
   }
 
@@ -67,30 +85,28 @@ class BufferArg extends Arg {
     this.length = this.value.length;
   }
 
-  getItem(idx: number) : any {
+  getItem(idx: number): any {
     return this.value[idx];
   }
 
   value: TypedArray;
 }
 
-export
-function getArg(metadata: any, buffers: any) : Arg {
+export function getArg(metadata: any, buffers: any): Arg {
   if (Scalar.isScalar(metadata)) {
     return new ScalarArg(metadata);
   }
 
   if (metadata['idx'] !== undefined) {
-    return new BufferArg(metadata, buffers[metadata['idx']])
+    return new BufferArg(metadata, buffers[metadata['idx']]);
   }
 
   throw 'Could not process argument ' + metadata;
 }
 
-export
-async function toBlob(canvas: HTMLCanvasElement) : Promise<Blob> {
+export async function toBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((blob) => {
+    canvas.toBlob(blob => {
       if (blob == null) {
         return reject('Unable to create blob');
       }
@@ -100,27 +116,29 @@ async function toBlob(canvas: HTMLCanvasElement) : Promise<Blob> {
   });
 }
 
-export
-async function toBytes(canvas: HTMLCanvasElement) : Promise<Uint8ClampedArray> {
+export async function toBytes(
+  canvas: HTMLCanvasElement
+): Promise<Uint8ClampedArray> {
   const blob = await toBlob(canvas);
 
   return new Promise<Uint8ClampedArray>((resolve, reject) => {
     const reader = new FileReader();
 
     reader.onloadend = () => {
-        if (typeof reader.result == 'string' || reader.result == null) {
-          return reject('Unable to read blob');
-        }
+      if (typeof reader.result == 'string' || reader.result == null) {
+        return reject('Unable to read blob');
+      }
 
-        const bytes = new Uint8ClampedArray(reader.result);
-        resolve(bytes);
+      const bytes = new Uint8ClampedArray(reader.result);
+      resolve(bytes);
     };
     reader.readAsArrayBuffer(blob);
   });
 }
 
-export
-async function fromBytes(array: Uint8ClampedArray) : Promise<HTMLImageElement> {
+export async function fromBytes(
+  array: Uint8ClampedArray
+): Promise<HTMLImageElement> {
   const blob = new Blob([array]);
 
   return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -128,8 +146,23 @@ async function fromBytes(array: Uint8ClampedArray) : Promise<HTMLImageElement> {
 
     img.onload = () => {
       resolve(img);
-    }
+    };
 
     img.src = URL.createObjectURL(blob);
+  });
+}
+
+export async function bufferToImage(buffer: any): Promise<HTMLImageElement> {
+  let url: string;
+
+  const blob = new Blob([buffer], { type: 'image/jpeg' });
+  url = URL.createObjectURL(blob);
+
+  const img = new Image();
+  return new Promise(resolve => {
+    img.onload = () => {
+      resolve(img);
+    };
+    img.src = url;
   });
 }

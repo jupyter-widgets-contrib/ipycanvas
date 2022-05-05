@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'jupyterlite_sphinx'
 ]
 
 templates_path = ['_templates']
+
+jupyterlite_config = "jupyterlite_config.json"
 
 master_doc = 'index'
 source_suffix = '.rst'

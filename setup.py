@@ -6,14 +6,15 @@
 
 from __future__ import print_function
 from glob import glob
+import os
 from os.path import join as pjoin
 from os import path
 
 
 from jupyter_packaging import (
     create_cmdclass, install_npm, ensure_targets,
-    combine_commands, ensure_python,
-    get_version
+    combine_commands,
+    get_version, skip_if_exists
 )
 
 from setuptools import setup, find_packages
@@ -24,9 +25,6 @@ HERE = path.dirname(path.abspath(__file__))
 # The name of the project
 name = 'ipycanvas'
 
-# Ensure a valid python version
-ensure_python('>=3.5')
-
 # Get our version
 version = get_version(pjoin(name, '_version.py'))
 
@@ -36,7 +34,7 @@ lab_path = pjoin(HERE, name, 'labextension')
 # Representative files that should exist after a successful build
 jstargets = [
     pjoin(nb_path, 'index.js'),
-    pjoin(HERE, 'lib', 'plugin.js'),
+    pjoin(lab_path, 'package.json'),
 ]
 
 package_data_spec = {
@@ -50,17 +48,22 @@ data_files_spec = [
     ('share/jupyter/nbextensions/ipycanvas',
         nb_path, '*.js*'),
     ('share/jupyter/labextensions/ipycanvas', lab_path, '**'),
-    ('etc/jupyter/nbconfig/notebook.d' , HERE, 'ipycanvas.json')
+    ('etc/jupyter/nbconfig/notebook.d', HERE, 'ipycanvas.json')
 ]
 
 
 cmdclass = create_cmdclass('jsdeps', package_data_spec=package_data_spec,
     data_files_spec=data_files_spec)
-cmdclass['jsdeps'] = combine_commands(
-    install_npm(HERE, build_cmd='build'),
+js_command = combine_commands(
+    install_npm(HERE, npm=["yarn"], build_cmd='build:extensions'),
     ensure_targets(jstargets),
 )
 
+is_repo = os.path.exists(os.path.join(HERE, '.git'))
+if is_repo:
+    cmdclass['jsdeps'] = js_command
+else:
+    cmdclass['jsdeps'] = skip_if_exists(jstargets, js_command)
 
 setup_args = dict(
     name=name,
@@ -81,21 +84,20 @@ setup_args = dict(
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Framework :: Jupyter',
     ],
-    include_package_data = True,
-    install_requires = [
+    include_package_data=True,
+    install_requires=[
         'ipywidgets>=7.6.0',
         'pillow>=6.0',
-        'numpy',
-        'orjson'
+        'numpy'
     ],
-    extras_require = {},
-    entry_points = {
-    },
+    extras_require={},
+    entry_points={},
 )
 
 if __name__ == '__main__':

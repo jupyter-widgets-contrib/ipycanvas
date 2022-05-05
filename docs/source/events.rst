@@ -8,19 +8,29 @@ The following built-in mouse events are supported: ``mouse_down``, ``mouse_move`
 
 Those methods take a callback function as single argument, this callback function must take two positional arguments that are the ``x`` and ``y`` pixel coordinates where the mouse was during the event.
 
-.. code:: Python
+.. code-block:: python
 
+    from ipywidgets import Output
+
+    out = Output()
+
+
+    @out.capture()
     def handle_mouse_move(x, y):
-        # Do something
-        pass
+        print("Mouse move event:", x, y)
+
 
     canvas.on_mouse_move(handle_mouse_move)
 
+
+    @out.capture()
     def handle_mouse_down(x, y):
-        # Do something else
-        pass
+        print("Mouse down event:", x, y)
+
 
     canvas.on_mouse_down(handle_mouse_down)
+
+    display(out)
 
 Built-in touch events
 ---------------------
@@ -29,17 +39,37 @@ The following built-in touch events are supported: ``touch_start``, ``touch_end`
 
 Those methods take a callback function as single argument, this callback function must take one positional argument which is the list of tuples representing the ``(x, y)`` pixel coordinates where the fingers are located on the canvas.
 
-.. code:: Python
+.. code-block:: python
 
     def handle_touch_move(fingers_locations):
         # Draw circles where fingers are located
         for finger_location in fingers_locations:
             canvas.fill_arc(finger_location[0], finger_location[1], 6, 0, 2 * pi)
 
+
     canvas.on_touch_move(handle_touch_move)
 
 .. note::
     Please open an issue or a Pull Request if you want more events to be supported by ipycanvas
+
+Keyboard events
+---------------
+
+.. code-block:: python
+
+    from ipywidgets import Output
+
+    out = Output()
+
+
+    @out.capture()
+    def on_keyboard_event(key, shift_key, ctrl_key, meta_key):
+        print("Keyboard event:", key, shift_key, ctrl_key, meta_key)
+
+
+    canvas.on_key_down(on_keyboard_event)
+
+    display(out)
 
 ipyevents
 ---------
