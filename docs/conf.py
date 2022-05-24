@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
+import sys
+from pathlib import Path
+
+# Inserting ipycanvas to path
+sys.path.append(str(Path(__file__).parent.parent))
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'jupyterlite_sphinx'
 ]
-
-templates_path = ['_templates']
 
 jupyterlite_config = "jupyterlite_config.json"
 
@@ -29,10 +33,6 @@ htmlhelp_basename = 'ipycanvasdoc'
 html_theme_options = dict(
     github_url='https://github.com/martinRenou/ipycanvas'
 )
-
-html_js_files = [
-    'goatcounter.js'
-]
 
 html_static_path = ['_static']
 

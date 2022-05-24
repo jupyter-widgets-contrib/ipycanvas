@@ -159,6 +159,10 @@ examples/my_scatter.png
 # We use yarn
 package-lock.json
 
+# jupyterlite build
+python_data.js
+python_data.data
+
 # Untitled notebooks
 *Untitled*.ipynb
 
