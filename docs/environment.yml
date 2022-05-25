@@ -1,0 +1,19 @@
+name: xeus-python-kernel-docs
+
+channels:
+  - conda-forge
+
+dependencies:
+  - numpy
+  - ipywidgets
+  - pillow
+  - mamba
+  - pydata-sphinx-theme
+  - emsdk
+  # - empack
+
+  - pip:
+    - jupyterlite
+    - jupyterlite-sphinx
+    - jupyterlite-xeus-python==0.3.0
+    - empack
