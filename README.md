@@ -1,4 +1,4 @@
-<p align="center"><img width="300" src="docs/source/images/ipycanvas_logo.svg"></p>
+<p align="center"><img width="300" src="docs/images/ipycanvas_logo.svg"></p>
 <h1 align="center">ipycanvas</h1>
 <h2 align="center"> Interactive Canvas in Jupyter </h1>
 
@@ -53,24 +53,24 @@ A development installation guide, can be found [here](https://ipycanvas.readthed
 
 ### Create John Conway's Game Of Life
 
-![John Conway's Game Of Life](docs/source/images/ipycanvas_gameoflife.png)
+![John Conway's Game Of Life](docs/images/ipycanvas_gameoflife.png)
 
 ### Give a "hand-drawn" style to your drawings using the RoughCanvas
 
-![RoughCanvas](docs/source/images/ipycanvas_rough.png)
+![RoughCanvas](docs/images/ipycanvas_rough.png)
 
 ### Draw Particles from IPython
 
-![Particles](docs/source/images/ipycanvas_particles.png)
+![Particles](docs/images/ipycanvas_particles.png)
 
 ### Custom Sprites
 
-![Sprites](docs/source/images/ipycanvas_sprites.png)
+![Sprites](docs/images/ipycanvas_sprites.png)
 
 ### Draw data directly from a NumPy array
 
-![NumPy](docs/source/images/ipycanvas_binary.png)
+![NumPy](docs/images/ipycanvas_binary.png)
 
 ### Create your own plotting library **fully** in Python
 
-![Plotting](docs/source/images/ipycanvas_scatter.png)
+![Plotting](docs/images/ipycanvas_scatter.png)

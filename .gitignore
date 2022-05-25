@@ -62,7 +62,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-docs/source/_static/embed-bundle*
+docs/_static/embed-bundle*
 
 # PyBuilder
 target/
