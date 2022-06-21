@@ -6,6 +6,7 @@ extensions = [
 ]
 
 jupyterlite_config = "jupyterlite_config.json"
+jupyterlite_dir = "."
 
 master_doc = 'index'
 source_suffix = '.rst'
