@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-import sys
-from pathlib import Path
-
-# Inserting ipycanvas to path
-sys.path.append(str(Path(__file__).parent.parent))
-
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',

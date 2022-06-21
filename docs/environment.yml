@@ -4,16 +4,12 @@ channels:
   - conda-forge
 
 dependencies:
-  - numpy
-  - ipywidgets
-  - pillow
+  - ipycanvas
   - mamba
   - pydata-sphinx-theme
-  - emsdk
-  # - empack
+  - empack
 
   - pip:
     - jupyterlite
     - jupyterlite-sphinx
-    - jupyterlite-xeus-python==0.3.0
-    - empack
+    - jupyterlite-xeus-python
