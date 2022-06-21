@@ -13,3 +13,4 @@ dependencies:
     - jupyterlite
     - jupyterlite-sphinx
     - jupyterlite-xeus-python
+    - jupyterlab-night

@@ -1,5 +1,13 @@
 {
   "XeusPythonEnv": {
       "packages": ["numpy", "ipycanvas"]
+  },
+  "jupyter-config-data": {
+    "disabledExtensions": [
+      "@jupyterlab/theme-light-extension",
+      "@jupyterlab/theme-dark-extension",
+      "@jupyterlite/javascript-kernel-extension",
+      "@jupyterlite/pyolite-kernel-extension"
+    ]
   }
 }
