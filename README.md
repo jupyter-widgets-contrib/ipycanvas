@@ -4,7 +4,7 @@
 
 [![Documentation](http://readthedocs.org/projects/ipycanvas/badge/?version=latest)](https://ipycanvas.readthedocs.io/en/latest/?badge=latest)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?urlpath=lab%2Ftree%2Fexamples)
-[![https://jupyterlite.rtfd.io/en/latest/_static/badge.svg]][https://ipycanvas.readthedocs.io/en/latest/lite/lab]
+[![JupyterLite](https://jupyterlite.rtfd.io/en/latest/_static/badge-launch.svg)](https://ipycanvas.readthedocs.io/en/latest/lite/lab)
 [![Downloads](https://pepy.tech/badge/ipycanvas)](https://pepy.tech/project/ipycanvas)
 [![Join the chat at https://gitter.im/martinRenou/ipycanvas](https://badges.gitter.im/martinRenou/ipycanvas.svg)](https://gitter.im/martinRenou/ipycanvas?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
