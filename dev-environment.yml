@@ -7,7 +7,7 @@ dependencies:
     - nodejs=16
     - jupyter-packaging
     - jupyterlab=3
-    - ipywidgets>=7.6
+    - ipywidgets>=7.6,<8
     - setuptools
     - wheel
     - twine
