@@ -100,7 +100,7 @@ jobs:
           channels: conda-forge
 
       - name: Install dependencies
-        run: mamba install python=${{ matrix.python-version }} pip yarn jupyterlab ipywidgets jupyter-packaging
+        run: mamba install python=${{ matrix.python-version }} pip yarn jupyterlab ipywidgets jupyter-packaging nodejs=16
 
       - uses: actions/download-artifact@v2
         with:

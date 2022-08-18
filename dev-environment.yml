@@ -4,6 +4,7 @@ channels:
 dependencies:
     - pip
     - yarn
+    - nodejs=16
     - jupyter-packaging
     - jupyterlab=3
     - ipywidgets>=7.6
