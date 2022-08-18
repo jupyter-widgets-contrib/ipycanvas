@@ -94,13 +94,12 @@ jobs:
       - name: Setup conda
         uses: conda-incubator/setup-miniconda@v2
         with:
+          activate-environment: ipycanvas-dev
+          environment-file: dev-environment.yml
           python-version: ${{ matrix.python-version }}
           mamba-version: "*"
           auto-activate-base: false
           channels: conda-forge
-
-      - name: Install dependencies
-        run: mamba install python=${{ matrix.python-version }} pip yarn jupyterlab ipywidgets jupyter-packaging
 
       - uses: actions/download-artifact@v2
         with:
