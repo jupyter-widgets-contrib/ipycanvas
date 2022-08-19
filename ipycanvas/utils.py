@@ -26,9 +26,11 @@ def image_bytes_to_array(im_bytes):
 
 def binary_image(ar, quality=75):
     f = BytesIO()
-    PILImage.fromarray(ar.astype(np.uint8), "RGB" if ar.shape[2] == 3 else "RGBA").save(
-        f, "JPEG", quality=quality
-    )
+    if ar.shape[2] == 3:
+        filetype = "JPEG"
+    else:
+        filetype = "PNG"
+    PILImage.fromarray(ar.astype(np.uint8)).save(f, filetype, quality=quality)
     return f.getvalue()
 
 
