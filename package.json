@@ -12,7 +12,9 @@
     "lib/**/*.js",
     "lib/**/*.d.ts",
     "dist/*.js",
-    "dist/*.d.ts"
+    "dist/*.d.ts",
+    "dist/*.map",
+    "dist/*.LICENSE.txt"
   ],
   "homepage": "https://github.com/martinRenou/ipycanvas",
   "bugs": {
