@@ -558,6 +558,7 @@ export class CanvasModel extends DOMWidgetModel {
 
   static serializers: ISerializers = {
     ...DOMWidgetModel.serializers,
+    _canvas_manager: { deserialize: unpack_models as any },
     image_data: {
       serialize: serializeImageData,
       deserialize: deserializeImageData
