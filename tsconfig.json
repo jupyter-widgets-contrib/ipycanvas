@@ -2,8 +2,7 @@
   "compilerOptions": {
     "declaration": true,
     "esModuleInterop": true,
-    "lib": ["es2015", "dom"],
-    "module": "commonjs",
+    "module": "ES2015",
     "moduleResolution": "node",
     "noEmitOnError": true,
     "noUnusedLocals": true,
@@ -15,7 +14,7 @@
     // This allows us to initialize members in the "initialize" method
     "strictPropertyInitialization": false,
     "strict": true,
-    "target": "es2015"
+    "target": "ES2017"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }
