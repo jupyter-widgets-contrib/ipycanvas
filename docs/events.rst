@@ -42,13 +42,16 @@ Those methods take a callback function as single argument, this callback functio
 .. code-block:: python
 
     import math
+
     out = Output()
-    
+
+
     @out.capture()
     def handle_touch_move(fingers_locations):
         # Draw circles where fingers are located
         for finger_location in fingers_locations:
             canvas.fill_arc(finger_location[0], finger_location[1], 6, 0, 2 * math.pi)
+
 
     canvas.on_touch_move(handle_touch_move)
     display(out)
