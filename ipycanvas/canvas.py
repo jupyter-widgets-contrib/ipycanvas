@@ -399,7 +399,9 @@ class _CanvasBase(DOMWidget):
     _view_module = Unicode(module_name).tag(sync=True)
     _view_module_version = Unicode(module_version).tag(sync=True)
 
-    _canvas_manager = Instance(_CanvasManager, default_value=_CANVAS_MANAGER).tag(sync=True, **widget_serialization)
+    _canvas_manager = Instance(_CanvasManager, default_value=_CANVAS_MANAGER).tag(
+        sync=True, **widget_serialization
+    )
 
     width = CInt(700).tag(sync=True)
     height = CInt(500).tag(sync=True)
@@ -705,7 +707,9 @@ class Canvas(_CanvasBase):
         else:
             populate_args(height, args, buffers)
 
-        self._canvas_manager.send_draw_command(self, COMMANDS["fillRects"], args, buffers)
+        self._canvas_manager.send_draw_command(
+            self, COMMANDS["fillRects"], args, buffers
+        )
 
     def stroke_rects(self, x, y, width, height=None):
         """Draw a rectangular outlines of sizes ``(width, height)`` at the ``(x, y)`` positions.
@@ -725,7 +729,9 @@ class Canvas(_CanvasBase):
         else:
             populate_args(height, args, buffers)
 
-        self._canvas_manager.send_draw_command(self, COMMANDS["strokeRects"], args, buffers)
+        self._canvas_manager.send_draw_command(
+            self, COMMANDS["strokeRects"], args, buffers
+        )
 
     def fill_styled_rects(self, x, y, width, height, color, alpha=1):
         """Draw filled and styled rectangles of sizes ``(width, height)`` at the ``(x, y)`` positions
@@ -799,7 +805,9 @@ class Canvas(_CanvasBase):
 
     def fill_circle(self, x, y, radius):
         """Draw a filled circle centered at ``(x, y)`` with a radius of ``radius``."""
-        self._canvas_manager.send_draw_command(self, COMMANDS["fillCircle"], [x, y, radius])
+        self._canvas_manager.send_draw_command(
+            self, COMMANDS["fillCircle"], [x, y, radius]
+        )
 
     def stroke_arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Draw an arc outline centered at ``(x, y)`` with a radius of ``radius``."""
@@ -830,7 +838,9 @@ class Canvas(_CanvasBase):
         populate_args(end_angle, args, buffers)
         args.append(anticlockwise)
 
-        self._canvas_manager.send_draw_command(self, COMMANDS["fillArcs"], args, buffers)
+        self._canvas_manager.send_draw_command(
+            self, COMMANDS["fillArcs"], args, buffers
+        )
 
     def stroke_arcs(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Draw an arc outlines centered at ``(x, y)`` with a radius of ``radius``.
@@ -847,7 +857,9 @@ class Canvas(_CanvasBase):
         populate_args(end_angle, args, buffers)
         args.append(anticlockwise)
 
-        self._canvas_manager.send_draw_command(self, COMMANDS["strokeArcs"], args, buffers)
+        self._canvas_manager.send_draw_command(
+            self, COMMANDS["strokeArcs"], args, buffers
+        )
 
     def fill_circles(self, x, y, radius):
         """Draw filled circles centered at ``(x, y)`` with a radius of ``radius``.
@@ -861,7 +873,9 @@ class Canvas(_CanvasBase):
         populate_args(y, args, buffers)
         populate_args(radius, args, buffers)
 
-        self._canvas_manager.send_draw_command(self, COMMANDS["fillCircles"], args, buffers)
+        self._canvas_manager.send_draw_command(
+            self, COMMANDS["fillCircles"], args, buffers
+        )
 
     def stroke_circles(self, x, y, radius):
         """Draw a circle outlines centered at ``(x, y)`` with a radius of ``radius``.
@@ -970,7 +984,9 @@ class Canvas(_CanvasBase):
 
         populate_args(points, args, buffers)
 
-        self._canvas_manager.send_draw_command(self, COMMANDS["fillPolygon"], args, buffers)
+        self._canvas_manager.send_draw_command(
+            self, COMMANDS["fillPolygon"], args, buffers
+        )
 
     def stroke_polygon(self, points):
         """Draw polygon outline from a list of points ``[(x1, y1), (x2, y2), ..., (xn, yn)]``."""
@@ -1135,7 +1151,9 @@ class Canvas(_CanvasBase):
 
         populate_args(points, args, buffers)
 
-        self._canvas_manager.send_draw_command(self, COMMANDS["strokeLines"], args, buffers)
+        self._canvas_manager.send_draw_command(
+            self, COMMANDS["strokeLines"], args, buffers
+        )
 
     def stroke_styled_line_segments(
         self, points, color, alpha=1, points_per_line_segment=None
@@ -1240,7 +1258,9 @@ class Canvas(_CanvasBase):
                 [widget_serialization["to_json"](rule_or_path, None)],
             )
         else:
-            self._canvas_manager.send_draw_command(self, COMMANDS["fill"], [rule_or_path])
+            self._canvas_manager.send_draw_command(
+                self, COMMANDS["fill"], [rule_or_path]
+            )
 
     def move_to(self, x, y):
         """Move the "pen" to the given ``(x, y)`` coordinates."""
@@ -1256,7 +1276,9 @@ class Canvas(_CanvasBase):
 
     def rect(self, x, y, width, height):
         """Add a rectangle of size ``(width, height)`` at the ``(x, y)`` position in the current path."""
-        self._canvas_manager.send_draw_command(self, COMMANDS["rect"], [x, y, width, height])
+        self._canvas_manager.send_draw_command(
+            self, COMMANDS["rect"], [x, y, width, height]
+        )
 
     def arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         """Add a circular arc centered at ``(x, y)`` with a radius of ``radius`` to the current path.
