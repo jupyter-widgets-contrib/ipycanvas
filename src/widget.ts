@@ -127,7 +127,8 @@ const COMMANDS = [
   'fillStyledPolygons',
   'strokeStyledPolygons',
   'strokeStyledLineSegments',
-  'switchCanvas'
+  'switchCanvas',
+  'requestImageData'
 ];
 
 export class CanvasManagerModel extends WidgetModel {
@@ -189,6 +190,9 @@ export class CanvasManagerModel extends WidgetModel {
       case 'switchCanvas':
         await this.switchCanvas(args[0]);
         this.canvasesToUpdate.push(this.currentCanvas);
+        break;
+      case 'requestImageData':
+        await this.currentCanvas.sendImageData();
         break;
       case 'sleep':
         await this.currentCanvas.sleep(args[0]);
@@ -632,6 +636,13 @@ export class CanvasModel extends DOMWidgetModel {
     this.syncImageData();
 
     await new Promise(resolve => setTimeout(resolve, time));
+  }
+
+  async sendImageData(): Promise<void> {
+    const bytes = await toBytes(this.canvas);
+    const imageData = serializeImageData(bytes);
+
+    this.send({ event: 'image_data' }, {}, [imageData]);
   }
 
   fillRect(x: number, y: number, width: number, height: number) {
@@ -1493,9 +1504,7 @@ export class MultiCanvasModel extends DOMWidgetModel {
     ...DOMWidgetModel.serializers,
     _canvases: { deserialize: unpack_models as any },
     image_data: {
-      serialize: (bytes: Uint8ClampedArray) => {
-        return new DataView(bytes.buffer.slice(0));
-      }
+      serialize: serializeImageData
     }
   };
 

@@ -103,6 +103,7 @@ _CMD_LIST = [
     "strokeStyledPolygons",
     "strokeStyledLineSegments",
     "switchCanvas",
+    "requestImageData",
 ]
 COMMANDS = {v: i for i, v in enumerate(_CMD_LIST)}
 
@@ -582,6 +583,8 @@ class Canvas(_CanvasBase):
 
     _client_ready_callbacks = Instance(CallbackDispatcher, ())
 
+    _image_data_callbacks = Instance(CallbackDispatcher, ())
+
     _mouse_move_callbacks = Instance(CallbackDispatcher, ())
     _mouse_down_callbacks = Instance(CallbackDispatcher, ())
     _mouse_up_callbacks = Instance(CallbackDispatcher, ())
@@ -632,6 +635,11 @@ class Canvas(_CanvasBase):
     def sleep(self, time):
         """Make the Canvas sleep for `time` milliseconds."""
         self._canvas_manager.send_draw_command(self, COMMANDS["sleep"], [time])
+
+    def request_image_data(self):
+        self._canvas_manager.send_draw_command(
+            self, COMMANDS["requestImageData"]
+        )
 
     # Gradient methods
     def create_linear_gradient(self, x0, y0, x1, y1, color_stops):
@@ -1491,6 +1499,9 @@ class Canvas(_CanvasBase):
         """
         self._client_ready_callbacks.register_callback(callback, remove=remove)
 
+    def on_image_data(self, callback, remove=False):
+        self._image_data_callbacks.register_callback(callback, remove=remove)
+
     def on_mouse_move(self, callback, remove=False):
         """Register a callback that will be called on mouse move."""
         self._mouse_move_callbacks.register_callback(callback, remove=remove)
@@ -1542,6 +1553,8 @@ class Canvas(_CanvasBase):
     def _handle_frontend_event(self, _, content, buffers):
         if content.get("event", "") == "client_ready":
             self._client_ready_callbacks()
+        if content.get("event", "") == "image_data":
+            self._image_data_callbacks(buffers[0])
 
         if content.get("event", "") == "mouse_move":
             self._mouse_move_callbacks(content["x"], content["y"])
