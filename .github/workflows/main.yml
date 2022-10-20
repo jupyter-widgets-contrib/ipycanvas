@@ -63,7 +63,7 @@ jobs:
 
     - name: Build packages
       run: |
-        python setup.py sdist bdist_wheel
+        python -m build
         cd dist
         sha256sum * | tee SHA256SUMS
 
@@ -110,6 +110,11 @@ jobs:
         run: |
           cd dist
           pip install -vv ${{ matrix.dist }}
+
+      - name: Log installation files
+        run: |
+          ls $CONDA_PREFIX/share/jupyter/nbextensions
+          ls $CONDA_PREFIX/share/jupyter/labextensions
 
       - name: Test installation files
         run: |
