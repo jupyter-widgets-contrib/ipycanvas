@@ -51,9 +51,9 @@ artifacts = [
 ]
 
 [tool.hatch.build.targets.wheel.shared-data]
-"/home/martinrenou/github/ipycanvas/ipycanvas/nbextension/static" = "share/jupyter/nbextensions/ipycanvas"
-"/home/martinrenou/github/ipycanvas/ipycanvas/labextension" = "share/jupyter/labextensions/ipycanvas"
-"/home/martinrenou/github/ipycanvas/ipycanvas.json" = "etc/jupyter/nbconfig/notebook.d/ipycanvas.json"
+"ipycanvas/nbextension/static" = "share/jupyter/nbextensions/ipycanvas"
+"ipycanvas/labextension" = "share/jupyter/labextensions/ipycanvas"
+"ipycanvas.json" = "etc/jupyter/nbconfig/notebook.d/ipycanvas.json"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
