@@ -262,6 +262,48 @@ class _CanvasManager(Widget):
 _CANVAS_MANAGER = _CanvasManager()
 
 
+def save_gif(
+    filename,
+    frames,
+    background=None,
+    transparency=None,
+    version="GIF87a",
+    frequency=1 / 30.0,
+    loop=0,
+):
+    """Save a GIF file from frames.
+
+    This uses Pillow under the hood.
+
+    Args:
+        filename (str): The name of the file to save. *e.g.* "test.gif"
+        frames (list): The list of frames captured by ipycanvas
+
+        background (): Default background color
+        transparency (): Transparency color index. This key is omitted if the image is not transparent
+        version (str): The GIF version, either "GIF87a" or "GIF89a"
+        frequency (float): The time between frames of the GIF, in milliseconds
+        loop (int): The number of times the GIF should loop. 0 means that it will loop forever
+
+    """
+    from PIL import Image
+
+    imgs = [Image.open(BytesIO(frame)) for frame in frames]
+
+    imgs[0].save(
+        filename,
+        save_all=True,
+        optimize=True,
+        append_images=imgs[1:],
+        loop=loop,
+        background=background,
+        transparency=transparency,
+        version=version,
+        duration=frequency,
+        disposal=2,
+    )
+
+
 class Path2D(Widget):
     """Create a Path2D.
 
@@ -637,9 +679,7 @@ class Canvas(_CanvasBase):
         self._canvas_manager.send_draw_command(self, COMMANDS["sleep"], [time])
 
     def request_image_data(self):
-        self._canvas_manager.send_draw_command(
-            self, COMMANDS["requestImageData"]
-        )
+        self._canvas_manager.send_draw_command(self, COMMANDS["requestImageData"])
 
     # Gradient methods
     def create_linear_gradient(self, x0, y0, x1, y1, color_stops):
