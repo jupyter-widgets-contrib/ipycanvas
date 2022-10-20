@@ -1,3 +1,103 @@
 [build-system]
-requires = ["jupyter_packaging~=0.7.0", "jupyterlab==3.*", "setuptools>=40.8.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = [
+    "hatchling",
+    "jupyterlab==3.*",
+]
+build-backend = "hatchling.build"
+
+[project]
+name = "ipycanvas"
+description = "Interactive widgets library exposing the browser's Canvas API"
+readme = "README.md"
+authors = [
+    { name = "Martin Renou", email = "martin.renou@gmail.com" },
+]
+keywords = [
+    "IPython",
+    "Jupyter",
+    "Widgets",
+]
+classifiers = [
+    "Framework :: Jupyter",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "ipywidgets>=7.6.0,<9",
+    "numpy",
+    "pillow>=6.0",
+]
+version = "0.13.1"
+
+[project.license]
+file = "LICENSE.txt"
+
+[project.optional-dependencies]
+
+[project.urls]
+Homepage = "https://github.com/martinRenou/ipycanvas"
+
+[tool.hatch.build]
+artifacts = [
+    "ipycanvas/nbextension/static/index.*",
+    "ipycanvas/labextension",
+]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"/home/martinrenou/github/ipycanvas/ipycanvas/nbextension/static" = "share/jupyter/nbextensions/ipycanvas"
+"/home/martinrenou/github/ipycanvas/ipycanvas/labextension" = "share/jupyter/labextensions/ipycanvas"
+"/home/martinrenou/github/ipycanvas/ipycanvas.json" = "etc/jupyter/nbconfig/notebook.d/ipycanvas.json"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    ".github",
+]
+
+[tool.hatch.build.hooks.jupyter-builder]
+ensured-targets = [
+    "ipycanvas/nbextension/static/index.js",
+    "ipycanvas/labextension/package.json",
+]
+dependencies = [
+    "hatch-jupyter-builder>=0.8.1",
+]
+build-function = "hatch_jupyter_builder.npm_builder"
+
+[tool.hatch.build.hooks.jupyter-builder.build-kwargs]
+path = "."
+build_cmd = "build:extensions"
+npm = [
+    "yarn",
+]
+
+[tool.tbump]
+field = [
+    { name = "channel", default = "" },
+    { name = "release", default = "" },
+]
+
+[tool.tbump.version]
+current = "0.13.1"
+regex = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)((?P<channel>a|b|rc|.dev)(?P<release>\\d+))?"
+
+[tool.tbump.git]
+message_template = "Bump to {new_version}"
+tag_template = "v{new_version}"
+
+[[tool.tbump.file]]
+src = "pyproject.toml"
+version_template = "version = \"{major}.{minor}.{patch}{channel}{release}\""
+
+[[tool.tbump.file]]
+src = "ipycanvas/_version.py"
+
+[[tool.tbump.file]]
+src = "package.json"
+version_template = "\"version\": \"{major}.{minor}.{patch}{channel}{release}\""
