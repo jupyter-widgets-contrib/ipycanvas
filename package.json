@@ -34,7 +34,7 @@
   "scripts": {
     "build": "yarn run build:lib && yarn run build:nbextension && yarn run build:labextension",
     "build:lib": "tsc",
-    "build:nbextension": "webpack",
+    "build:nbextension": "webpack --no-devtool",
     "build:labextension": "jupyter labextension build .",
     "build:extensions": "yarn run build && yarn run build:labextension",
     "clean": "yarn run clean:lib && yarn run clean:nbextension && yarn run clean:labextension",
