@@ -8,6 +8,8 @@ import warnings
 from io import BytesIO
 from contextlib import contextmanager
 
+from PIL import Image as PILImage
+
 import numpy as np
 
 from traitlets import (
@@ -263,40 +265,6 @@ class _CanvasManager(Widget):
 _CANVAS_MANAGER = _CanvasManager()
 
 
-def save_gif(
-    filename,
-    frames,
-    frequency=20,
-    loop=0,
-    version="GIF87a",
-):
-    """Save a GIF file from frames.
-
-    This uses Pillow under the hood.
-
-    Args:
-        filename (str): The name of the file to save. *e.g.* "test.gif"
-        frames (list): The list of frames captured by ipycanvas
-        frequency (int): The time between frames of the GIF, in milliseconds. Defaults to 20 (50Hz).
-        loop (int): The number of times the GIF should loop. 0 means that it will loop forever. Defaults to 0.
-        version (str): The GIF version, either "GIF87a" or "GIF89a"
-    """
-    from PIL import Image
-
-    imgs = [Image.open(BytesIO(frame)) for frame in frames]
-
-    imgs[0].save(
-        filename,
-        append_images=imgs[1:],
-        save_all=True,
-        optimize=True,
-        loop=loop,
-        version=version,
-        duration=frequency,
-        disposal=2,
-    )
-
-
 class Path2D(Widget):
     """Create a Path2D.
 
@@ -450,6 +418,11 @@ class _CanvasBase(DOMWidget):
     image_data = Bytes(default_value=None, allow_none=True, read_only=True).tag(
         sync=True, **bytes_serialization
     )
+
+    def __init__(self, *args, **kwargs):
+        self._requested_frames = 0
+
+        super(_CanvasBase, self).__init__(*args, **kwargs)
 
     def to_file(self, filename):
         """Save the current Canvas image to a PNG file.
@@ -671,7 +644,12 @@ class Canvas(_CanvasBase):
         """Make the Canvas sleep for `time` milliseconds."""
         self._canvas_manager.send_draw_command(self, COMMANDS["sleep"], [time])
 
-    def request_image_data(self):
+    def frame(self):
+        """Request a frame to the Canvas.
+
+        TODO
+        """
+        self._requested_frames += 1
         self._canvas_manager.send_draw_command(self, COMMANDS["requestImageData"])
 
     # Gradient methods
@@ -1532,7 +1510,10 @@ class Canvas(_CanvasBase):
         """
         self._client_ready_callbacks.register_callback(callback, remove=remove)
 
-    def on_image_data(self, callback, remove=False):
+    def on_new_frame(self, callback, remove=False):
+        """
+        TODO
+        """
         self._image_data_callbacks.register_callback(callback, remove=remove)
 
     def on_mouse_move(self, callback, remove=False):
@@ -1863,3 +1844,57 @@ def hold_canvas(canvas=None):
 
     if not orig_caching:
         _CANVAS_MANAGER._caching = False
+
+@contextmanager
+def save_gif(
+    canvas,
+    filename,
+    frequency=20,
+    loop=0,
+    version="GIF87a",
+):
+    """Save a GIF file.
+
+    TODO example
+    TODO say that the file is probably not finished creating when this function returns
+
+    This uses Pillow under the hood.
+
+    Args:
+        canvas (Canvas or MultiCanvas): The Canvas from which to generate the GIF.
+        filename (str): The name of the file to save. *e.g.* "test.gif"
+        frames (list): The list of frames captured by ipycanvas
+        frequency (int): The time between frames of the GIF, in milliseconds. Defaults to 20 (50Hz).
+        loop (int): The number of times the GIF should loop. 0 means that it will loop forever. Defaults to 0.
+        version (str): The GIF version, either "GIF87a" or "GIF89a"
+    """
+    if canvas._requested_frames != 0:
+        raise RuntimeError("Impossible to save a GIF for this Canvas as a GIF is already being processed.")
+
+    frames = []
+
+    def on_new_frame(frame):
+        frames.append(frame)
+
+        if len(frames) == canvas._requested_frames:
+            imgs = [PILImage.open(BytesIO(frame)) for frame in frames]
+
+            imgs[0].save(
+                filename,
+                append_images=imgs[1:],
+                save_all=True,
+                optimize=True,
+                loop=loop,
+                version=version,
+                duration=frequency,
+                disposal=2,
+            )
+
+            # Cleanup
+            canvas._requested_frames = 0
+            canvas.on_new_frame(on_new_frame, remove=True)
+
+    canvas.on_new_frame(on_new_frame)
+
+    with hold_canvas():
+        yield
