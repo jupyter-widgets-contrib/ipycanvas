@@ -5,6 +5,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 import warnings
+from io import BytesIO
 from contextlib import contextmanager
 
 import numpy as np
@@ -265,11 +266,9 @@ _CANVAS_MANAGER = _CanvasManager()
 def save_gif(
     filename,
     frames,
-    background=None,
-    transparency=None,
-    version="GIF87a",
-    frequency=1 / 30.0,
+    frequency=20,
     loop=0,
+    version="GIF87a",
 ):
     """Save a GIF file from frames.
 
@@ -278,13 +277,9 @@ def save_gif(
     Args:
         filename (str): The name of the file to save. *e.g.* "test.gif"
         frames (list): The list of frames captured by ipycanvas
-
-        background (): Default background color
-        transparency (): Transparency color index. This key is omitted if the image is not transparent
+        frequency (int): The time between frames of the GIF, in milliseconds. Defaults to 20 (50Hz).
+        loop (int): The number of times the GIF should loop. 0 means that it will loop forever. Defaults to 0.
         version (str): The GIF version, either "GIF87a" or "GIF89a"
-        frequency (float): The time between frames of the GIF, in milliseconds
-        loop (int): The number of times the GIF should loop. 0 means that it will loop forever
-
     """
     from PIL import Image
 
@@ -292,12 +287,10 @@ def save_gif(
 
     imgs[0].save(
         filename,
+        append_images=imgs[1:],
         save_all=True,
         optimize=True,
-        append_images=imgs[1:],
         loop=loop,
-        background=background,
-        transparency=transparency,
         version=version,
         duration=frequency,
         disposal=2,

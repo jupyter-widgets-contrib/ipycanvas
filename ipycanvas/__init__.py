@@ -11,6 +11,7 @@ from .canvas import (
     MultiCanvas,
     MultiRoughCanvas,
     hold_canvas,
+    save_gif,
 )  # noqa
 from ._version import __version__  # noqa
 
