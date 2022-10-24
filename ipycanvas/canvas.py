@@ -1891,6 +1891,7 @@ def save_gif(
             )
 
             # Cleanup
+            # TODO Change this. This approach does not work if the user uses .frame() outside of save_gif
             canvas._requested_frames = 0
             canvas.on_new_frame(on_new_frame, remove=True)
 
