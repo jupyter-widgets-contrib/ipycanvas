@@ -167,21 +167,31 @@ export class CanvasManagerModel extends WidgetModel {
     }
   }
 
-  private async processCommand(command: any, buffers: any) {
+  private async processCommand(command: any, buffers: any): Promise<DataView | null> {
     // If it's a list of commands
     if (command instanceof Array && command[0] instanceof Array) {
       let remainingBuffers = buffers;
+      const frames: DataView[] = [];
 
       for (const subcommand of command) {
         let subbuffers = [];
+
         const nBuffers: Number = subcommand[2];
         if (nBuffers) {
           subbuffers = remainingBuffers.slice(0, nBuffers);
           remainingBuffers = remainingBuffers.slice(nBuffers);
         }
-        await this.processCommand(subcommand, subbuffers);
+
+        const frame = await this.processCommand(subcommand, subbuffers);
+
+        if (frame !== null) {
+          frames.push(frame);
+        }
       }
-      return;
+
+      this.send({ event: 'image_data' }, {}, frames);
+
+      return null;
     }
 
     const name: string = COMMANDS[command[0]];
@@ -192,8 +202,10 @@ export class CanvasManagerModel extends WidgetModel {
         this.canvasesToUpdate.push(this.currentCanvas);
         break;
       case 'requestImageData':
-        await this.currentCanvas.sendImageData();
-        break;
+        for (const canvas of this.canvasesToUpdate) {
+          canvas.syncViews();
+        }
+        return await this.currentCanvas.frame();
       case 'sleep':
         await this.currentCanvas.sleep(args[0]);
         break;
@@ -363,6 +375,8 @@ export class CanvasManagerModel extends WidgetModel {
         this.currentCanvas.executeCommand(name, args);
         break;
     }
+
+    return null;
   }
 
   private async switchCanvas(serializedCanvas: any) {
@@ -638,11 +652,9 @@ export class CanvasModel extends DOMWidgetModel {
     await new Promise(resolve => setTimeout(resolve, time));
   }
 
-  async sendImageData(): Promise<void> {
+  async frame(): Promise<DataView> {
     const bytes = await toBytes(this.canvas);
-    const imageData = serializeImageData(bytes);
-
-    this.send({ event: 'image_data' }, {}, [imageData]);
+    return serializeImageData(bytes);
   }
 
   fillRect(x: number, y: number, width: number, height: number) {

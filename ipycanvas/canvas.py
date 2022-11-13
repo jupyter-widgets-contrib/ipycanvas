@@ -1510,7 +1510,7 @@ class Canvas(_CanvasBase):
         """
         self._client_ready_callbacks.register_callback(callback, remove=remove)
 
-    def on_new_frame(self, callback, remove=False):
+    def on_new_frames(self, callback, remove=False):
         """
         TODO
         """
@@ -1871,13 +1871,13 @@ def save_gif(
     if canvas._requested_frames != 0:
         raise RuntimeError("Impossible to save a GIF for this Canvas as a GIF is already being processed.")
 
-    frames = []
+    received_frames = []
 
-    def on_new_frame(frame):
-        frames.append(frame)
+    def on_new_frames(frames):
+        received_frames.extend(frames)
 
-        if len(frames) == canvas._requested_frames:
-            imgs = [PILImage.open(BytesIO(frame)) for frame in frames]
+        if len(received_frames) >= canvas._requested_frames:
+            imgs = [PILImage.open(BytesIO(frame)) for frame in received_frames]
 
             imgs[0].save(
                 filename,
@@ -1893,9 +1893,9 @@ def save_gif(
             # Cleanup
             # TODO Change this. This approach does not work if the user uses .frame() outside of save_gif
             canvas._requested_frames = 0
-            canvas.on_new_frame(on_new_frame, remove=True)
+            canvas.on_new_frame(on_new_frames, remove=True)
 
-    canvas.on_new_frame(on_new_frame)
+    canvas.on_new_frames(on_new_frames)
 
     with hold_canvas():
         yield
