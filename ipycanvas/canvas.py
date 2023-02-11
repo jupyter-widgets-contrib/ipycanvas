@@ -1509,7 +1509,7 @@ class Canvas(_CanvasBase):
         self._mouse_out_callbacks.register_callback(callback, remove=remove)
 
     def on_mouse_wheel(self, callback, remove=False):
-        """Register a callback that will be called on mouse out of the canvas."""
+        """Register a callback that will be called on mouse wheel movement."""
         self._mouse_wheel_callbacks.register_callback(callback, remove=remove)
 
     def on_touch_start(self, callback, remove=False):
@@ -1757,7 +1757,7 @@ class MultiCanvas(_CanvasBase):
         self._canvases[-1].on_mouse_out(callback, remove=remove)
 
     def on_mouse_wheel(self, callback, remove=False):
-        """Register a callback that will be called on mouse out of the canvas."""
+        """Register a callback that will be called on mouse wheel movement."""
         self._canvases[-1].on_mouse_wheel(callback, remove=remove)
 
     def on_touch_start(self, callback, remove=False):
