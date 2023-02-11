@@ -582,6 +582,7 @@ class Canvas(_CanvasBase):
 
     _client_ready_callbacks = Instance(CallbackDispatcher, ())
 
+    _mouse_wheel_callbacks = Instance(CallbackDispatcher, ())
     _mouse_move_callbacks = Instance(CallbackDispatcher, ())
     _mouse_down_callbacks = Instance(CallbackDispatcher, ())
     _mouse_up_callbacks = Instance(CallbackDispatcher, ())
@@ -1507,6 +1508,10 @@ class Canvas(_CanvasBase):
         """Register a callback that will be called on mouse out of the canvas."""
         self._mouse_out_callbacks.register_callback(callback, remove=remove)
 
+    def on_mouse_wheel(self, callback, remove=False):
+        """Register a callback that will be called on mouse out of the canvas."""
+        self._mouse_wheel_callbacks.register_callback(callback, remove=remove)
+
     def on_touch_start(self, callback, remove=False):
         """Register a callback that will be called on touch start (new finger on the screen)."""
         self._touch_start_callbacks.register_callback(callback, remove=remove)
@@ -1551,6 +1556,8 @@ class Canvas(_CanvasBase):
             self._mouse_up_callbacks(content["x"], content["y"])
         if content.get("event", "") == "mouse_out":
             self._mouse_out_callbacks(content["x"], content["y"])
+        if content.get("event", "") == "mouse_wheel":
+            self._mouse_wheel_callbacks(content["x"], content["y"])
 
         if content.get("event", "") == "touch_start":
             self._touch_start_callbacks(
@@ -1748,6 +1755,10 @@ class MultiCanvas(_CanvasBase):
     def on_mouse_out(self, callback, remove=False):
         """Register a callback that will be called on mouse out of the canvas."""
         self._canvases[-1].on_mouse_out(callback, remove=remove)
+
+    def on_mouse_wheel(self, callback, remove=False):
+        """Register a callback that will be called on mouse out of the canvas."""
+        self._canvases[-1].on_mouse_wheel(callback, remove=remove)
 
     def on_touch_start(self, callback, remove=False):
         """Register a callback that will be called on touch start (new finger on the screen)."""
