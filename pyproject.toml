@@ -42,7 +42,7 @@ file = "LICENSE.txt"
 [project.optional-dependencies]
 
 [project.urls]
-Homepage = "https://github.com/martinRenou/ipycanvas"
+Homepage = "https://github.com/jupyter-widgets-contrib/ipycanvas"
 
 [tool.hatch.build]
 artifacts = [

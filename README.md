@@ -1,12 +1,12 @@
-<p align="center"><img width="300" src="docs/images/ipycanvas_logo.svg"></p>
+<p align="center"><img width="300" src="https://raw.githubusercontent.com/jupyter-widgets-contrib/ipycanvas/master/docs/images/ipycanvas_logo.svg"></p>
 <h1 align="center">ipycanvas</h1>
 <h2 align="center"> Interactive Canvas in Jupyter </h1>
 
 [![Documentation](http://readthedocs.org/projects/ipycanvas/badge/?version=latest)](https://ipycanvas.readthedocs.io/en/latest/?badge=latest)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?urlpath=lab%2Ftree%2Fexamples)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter-widgets-contrib/ipycanvas/stable?urlpath=lab%2Ftree%2Fexamples)
 [![JupyterLite](https://jupyterlite.rtfd.io/en/latest/_static/badge-launch.svg)](https://ipycanvas.readthedocs.io/en/latest/lite/lab)
 [![Downloads](https://pepy.tech/badge/ipycanvas)](https://pepy.tech/project/ipycanvas)
-[![Join the chat at https://gitter.im/martinRenou/ipycanvas](https://badges.gitter.im/martinRenou/ipycanvas.svg)](https://gitter.im/martinRenou/ipycanvas?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/jupyter-widgets-contrib/ipycanvas](https://badges.gitter.im/jupyter-widgets-contrib/ipycanvas.svg)](https://gitter.im/jupyter-widgets-contrib/ipycanvas?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ipycanvas is a lightweight, fast and stable library exposing the [browser's Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) to IPython.
 It allows you to draw simple primitives directly from Python like text, lines, polygons, arcs, images etc. This simple toolset allows you to draw literally anything!
@@ -15,7 +15,7 @@ It allows you to draw simple primitives directly from Python like text, lines, p
 
 You can try it online by clicking on this badge:
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/martinRenou/ipycanvas/stable?urlpath=lab%2Ftree%2Fexamples)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter-widgets-contrib/ipycanvas/stable?urlpath=lab%2Ftree%2Fexamples)
 
 ## Documentation
 
@@ -23,9 +23,9 @@ You can read the documentation following this link: https://ipycanvas.readthedoc
 
 ## Questions?
 
-If you have any question, or if you want to share what you do with ipycanvas, [start a new discussion on Github](https://github.com/martinRenou/ipycanvas/discussions/new)!
+If you have any question, or if you want to share what you do with ipycanvas, [start a new discussion on Github](https://github.com/jupyter-widgets-contrib/ipycanvas/discussions/new)!
 
-Or join the gitter channel: [![Join the chat at https://gitter.im/martinRenou/ipycanvas](https://badges.gitter.im/martinRenou/ipycanvas.svg)](https://gitter.im/martinRenou/ipycanvas?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Or join the gitter channel: [![Join the chat at https://gitter.im/jupyter-widgets-contrib/ipycanvas](https://badges.gitter.im/jupyter-widgets-contrib/ipycanvas.svg)](https://gitter.im/jupyter-widgets-contrib/ipycanvas?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Installation
 
@@ -54,24 +54,24 @@ A development installation guide, can be found [here](https://ipycanvas.readthed
 
 ### Create John Conway's Game Of Life
 
-![John Conway's Game Of Life](docs/images/ipycanvas_gameoflife.png)
+![John Conway's Game Of Life](https://raw.githubusercontent.com/jupyter-widgets-contrib/ipycanvas/master/docs/images/ipycanvas_gameoflife.png)
 
 ### Give a "hand-drawn" style to your drawings using the RoughCanvas
 
-![RoughCanvas](docs/images/ipycanvas_rough.png)
+![RoughCanvas](https://raw.githubusercontent.com/jupyter-widgets-contrib/ipycanvas/master/docs/images/ipycanvas_rough.png)
 
 ### Draw Particles from IPython
 
-![Particles](docs/images/ipycanvas_particles.png)
+![Particles](https://raw.githubusercontent.com/jupyter-widgets-contrib/ipycanvas/master/docs/images/ipycanvas_particles.png)
 
 ### Custom Sprites
 
-![Sprites](docs/images/ipycanvas_sprites.png)
+![Sprites](https://raw.githubusercontent.com/jupyter-widgets-contrib/ipycanvas/master/docs/images/ipycanvas_sprites.png)
 
 ### Draw data directly from a NumPy array
 
-![NumPy](docs/images/ipycanvas_binary.png)
+![NumPy](https://raw.githubusercontent.com/jupyter-widgets-contrib/ipycanvas/master/docs/images/ipycanvas_binary.png)
 
 ### Create your own plotting library **fully** in Python
 
-![Plotting](docs/images/ipycanvas_scatter.png)
+![Plotting](https://raw.githubusercontent.com/jupyter-widgets-contrib/ipycanvas/master/docs/images/ipycanvas_scatter.png)

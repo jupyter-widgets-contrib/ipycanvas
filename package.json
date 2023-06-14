@@ -16,9 +16,9 @@
     "dist/*.map",
     "dist/*.LICENSE.txt"
   ],
-  "homepage": "https://github.com/martinRenou/ipycanvas",
+  "homepage": "https://github.com/jupyter-widgets-contrib/ipycanvas",
   "bugs": {
-    "url": "https://github.com/martinRenou/ipycanvas/issues"
+    "url": "https://github.com/jupyter-widgets-contrib/ipycanvas/issues"
   },
   "license": "BSD-3-Clause",
   "author": {
@@ -29,7 +29,7 @@
   "types": "./lib/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/martinRenou/ipycanvas"
+    "url": "https://github.com/jupyter-widgets-contrib/ipycanvas"
   },
   "scripts": {
     "build": "yarn run build:lib && yarn run build:nbextension && yarn run build:labextension",
