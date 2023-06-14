@@ -40,7 +40,7 @@ For a development installation (requires npm):
 
 .. code:: bash
 
-    git clone https://github.com/martinRenou/ipycanvas.git
+    git clone https://github.com/jupyter-widgets-contrib/ipycanvas.git
     cd ipycanvas
     pip install -e .
 
