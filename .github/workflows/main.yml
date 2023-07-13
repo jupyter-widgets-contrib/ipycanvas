@@ -38,10 +38,8 @@ jobs:
     - name: Test PEP8
       run: |
         black --check ipycanvas
+        black --check examples/*.ipynb
         blacken-docs docs/*.rst
-
-    - name: Test PEP8 on example notebooks
-      run: jupytext examples/*.ipynb --check 'black --check {}'
 
   build:
     runs-on: ubuntu-latest
