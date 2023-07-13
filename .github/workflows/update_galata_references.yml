@@ -32,22 +32,28 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup conda
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/provision-with-micromamba@main
         with:
-          activate-environment: ipycanvas-dev
+          environment-name: ipycanvas-dev
           environment-file: dev-environment.yml
-          python-version: 3.9
-          mamba-version: "*"
-          auto-activate-base: false
           channels: conda-forge
+          extra-specs: |
+            python=${{ matrix.python-version }}
 
       - name: Install the package
         run: pip install -vv .
 
-      - name: Update snapshots
-        uses: jupyterlab/maintainer-tools/.github/actions/update-snapshots@main
+      - name: Install dependencies
+        shell: bash -l {0}
+        working-directory: ui-tests
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+        run: jlpm install
+
+      - uses: jupyterlab/maintainer-tools/.github/actions/update-snapshots@main
         with:
+          npm_client: jlpm
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          server_url: http-get://localhost:8888/
+          start_server_script: 'null'
           test_folder: ui-tests
