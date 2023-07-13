@@ -1461,6 +1461,7 @@ export class CanvasView extends DOMWidgetView {
     return { x, y };
   }
 
+  // @ts-ignore: 2611
   get tagName(): string {
     return 'canvas';
   }

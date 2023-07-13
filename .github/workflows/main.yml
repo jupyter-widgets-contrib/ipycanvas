@@ -26,15 +26,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Setup conda
-      uses: conda-incubator/setup-miniconda@v2
+    - name: Install Conda environment with Micromamba
+      uses: mamba-org/provision-with-micromamba@main
       with:
-        activate-environment: ipycanvas-dev
+        environment-name: ipycanvas-dev
         environment-file: dev-environment.yml
-        python-version: ${{ matrix.python-version }}
-        mamba-version: "*"
-        auto-activate-base: false
         channels: conda-forge
+        extra-specs: |
+          python=${{ matrix.python-version }}
 
     - name: Test PEP8
       run: |
@@ -51,15 +50,15 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Setup conda
-      uses: conda-incubator/setup-miniconda@v2
+    - name: Install Conda environment with Micromamba
+      uses: mamba-org/provision-with-micromamba@main
       with:
-        activate-environment: ipycanvas-dev
+        environment-name: ipycanvas-dev
         environment-file: dev-environment.yml
-        python-version: ${{ matrix.python-version }}
-        mamba-version: "*"
-        auto-activate-base: false
         channels: conda-forge
+        extra-specs: |
+          python=${{ matrix.python-version }}
+
 
     - name: Build packages
       run: |
@@ -91,15 +90,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup conda
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/provision-with-micromamba@main
         with:
-          activate-environment: ipycanvas-dev
+          environment-name: ipycanvas-dev
           environment-file: dev-environment.yml
-          python-version: ${{ matrix.python-version }}
-          mamba-version: "*"
-          auto-activate-base: false
           channels: conda-forge
+          extra-specs: |
+            python=${{ matrix.python-version }}
 
       - uses: actions/download-artifact@v2
         with:
@@ -131,31 +129,35 @@ jobs:
       - name: Validate the labextension
         run: jupyter labextension list 2>&1 | grep ipycanvas
 
-      - name: Install Galata
-        run: |
-          yarn install
-          yarn playwright install chromium
+      - name: Install dependencies
+        shell: bash -l {0}
         working-directory: ui-tests
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+        run: jlpm install
 
-      - name: Launch JupyterLab
-        run: yarn run start:detached
-        working-directory: ui-tests
-
-      - name: Wait for JupyterLab
-        uses: ifaxity/wait-on-action@v1
+      - name: Set up browser cache
+        uses: actions/cache@v3
         with:
-          resource: http-get://localhost:8888/api
-          timeout: 20000
-
-      - name: Run UI Tests
-        run: yarn run test
-        working-directory: ui-tests
-
-      - name: Upload UI Test artifacts
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: ui-test-output
           path: |
-            ui-tests/playwright-report
+            ${{ github.workspace }}/pw-browsers
+          key: ${{ runner.os }}-${{ hashFiles('ui-tests/yarn.lock') }}
+
+      - name: Install browser
+        shell: bash -l {0}
+        run: npx playwright install chromium
+        working-directory: ui-tests
+
+      - name: Execute integration tests
+        shell: bash -l {0}
+        working-directory: ui-tests
+        run: npx playwright test
+
+      - name: Upload Playwright Test report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: ipycanvas-playwright-tests
+          path: |
             ui-tests/test-results
+            ui-tests/playwright-report

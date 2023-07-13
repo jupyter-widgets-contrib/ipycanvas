@@ -4,11 +4,11 @@ channels:
 dependencies:
     - pip
     - build
-    - yarn
-    - nodejs=16
+    - yarn=3
     - jupyter-packaging
-    - jupyterlab=3
-    - ipywidgets>=7.6,<8
+    - notebook
+    - jupyterlab=4
+    - ipywidgets>=7.6,<9
     - setuptools
     - wheel
     - twine
