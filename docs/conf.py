@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "jupyterlite_sphinx"]
 
-jupyterlite_config = "jupyterlite_config.json"
 jupyterlite_dir = "."
 
 master_doc = "index"
