@@ -1,4 +1,4 @@
-name: xeus-python-kernel-docs
+name: ipycanvas-docs
 
 channels:
   - conda-forge
@@ -6,6 +6,9 @@ channels:
 dependencies:
   - ipycanvas
   - mamba
+  # This is needed for building ipycanvas from source for the emscripten env
+  - yarn
+  # Docs requirements
   - pydata-sphinx-theme
   - jupyterlite-sphinx
   - jupyterlite-xeus-python >=0.9.2,<0.10
