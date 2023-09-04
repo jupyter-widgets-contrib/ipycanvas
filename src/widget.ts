@@ -1338,6 +1338,9 @@ export class CanvasView extends DOMWidgetView {
     this.el.addEventListener('mouseout', {
       handleEvent: this.onMouseOut.bind(this)
     });
+    this.el.addEventListener('wheel', {
+      handleEvent: this.onMouseWheel.bind(this)
+    });
     this.el.addEventListener('touchstart', {
       handleEvent: this.onTouchStart.bind(this)
     });
@@ -1390,6 +1393,14 @@ export class CanvasView extends DOMWidgetView {
 
   private onMouseOut(event: MouseEvent) {
     this.model.send({ event: 'mouse_out', ...this.getCoordinates(event) }, {});
+  }
+
+  private onMouseWheel(event: WheelEvent) {
+    this.model.send(
+      { event: 'mouse_wheel', x: event.deltaX, y: event.deltaY },
+      {}
+    );
+    event.preventDefault();
   }
 
   private onTouchStart(event: TouchEvent) {
