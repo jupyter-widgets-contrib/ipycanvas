@@ -5,6 +5,10 @@ import { expect, IJupyterLabPageFixture, test } from '@jupyterlab/galata';
 import * as path from 'path';
 const klaw = require('klaw-sync');
 
+function delay(ms: number) {
+  return new Promise( resolve => setTimeout(resolve, ms) );
+}
+
 
 const filterUpdateNotebooks = item => {
   const basename = path.basename(item.path);
@@ -29,6 +33,7 @@ const testCellOutputs = async (page: IJupyterLabPageFixture, tmpPath: string) =>
 
     await page.notebook.runCellByCell({
       onAfterCellRun: async (cellIndex: number) => {
+        await delay(150);
         const cell = await page.notebook.getCellOutput(cellIndex);
         if (cell) {
           results.push(await cell.screenshot());
