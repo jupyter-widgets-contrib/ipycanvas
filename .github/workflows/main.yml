@@ -121,9 +121,6 @@ jobs:
           test -f $CONDA_PREFIX/share/jupyter/labextensions/ipycanvas/package.json
           test -d $CONDA_PREFIX/share/jupyter/labextensions/ipycanvas/static
 
-      - name: Validate the nbextension
-        run: jupyter nbextension list 2>&1 | grep "ipycanvas/extension"
-
       - name: Validate the labextension
         run: jupyter labextension list 2>&1 | grep ipycanvas
 
