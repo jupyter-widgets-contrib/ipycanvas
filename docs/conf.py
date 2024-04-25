@@ -20,7 +20,9 @@ html_favicon = "./images/ipycanvas_logo.ico"
 html_theme = "pydata_sphinx_theme"
 htmlhelp_basename = "ipycanvasdoc"
 
-html_theme_options = dict(github_url="https://github.com/jupyter-widgets-contrib/ipycanvas")
+html_theme_options = dict(
+    github_url="https://github.com/jupyter-widgets-contrib/ipycanvas"
+)
 
 html_static_path = ["_static"]
 

@@ -1,4 +1,5 @@
 """Binary module."""
+
 from io import BytesIO
 
 from PIL import Image as PILImage
