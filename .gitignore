@@ -146,6 +146,7 @@ $RECYCLE.BIN/
 
 **/node_modules/
 ipycanvas/nbextension/static/index.*
+.yarn
 
 # Coverage data
 # -------------
