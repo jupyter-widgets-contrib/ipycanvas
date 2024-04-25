@@ -8,7 +8,7 @@ module.exports = {
   webServer: {
     command: 'jlpm start',
     url: 'http://localhost:8888/lab',
-    timeout: 600000,
+    timeout: 1200000,
     reuseExistingServer: !process.env.CI
   },
   retries: 1
