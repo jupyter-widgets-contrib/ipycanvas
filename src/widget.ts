@@ -377,6 +377,34 @@ export class CanvasManagerModel extends WidgetModel {
   static model_module_version = MODULE_VERSION;
 }
 
+export class AsyncValueWidgetModel<ValueType> extends WidgetModel {
+  initialize(attributes: any, options: any) {
+    super.initialize(attributes, options);
+
+    this._initPromise = new Promise(resolve => {
+      this._resolve = resolve;
+    });
+  }
+
+  async initialized(): Promise<ValueType> {
+    return this._initPromise;
+  }
+
+  set value(v: ValueType) {
+    this._underlyingValue = v;
+    this._resolve(v);
+  }
+
+  get value(): ValueType | undefined {
+    return this._underlyingValue;
+  }
+
+  protected _underlyingValue: ValueType | undefined = undefined;
+
+  private _initPromise: Promise<ValueType>;
+  private _resolve: (value: ValueType) => void;
+}
+
 export class Path2DModel extends WidgetModel {
   defaults() {
     return {
@@ -401,7 +429,7 @@ export class Path2DModel extends WidgetModel {
   static model_module_version = MODULE_VERSION;
 }
 
-export class PatternModel extends WidgetModel {
+export class PatternModel extends AsyncValueWidgetModel<CanvasPattern> {
   defaults() {
     return {
       ...super.defaults(),
@@ -430,7 +458,7 @@ export class PatternModel extends WidgetModel {
     }
 
     if (patternSource == undefined) {
-      throw 'Could not understand the souce for the pattern';
+      throw 'Could not understand the source for the pattern';
     }
 
     const pattern = PatternModel.ctx.createPattern(
@@ -450,8 +478,6 @@ export class PatternModel extends WidgetModel {
     image: { deserialize: unpack_models as any }
   };
 
-  value: CanvasPattern;
-
   static model_name = 'PatternModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -462,7 +488,7 @@ export class PatternModel extends WidgetModel {
   );
 }
 
-class GradientModel extends WidgetModel {
+class GradientModel extends AsyncValueWidgetModel<CanvasGradient> {
   defaults() {
     return {
       ...super.defaults(),
@@ -481,8 +507,10 @@ class GradientModel extends WidgetModel {
 
     this.createGradient();
 
-    for (const colorStop of this.get('color_stops')) {
-      this.value.addColorStop(colorStop[0], colorStop[1]);
+    if (this.value) {
+      for (const colorStop of this.get('color_stops')) {
+        this.value.addColorStop(colorStop[0], colorStop[1]);
+      }
     }
   }
 
@@ -494,8 +522,6 @@ class GradientModel extends WidgetModel {
       this.get('y1')
     );
   }
-
-  value: CanvasGradient;
 
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -1077,11 +1103,11 @@ export class CanvasModel extends DOMWidgetModel {
 
   async setAttr(attr: number, value: any) {
     if (typeof value === 'string' && value.startsWith('IPY')) {
-      const widgetModel: GradientModel = await unpack_models(
+      const widgetModel: AsyncValueWidgetModel<any> = await unpack_models(
         value,
         this.widget_manager
       );
-      value = widgetModel.value;
+      value = await widgetModel.initialized();
     }
 
     (this.ctx as any)[CanvasModel.ATTRS[attr]] = value;
