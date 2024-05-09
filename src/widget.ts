@@ -25,7 +25,7 @@ import {
 } from './utils';
 
 function getContext(canvas: HTMLCanvasElement) {
-  const context = canvas.getContext('2d');
+  var context = canvas.getContext('2d');
   if (context === null) {
     throw 'Could not create 2d context.';
   }
@@ -609,7 +609,8 @@ export class CanvasModel extends DOMWidgetModel {
     'shadowOffsetY',
     'shadowBlur',
     'shadowColor',
-    'filter'
+    'filter',
+    'imageSmoothingEnabled'
   ];
 
   initialize(attributes: any, options: any) {
@@ -1102,6 +1103,9 @@ export class CanvasModel extends DOMWidgetModel {
   }
 
   async setAttr(attr: number, value: any) {
+    console.log("setting attribute")
+    console.log(CanvasModel.ATTRS[attr])
+    console.log(value)
     if (typeof value === 'string' && value.startsWith('IPY')) {
       const widgetModel: AsyncValueWidgetModel<any> = await unpack_models(
         value,
@@ -1109,7 +1113,13 @@ export class CanvasModel extends DOMWidgetModel {
       );
       value = await widgetModel.initialized();
     }
-
+    if (CanvasModel.ATTRS[attr] === 'imageSmoothingEnabled')  {
+      if (value === 'True')  {
+        value=true;
+      } else  {
+        value=false;
+      }
+    }
     (this.ctx as any)[CanvasModel.ATTRS[attr]] = value;
   }
 
