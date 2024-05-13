@@ -25,7 +25,7 @@ import {
 } from './utils';
 
 function getContext(canvas: HTMLCanvasElement) {
-  var context = canvas.getContext('2d');
+  const context = canvas.getContext('2d');
   if (context === null) {
     throw 'Could not create 2d context.';
   }
@@ -1103,9 +1103,6 @@ export class CanvasModel extends DOMWidgetModel {
   }
 
   async setAttr(attr: number, value: any) {
-    console.log("setting attribute")
-    console.log(CanvasModel.ATTRS[attr])
-    console.log(value)
     if (typeof value === 'string' && value.startsWith('IPY')) {
       const widgetModel: AsyncValueWidgetModel<any> = await unpack_models(
         value,
