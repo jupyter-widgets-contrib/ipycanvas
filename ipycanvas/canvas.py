@@ -575,7 +575,7 @@ class Canvas(_CanvasBase):
     filter = Unicode("none")
 
     #: (bool) Indicates if scaled images are smoothed. Default to True
-    image_smoothing_enabled = Enum([True, False], default_value=True)
+    image_smoothing_enabled = Bool(True)
 
     _line_dash = List()
 
