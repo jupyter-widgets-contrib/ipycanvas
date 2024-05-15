@@ -239,7 +239,6 @@ class _CanvasManager(Widget):
                 ]
             )
             self._current_canvas = canvas
-
         self._send_custom(command, buffers)
 
     def flush(self):
@@ -575,6 +574,9 @@ class Canvas(_CanvasBase):
     #: This property has no effect on Safari, see https://bugs.webkit.org/show_bug.cgi?id=198416
     filter = Unicode("none")
 
+    #: (bool) Indicates if scaled images are smoothed. Default to True
+    image_smoothing_enabled = Bool(True)
+
     _line_dash = List()
 
     #: (float) Specifies where to start a dash array on a line. Default is ``0.``.
@@ -614,6 +616,7 @@ class Canvas(_CanvasBase):
         "shadow_blur": 15,
         "shadow_color": 16,
         "filter": 17,
+        "image_smoothing_enabled": 18
     }
 
     def __init__(self, *args, **kwargs):
@@ -1539,7 +1542,6 @@ class Canvas(_CanvasBase):
             # If it's a Widget we need to serialize it
             if isinstance(value, Widget):
                 value = widget_serialization["to_json"](value, None)
-
             self._canvas_manager.send_command(
                 self, [COMMANDS["set"], [self.ATTRS[name], value]]
             )

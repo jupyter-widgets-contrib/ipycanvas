@@ -609,7 +609,8 @@ export class CanvasModel extends DOMWidgetModel {
     'shadowOffsetY',
     'shadowBlur',
     'shadowColor',
-    'filter'
+    'filter',
+    'imageSmoothingEnabled'
   ];
 
   initialize(attributes: any, options: any) {
@@ -1109,7 +1110,6 @@ export class CanvasModel extends DOMWidgetModel {
       );
       value = await widgetModel.initialized();
     }
-
     (this.ctx as any)[CanvasModel.ATTRS[attr]] = value;
   }
 
