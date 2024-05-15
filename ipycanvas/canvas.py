@@ -1542,8 +1542,6 @@ class Canvas(_CanvasBase):
             # If it's a Widget we need to serialize it
             if isinstance(value, Widget):
                 value = widget_serialization["to_json"](value, None)
-            if name == "image_smoothing_enabled":
-                value = str(value)
             self._canvas_manager.send_command(
                 self, [COMMANDS["set"], [self.ATTRS[name], value]]
             )
