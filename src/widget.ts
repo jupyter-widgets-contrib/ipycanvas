@@ -1110,13 +1110,6 @@ export class CanvasModel extends DOMWidgetModel {
       );
       value = await widgetModel.initialized();
     }
-    if (CanvasModel.ATTRS[attr] === 'imageSmoothingEnabled')  {
-      if (value === 'True')  {
-        value=true;
-      } else  {
-        value=false;
-      }
-    }
     (this.ctx as any)[CanvasModel.ATTRS[attr]] = value;
   }
 
