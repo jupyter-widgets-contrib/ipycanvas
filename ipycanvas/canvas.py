@@ -60,6 +60,7 @@ _CMD_LIST = [
     "beginPath",
     "closePath",
     "stroke",
+    "strokePath",
     "fillPath",
     "fill",
     "moveTo",
@@ -1242,10 +1243,21 @@ class Canvas(_CanvasBase):
         This method doesn't draw anything to the canvas directly. You can render the path using the stroke() or fill() methods.
         """
         self._canvas_manager.send_draw_command(self, COMMANDS["closePath"])
+    
+    # https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/stroke
+    # stroke(), stroke(path)
+    def stroke(self, path2d: Path2D = None):
+        """Stroke (outlines) the current path with the current ``stroke_style``.
+        If @path2d is passed, that Path2D object will be rendered with the 
+        current ``stroke_style``"""
 
-    def stroke(self):
-        """Stroke (outlines) the current path with the current ``stroke_style``."""
-        self._canvas_manager.send_draw_command(self, COMMANDS["stroke"])
+        if isinstance(path2d, Path2D):
+            self._canvas_manager.send_draw_command(
+                self,
+                COMMANDS["strokePath"], [widget_serialization["to_json"](path2d, None)],
+            )
+        else:
+            self._canvas_manager.send_draw_command(self, COMMANDS["stroke"])
 
     def fill(self, rule_or_path="nonzero"):
         """Fill the current path with the current ``fill_style`` and given the rule, or fill the given Path2D.
