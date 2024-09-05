@@ -282,6 +282,7 @@ export class CanvasManagerModel extends WidgetModel {
         break;
       case 'strokePath':
         await this.currentCanvas.strokePath(args, buffers);
+        break;
       case 'fillPath':
         await this.currentCanvas.fillPath(args, buffers);
         break;
@@ -1058,17 +1059,16 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.closePath();
     this.ctx.stroke();
   }
+
   async strokePath(args: any[], buffers: any) {
     const [serializedPath] = args;
-
     const path = await unpack_models(serializedPath, this.widget_manager);
 
     this.ctx.stroke(path.value);
   }
-  
+
   async fillPath(args: any[], buffers: any) {
     const [serializedPath] = args;
-
     const path = await unpack_models(serializedPath, this.widget_manager);
 
     this.ctx.fill(path.value);
