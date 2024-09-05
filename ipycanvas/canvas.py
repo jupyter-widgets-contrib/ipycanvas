@@ -617,7 +617,7 @@ class Canvas(_CanvasBase):
         "shadow_blur": 15,
         "shadow_color": 16,
         "filter": 17,
-        "image_smoothing_enabled": 18
+        "image_smoothing_enabled": 18,
     }
 
     def __init__(self, *args, **kwargs):
