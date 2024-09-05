@@ -27,7 +27,9 @@ def image_bytes_to_array(im_bytes):
 
 def binary_image(ar, quality=75):
     f = BytesIO()
-    if ar.shape[2] == 3:
+    if len(ar.shape) == 2:
+        filetype = "PNG"
+    elif ar.shape[2] == 3:
         filetype = "JPEG"
     else:
         filetype = "PNG"
