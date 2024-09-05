@@ -612,7 +612,8 @@ export class CanvasModel extends DOMWidgetModel {
     'shadowOffsetY',
     'shadowBlur',
     'shadowColor',
-    'filter'
+    'filter',
+    'imageSmoothingEnabled'
   ];
 
   initialize(attributes: any, options: any) {
