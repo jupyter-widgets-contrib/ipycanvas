@@ -46,7 +46,6 @@
     "prettier": "yarn prettier:base --write --list-different",
     "prettier:base": "prettier \"**/*{.ts,.tsx,.js,.jsx,.css,.json,.md}\"",
     "prettier:check": "yarn prettier:base --check",
-    "prepack": "yarn run build",
     "watch:lib": "tsc -w",
     "watch:nbextension": "webpack --watch"
   },
