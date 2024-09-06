@@ -102,3 +102,17 @@ src = "ipycanvas/_version.py"
 [[tool.tbump.file]]
 src = "package.json"
 version_template = "\"version\": \"{major}.{minor}.{patch}{channel}{release}\""
+
+[tool.jupyter-releaser.hooks]
+before-bump-version = [
+    "python -m pip install hatch jupyterlab~=4.0",
+]
+before-build-npm = [
+    "python -m pip install jupyterlab~=4.0",
+    "jlpm",
+    "jlpm clean",
+    "jlpm build",
+]
+before-build-python = [
+    "jlpm clean",
+]
