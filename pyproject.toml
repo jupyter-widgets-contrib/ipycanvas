@@ -35,7 +35,7 @@ dependencies = [
     "numpy",
     "pillow>=6.0",
 ]
-version = "0.13.2"
+version = "0.13.3"
 
 [project.license]
 file = "LICENSE.txt"
@@ -85,7 +85,7 @@ field = [
 ]
 
 [tool.tbump.version]
-current = "0.13.1"
+current = "0.13.3"
 regex = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)((?P<channel>a|b|rc|.dev)(?P<release>\\d+))?"
 
 [tool.tbump.git]
@@ -102,3 +102,20 @@ src = "ipycanvas/_version.py"
 [[tool.tbump.file]]
 src = "package.json"
 version_template = "\"version\": \"{major}.{minor}.{patch}{channel}{release}\""
+
+[tool.jupyter-releaser.hooks]
+before-bump-version = [
+    "python -m pip install hatch jupyterlab~=4.0",
+]
+before-build-npm = [
+    "python -m pip install jupyterlab~=4.0",
+    "jlpm",
+    "jlpm clean",
+    "jlpm build",
+]
+before-build-python = [
+    "jlpm clean",
+]
+
+[tool.check-wheel-contents]
+ignore = ["W002"]

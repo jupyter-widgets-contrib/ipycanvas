@@ -1,6 +1,6 @@
 {
   "name": "ipycanvas",
-  "version": "0.13.2",
+  "version": "0.13.3",
   "description": "Interactive widgets library exposing the browser's Canvas API",
   "keywords": [
     "jupyter",
@@ -46,7 +46,6 @@
     "prettier": "yarn prettier:base --write --list-different",
     "prettier:base": "prettier \"**/*{.ts,.tsx,.js,.jsx,.css,.json,.md}\"",
     "prettier:check": "yarn prettier:base --check",
-    "prepack": "yarn run build",
     "watch:lib": "tsc -w",
     "watch:nbextension": "webpack --watch"
   },
