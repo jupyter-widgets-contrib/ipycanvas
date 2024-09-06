@@ -6,7 +6,7 @@ There are two ways for creating and drawing a path in ipycanvas.
 Using Path2D
 ------------
 
-You can define a Path2D given an SVG path. Note that once the path is created, it is read only, you cannot dynamically change the path value. This means they do not (yet) support Path2D methods like Path2D.move_to, draw_line, etc.
+You can define a Path2D given an SVG path. Note that once the path is created, it is read only, you cannot dynamically change the path value. ``ipycanvas`` does not (yet) support Path2D methods like Path2D.move_to, draw_line, etc.
 Using the Path2D class is very useful and efficient when you want to reuse the same path multiple times. Path2D objects may be stroked or filled.
 
 See https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths for documentation about SVG paths.
