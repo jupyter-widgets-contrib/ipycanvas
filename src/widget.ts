@@ -85,6 +85,7 @@ const COMMANDS = [
   'beginPath',
   'closePath',
   'stroke',
+  'strokePath',
   'fillPath',
   'fill',
   'moveTo',
@@ -278,6 +279,9 @@ export class CanvasManagerModel extends WidgetModel {
         break;
       case 'strokePolygon':
         this.currentCanvas.strokePolygon(args, buffers);
+        break;
+      case 'strokePath':
+        await this.currentCanvas.strokePath(args, buffers);
         break;
       case 'fillPath':
         await this.currentCanvas.fillPath(args, buffers);
@@ -1056,9 +1060,15 @@ export class CanvasModel extends DOMWidgetModel {
     this.ctx.stroke();
   }
 
+  async strokePath(args: any[], buffers: any) {
+    const [serializedPath] = args;
+    const path = await unpack_models(serializedPath, this.widget_manager);
+
+    this.ctx.stroke(path.value);
+  }
+
   async fillPath(args: any[], buffers: any) {
     const [serializedPath] = args;
-
     const path = await unpack_models(serializedPath, this.widget_manager);
 
     this.ctx.fill(path.value);
