@@ -2,6 +2,34 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.13.3
+
+([Full Changelog](https://github.com/jupyter-widgets-contrib/ipycanvas/compare/0.13.2...8540dc19f2fff16aa64c0a2d1aa34536b7f43e37))
+
+### New features
+
+- Added grayscale image support in put_image_data and exposed image_smoothing_enabled attribute [#353](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/353) ([@AnyaPorter](https://github.com/AnyaPorter))
+- Add stroke path to Path2D interface per html canvas spec  [#350](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/350) ([@cleemesser](https://github.com/cleemesser))
+- Added mouse wheel events support [#321](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/321) ([@VladislavZavadskyy](https://github.com/VladislavZavadskyy))
+
+### Bug fixes
+
+- Fix pattern from image in JupyterLab [#345](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/345) ([@martinRenou](https://github.com/martinRenou))
+
+### Maintenance
+
+- Add jupyter-releaser [#354](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/354) ([@martinRenou](https://github.com/martinRenou))
+- Fix CI [#352](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/352) ([@martinRenou](https://github.com/martinRenou))
+- Fix security issue [#351](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/351) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter-widgets-contrib/ipycanvas/graphs/contributors?from=2024-04-25&to=2024-09-06&type=c))
+
+[@AnyaPorter](https://github.com/AnyaPorter) | [@cleemesser](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3Acleemesser+updated%3A2024-04-25..2024-09-06&type=Issues) | [@github-actions](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3Agithub-actions+updated%3A2024-04-25..2024-09-06&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3AmartinRenou+updated%3A2024-04-25..2024-09-06&type=Issues) | [@VladislavZavadskyy](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3AVladislavZavadskyy+updated%3A2024-04-25..2024-09-06&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## Release 0.13.2
 
 ### Maintenance
@@ -15,8 +43,6 @@
 * Build docs against the latest jupyterlite-xeus-python by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/338
 
 **Full Changelog**: https://github.com/jupyter-widgets-contrib/ipycanvas/compare/0.13.1...0.13.2
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.13.1
 
@@ -92,7 +118,6 @@
 * Add a test for multicanvas by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/267
 * Update yarn dependencies by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/268
 
-
 **Full Changelog**: https://github.com/martinRenou/ipycanvas/compare/0.11.0...0.12.0
 
 ## Release 0.11.0
@@ -115,8 +140,6 @@
 
 ## 0.10.2
 
-
-
 ## Release 0.10.0
 
 Improvements
@@ -125,8 +148,6 @@ Improvements
 - Add `fill_styled_*` and `stroke_styled_*` methods by @DerThorsten #225 #227
 
 ## Release 0.9.1
-
-
 
 ## Release 0.9.0
 
@@ -196,7 +217,6 @@ Big fixes
 
 - Refactor sizing logic. The web canvas has two sizes, the colorbuffer size and the display size (actual size on the screen). We used to only expose the colorbuffer size and force the display size to be the same. The user can now control the display size through the `layout` property. #111 #113
 
-
 ## Release 0.4.7
 
 ### Improvements
@@ -239,29 +259,14 @@ Changes:
 
 ## Release 0.4.1
 
-
-
 ## Release 0.4.0
-
-
 
 ## Release 0.3.4
 
-
-
 ## Release 0.3.3
-
-
 
 ## Release 0.3.2
 
-
-
 ## Release 0.3.1
 
-
-
 ## Release 0.3.0
-
-
-
