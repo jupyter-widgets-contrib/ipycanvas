@@ -40,7 +40,7 @@ See https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths for document
     # draw a sinusoidal curve using quadratic bezier curves
     path5 = Path2D("M 10 150 Q 52.5 10 95 150 T 180 150")
     canvas.line_width = 2.5
-    canvas.stroke_style = 'black'
+    canvas.stroke_style = "black"
     canvas.stroke(path5)
     canvas
 
