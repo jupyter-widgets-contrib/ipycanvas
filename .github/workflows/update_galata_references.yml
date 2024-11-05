@@ -41,13 +41,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Conda environment with Micromamba
-        uses: mamba-org/provision-with-micromamba@main
+        uses: mamba-org/setup-micromamba
         with:
           environment-name: ipycanvas-dev
           environment-file: dev-environment.yml
           channels: conda-forge
-          extra-specs: |
+          create-args: >-
             python=${{ matrix.python-version }}
+
 
       - name: Install the package
         run: pip install -vv .
