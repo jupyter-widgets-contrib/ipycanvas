@@ -2,6 +2,7 @@
 extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "jupyterlite_sphinx"]
 
 jupyterlite_dir = "."
+jupyterlite_silence = False
 
 master_doc = "index"
 source_suffix = ".rst"
