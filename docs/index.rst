@@ -16,8 +16,35 @@ You can try ipycanvas, without the need of installing anything on your computer,
 
 Or you can run it directly in your browser using JupyterLite!!
 
-.. image:: https://jupyterlite.rtfd.io/en/latest/_static/badge.svg
-   :target: https://ipycanvas.readthedocs.io/en/latest/lite/lab
+.. replite::
+   :kernel: xpython
+   :height: 600px
+
+    from math import pi
+
+    from ipycanvas import Canvas
+
+    canvas = Canvas(width=1600, height=1200, layout=dict(width="100%"))
+
+    canvas.fill_style = "#8ee05e"
+    canvas.fill_rect(0, 0, canvas.width, canvas.height)
+
+    canvas.fill_style = "#f5f533"
+    canvas.fill_circle(canvas.width / 2.0, canvas.height / 2.0, 500)
+
+    canvas.stroke_style = "black"
+    canvas.line_width = 30
+    canvas.stroke_circle(canvas.width / 2.0, canvas.height / 2.0, 500)
+
+    canvas.fill_style = "black"
+    canvas.fill_circle(canvas.width / 2.7, canvas.height / 3.0, 100)  # Right eye
+    canvas.stroke_arc(canvas.width / 2.0, canvas.height / 2.0, 400, 0, pi, False)  # Mouth
+    canvas.stroke_arc(
+        canvas.width - canvas.width / 2.7, canvas.height / 2.7, 100, 0, pi, True
+    )  # Left eye
+
+    canvas
+
 
 Questions?
 ----------

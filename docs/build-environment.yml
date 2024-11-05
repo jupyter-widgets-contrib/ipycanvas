@@ -5,11 +5,10 @@ channels:
 
 dependencies:
   - ipycanvas
-  - mamba
-  # This is needed for building ipycanvas from source for the emscripten env
-  - yarn
+  - micromamba
   # Docs requirements
   - pydata-sphinx-theme
   - jupyterlite-sphinx
-  - jupyterlite-xeus-python >=0.9.2,<0.10
+  - jupyterlite-core
+  - jupyterlite-xeus
   - jupyterlab-night
