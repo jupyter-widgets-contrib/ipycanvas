@@ -41,7 +41,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Conda environment with Micromamba
-        uses: mamba-org/setup-micromamba
+        uses: mamba-org/setup-micromamba@v1
         with:
           environment-name: ipycanvas-dev
           environment-file: dev-environment.yml
