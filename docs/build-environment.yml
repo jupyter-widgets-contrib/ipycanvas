@@ -6,6 +6,7 @@ channels:
 dependencies:
   - ipycanvas
   - micromamba
+  - yarn
   # Docs requirements
   - pydata-sphinx-theme
   - jupyterlite-sphinx
