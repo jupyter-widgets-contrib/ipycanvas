@@ -24,15 +24,15 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Install Conda environment with Micromamba
-      uses: mamba-org/provision-with-micromamba@main
+      uses: mamba-org/setup-micromamba@v1
       with:
         environment-name: ipycanvas-dev
         environment-file: dev-environment.yml
         channels: conda-forge
-        extra-specs: |
+        create-args: >-
           python=${{ matrix.python-version }}
 
     - name: Test PEP8
@@ -46,15 +46,15 @@ jobs:
     steps:
 
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Install Conda environment with Micromamba
-      uses: mamba-org/provision-with-micromamba@main
+      uses: mamba-org/setup-micromamba@v1
       with:
         environment-name: ipycanvas-dev
         environment-file: dev-environment.yml
         channels: conda-forge
-        extra-specs: |
+        create-args: >-
           python=${{ matrix.python-version }}
 
 
@@ -65,7 +65,7 @@ jobs:
         sha256sum * | tee SHA256SUMS
 
     - name: Upload builds
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: dist ${{ github.run_number }}
         path: ./dist
@@ -86,18 +86,18 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install Conda environment with Micromamba
-        uses: mamba-org/provision-with-micromamba@main
+        uses: mamba-org/setup-micromamba@v1
         with:
           environment-name: ipycanvas-dev
           environment-file: dev-environment.yml
           channels: conda-forge
-          extra-specs: |
+          create-args: >-
             python=${{ matrix.python-version }}
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: dist ${{ github.run_number }}
           path: ./dist
@@ -150,7 +150,7 @@ jobs:
 
       - name: Upload Playwright Test report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ipycanvas-playwright-tests
           path: |
