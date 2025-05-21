@@ -12,4 +12,4 @@ dependencies:
   - jupyterlite-sphinx
   - jupyterlab-night
   - pip:
-    - jupyterlite-xeus===0.4.0b0
+    - jupyterlite-xeus===4.0.0b0
