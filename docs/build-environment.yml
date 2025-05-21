@@ -5,11 +5,11 @@ channels:
 
 dependencies:
   - ipycanvas
-  - micromamba
+  - micromamba=2.0.5
   - yarn
   # Docs requirements
   - pydata-sphinx-theme
   - jupyterlite-sphinx
-  - jupyterlite-core
-  - jupyterlite-xeus
   - jupyterlab-night
+  - pip:
+    - jupyterlite-xeus===0.4.0b0
