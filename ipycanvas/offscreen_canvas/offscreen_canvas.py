@@ -1,0 +1,341 @@
+from .offscreen_canvas_core import OffscreenCanvasCore
+from contextlib import contextmanager
+from functools import partial,partialmethod
+import pyjs
+import numpy as np
+from numbers import Number
+from pathlib import Path
+
+
+
+def _exec_js_file(filename):
+    try:
+        with open(filename, "r") as f:
+            js_code = f.read()
+        
+        pyjs.js.Function(js_code)()
+    except Exception as e:
+        raise RuntimeError(f"Error executing JavaScript file {filename}: {e}") from e
+
+def _extend_js():
+    THIS_DIR = Path(__file__).parent
+    _exec_js_file(THIS_DIR/ "js" / "extend_context_2d.js")
+_extend_js()
+del _extend_js
+
+
+@contextmanager
+def hold_canvas(canvas):
+    yield None
+
+
+
+
+
+
+
+
+class OffscreenCanvas(OffscreenCanvasCore):
+    
+
+
+    def __init__(self, *args, **kwargs): 
+        super().__init__(*args, **kwargs)
+
+        initial_buffer_size = 10
+        n_buffers = 7 # max number of args / buffers we need at the same time
+        self._buffers = [ np.zeros(initial_buffer_size, dtype=np.float32) for _ in range(n_buffers)]
+        self._js_buffers = [
+            pyjs.buffer_to_js_typed_array(fbuffer, view=True) for fbuffer in self._buffers
+        ]
+
+    def initialize(self):
+        super().initialize()
+        if  self._canvas is None:
+            raise RuntimeError("Canvas is not displayed yet")
+        self._ctx = self._canvas.getContext("2d")
+
+    async def async_initialize(self):
+        """Initialize the canvas asynchronously."""
+        await super().async_initialize()
+        if  self._canvas is None:
+            raise RuntimeError("Canvas is not displayed yet")
+        self._ctx = self._canvas.getContext("2d")
+    
+
+    
+    def _ensure_size(self, index, size):
+        buffer_size = len(self._buffers[index])
+        if size > buffer_size:
+            # resize the buffer
+            new_size = max(size, buffer_size * 2)
+            new_buffer = np.zeros(new_size, dtype=np.float32)
+            self._buffers[index] =  new_buffer
+            self._js_buffers[index] = pyjs.buffer_to_js_typed_array(new_buffer, view=True)
+
+    def _points_to_buffer(self,index, points):
+        """Convert a list of points to a float buffer."""
+        points = np.require(points, requirements='C', dtype=np.float32)
+        n_points = int(points.shape[0])
+        n_points2 = 2 * n_points
+        self._ensure_size(index, n_points2)
+        self._buffers[index][:n_points2] = points.flatten()
+        return n_points
+
+    
+
+
+    # ipycanvas api
+    def clear(self):
+        self._ctx.clearRect(0, 0, self._canvas.width, self._canvas.height)
+    
+    def sleep(self, seconds):
+        """in the non-lite version this sleeps in the fronend / canvas, but not in the kernel.
+        THis make little sense  in the offscreen canvas version, since the canvas **is** the frontend.
+        """
+        pass
+
+
+
+    def create_linear_gradient(self):
+        raise NotImplementedError("create_linear_gradient is not implemented in the offscreen canvas version yet")
+    def create_radial_gradient(self):
+        raise NotImplementedError("create_radial_gradient is not implemented in the offscreen canvas version yet")        
+    def create_pattern(self):
+        raise NotImplementedError("create_pattern is not implemented in the offscreen canvas version yet")
+    def fill_rect(self, x, y, width, height):
+        self._ctx.fillRect(x, y, width, height)
+    def stroke_rect(self, x, y, width, height):
+        self._ctx.strokeRect(x, y, width, height)
+    def clear_rect(self):
+        self._ctx.clearRect(x, y, width, height)
+    def fill_arc(self, x, y, radius, start_angle, end_angle, counter_clockwise=False):
+        self._ctx.fillArc(x, y, radius, start_angle, end_angle, counter_clockwise)
+    def fill_circle(self, x, y, radius):
+        self._ctx.fillCircle(x, y, radius)
+    def stroke_arc(self):
+        self._ctx.strokeArc(x, y, radius, start_angle, end_angle, counter_clockwise)
+    def stroke_circle(self, x, y, radius):
+        self._ctx.strokeCircle(x, y, radius)
+
+
+
+    def fill_polygon(self, points):
+        n_points = self._points_to_buffer(0, points)
+        self._ctx.fillPolygon(n_points, self._js_buffers[0] )
+
+    def stroke_polygon(self, points):
+        n_points = self._points_to_buffer(0, points)
+        self._ctx.strokePolygon(n_points ,self._js_buffers[0])
+
+        
+
+    def stroke_line(self, x1, y1, x2, y2):
+        self._ctx.strokeLine(x1, y1, x2, y2)
+    def begin_path(self):
+        self._ctx.beginPath()
+    def close_path(self):
+        self._ctx.closePath()
+    def stroke(self):
+        self._ctx.stroke()
+    def fill(self):
+        self._ctx.fill()
+    def move_to(self, x, y):
+        self._ctx.moveTo(x, y)
+    def line_to(self, x, y):
+        self._ctx.lineTo(x, y)
+    def rect(self, x, y, width, height):
+        self._ctx.rect(x, y, width, height)
+    def arc(self, x, y, radius, start_angle, end_angle, counter_clockwise=False):
+        self._ctx.arc(x, y, radius, start_angle, end_angle, counter_clockwise)  
+    def ellipse(self, x, y, radius_x, radius_y, rotation=0, start_angle=0, end_angle=2 * 3.14159, counter_clockwise=False):
+        self._ctx.ellipse(x, y, radius_x, radius_y, rotation, start_angle, end_angle, counter_clockwise)
+    def arc_to(self, x1, y1, x2, y2, radius):
+        self._ctx.arcTo(x1, y1, x2, y2, radius)
+    def quadratic_curve_to(self, cp_x, cp_y, to_x, to_y):
+        self._ctx.quadraticCurveTo(cp_x, cp_y, to_x, to_y)
+    def bezier_curve_to(self, cp1_x, cp1_y, cp2_x, cp2_y, to_x, to_y):
+        self._ctx.bezierCurveTo(cp1_x, cp1_y, cp2_x, cp2_y, to_x, to_y)
+    def fill_text(self, text, x, y, max_width=None):
+        if max_width is not None:
+            self._ctx.fillText(text, x, y, max_width)
+        else:
+            self._ctx.fillText(text, x, y)
+    def stroke_text(self, text, x, y, max_width=None):
+        if max_width is not None:
+            self._ctx.strokeText(text, x, y, max_width)
+        else:
+            self._ctx.strokeText(text, x, y)
+    def get_line_dash(self):
+        raise NotImplementedError("get_line_dash is not implemented in the offscreen canvas version yet")
+    def set_line_dash(self, segments):
+        raise NotImplementedError("set_line_dash is not implemented in the offscreen canvas version yet")
+    def draw_image(self):
+        raise NotImplementedError("draw_image is not implemented in the offscreen canvas version yet")
+    def put_image_data(self, image_data, dx, dy, dirty_x=None, dirty_y=None, dirty_width=None, dirty_height=None):
+        raise NotImplementedError("put_image_data is not implemented in the offscreen canvas version yet")
+    def create_image_data(self, sw=None, sh=None):
+        raise NotImplementedError("create_image_data is not implemented in the offscreen canvas version yet")
+    def clip(self):
+        self._ctx.clip()
+    def save(self):
+        self._ctx.save()
+    def restore(self):
+        self._ctx.restore()
+    def translate(self, x, y):
+        self._ctx.translate(x, y)
+        
+    def rotate(self, angle):
+        self._ctx.rotate(angle)
+        
+    def scale(self, x, y):
+        self._ctx.scale(x, y)
+        
+    def transform(self, a, b, c, d, e, f):
+        self._ctx.transform(a, b, c, d, e, f)
+        
+    def set_transform(self, a, b, c, d, e, f):
+        self._ctx.setTransform(a, b, c, d, e, f)
+    def reset_transform(self):
+        self._ctx.resetTransform()  
+    def clear(self):
+        """Clear the canvas."""
+        self._ctx.clearRect(0, 0, self._canvas.width, self._canvas.height)
+        
+    def flush(self):
+        """Flush the canvas. In the offscreen canvas version this does nothing."""
+        pass
+
+
+    def create_linear_gradient(self, x0, y0, x1, y1, color_stops):
+        """Create a linear gradient."""
+        gradient = self._ctx.createLinearGradient(x0, y0, x1, y1)
+        for offset, color in color_stops:
+            gradient.addColorStop(offset, color)
+        return gradient
+
+
+
+
+    # BATCH API
+
+    # Canvas.fill_styled_circles()
+    # Canvas.stroke_styled_circles()
+    # Canvas.fill_circles()
+    # Canvas.stroke_circles()
+
+
+    # # batch methods
+    # Canvas.fill_rects()
+    # Canvas.stroke_rects()
+    # Canvas.fill_styled_rects()
+    # Canvas.stroke_styled_rects()
+
+
+    # Canvas.fill_arcs()
+    # Canvas.stroke_arcs()
+
+    # Canvas.fill_styled_arcs()
+    # Canvas.stroke_styled_arcs()
+    # Canvas.fill_polygons()
+    # Canvas.stroke_polygons()
+    # Canvas.fill_styled_polygons()
+    # Canvas.stroke_styled_polygons()
+    # Canvas.stroke_lines()
+    # Canvas.stroke_styled_line_segments()
+    # Canvas.stroke_line_segments()
+
+    def _fill_buffer_with_scalars(self, index, value):
+        # is number ? 
+        if isinstance(value, Number):
+            self._ensure_size(index, 1)
+            self._buffers[index][0] = value
+            return 1
+        else: # assume iterable
+            value = np.require(value, requirements='C', dtype=np.float32)
+            n_values = int(value.shape[0])
+            self._ensure_size(index, n_values)
+            self._buffers[index][:n_values] = value
+            return n_values
+    
+    def _fill_buffer_with_colors(self, index, color):
+        arr = np.require(color, requirements='C', dtype=np.float32).flatten()
+        self._ensure_size(index, len(arr))
+        self._buffers[index][:len(arr)] = arr
+        return len(arr) / 3
+
+
+
+    def fill_styled_circles(self, x, y, radius, color, alpha=1):
+        self._buffers[5][0:5] = [
+            self._fill_buffer_with_scalars(0, x),
+            self._fill_buffer_with_scalars(1, y),
+            self._fill_buffer_with_scalars(2, radius),
+            self._fill_buffer_with_colors(3, color),
+            self._fill_buffer_with_scalars(4, alpha),
+        ]   
+        self._ctx.fillStyledCircles(*self._js_buffers[:6])
+
+    def stroke_styled_circles(self, x, y, radius, color, alpha=1):
+        self._buffers[5][0:5] = [
+            self._fill_buffer_with_scalars(0, x),
+            self._fill_buffer_with_scalars(1, y),
+            self._fill_buffer_with_scalars(2, radius),
+            self._fill_buffer_with_colors(3, color),
+            self._fill_buffer_with_scalars(4, alpha),
+        ]   
+        self._ctx.strokeStyledCircles(*self._js_buffers[:6])
+    
+
+
+
+
+
+
+
+
+def _make_prop(js_name):
+    @property
+    def prop(self):
+        return getattr(self._ctx, js_name)
+    @prop.setter
+    def prop(self, value):
+        setattr(self._ctx, js_name, value)
+
+    return prop
+
+
+def _extend_canvas():
+
+    # add properties to the Canvas class
+    py_to_js_name = {
+        'fill_style': 'fillStyle',
+        'stroke_style': 'strokeStyle',
+        'global_alpha': 'globalAlpha',
+        'font': 'font',
+        'text_align': 'textAlign',
+        'text_baseline': 'textBaseline',
+        'direction': 'direction',
+        'global_composite_operation': 'globalCompositeOperation',
+        'shadow_offset_x': 'shadowOffsetX',
+        'shadow_offset_y': 'shadowOffsetY',
+        'shadow_blur': 'shadowBlur',
+        'shadow_color': 'shadowColor',
+        'line_width': 'lineWidth',
+        'line_cap': 'lineCap',
+        'line_join': 'lineJoin',
+        'miter_limit': 'miterLimit',
+        'filter': 'filter',
+        'image_smoothing_enabled': 'imageSmoothingEnabled',
+        'line_dash_offset': 'lineDashOffset'
+    }
+    for py_name, js_name in py_to_js_name.items():
+        prop = _make_prop(js_name)
+        setattr(OffscreenCanvas, py_name, prop)
+
+
+_extend_canvas()
+del _extend_canvas
+
+
+
