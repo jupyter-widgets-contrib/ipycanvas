@@ -22,7 +22,7 @@ from .canvas import (
 from ._version import __version__  # noqa
 
 if is_emscripten:
-    from . offscreen_canvas import OffscreenCanvasCore  # noqa
+    from . offscreen_canvas import OffscreenCanvasCore, OffscreenCanvas, hold_canvas  # noqa
 
 
 
