@@ -17,8 +17,8 @@ import { MODULE_NAME, MODULE_VERSION } from './version';
       _view_name: OffscreenCanvasModel.view_name,
       _view_module: OffscreenCanvasModel.view_module,
       _view_module_version: OffscreenCanvasModel.view_module_version,
-      width: 300,
-      height: 150,
+      _width: 300,
+      _height: 150,
       _name: OffscreenCanvasModel._name
     };
   }
@@ -47,6 +47,8 @@ class OffscreenCanvasView extends DOMWidgetView {
 
     const _canvas_name = () => `_canvas_${this.model.get('_name')}`;
     const _reciver_name = () => `_canvas_reciver_${this.model.get('_name')}`;
+
+    this.setCanvasSize();
 
     // magic here!
     const offscreen: OffscreenCanvas = this.canvas.transferControlToOffscreen();
@@ -87,19 +89,19 @@ class OffscreenCanvasView extends DOMWidgetView {
 
 
 
-
-    this.model.on('change:width', this.updateCanvasSize, this);
-    this.model.on('change:height', this.updateCanvasSize, this);
   }
 
-
-  updateCanvasSize(): void {
-    const width = this.model.get('width');
-    const height = this.model.get('height');
+  // note that we cannot update the canvas here size once its transferred to the offscreen context
+  // (the canvas **can** be resized after beeing transferred, but only **on** the transfered object,
+  // ie in the worker)
+  setCanvasSize(): void {
+    const width = this.model.get('_width');
+    const height = this.model.get('_height');
+    //log (`Updating canvas size to ${width}x${height}`);
     this.canvas.width = width;
     this.canvas.height = height;
-    this.canvas.style.width = `${width}px`;
-    this.canvas.style.height = `${height}px`;
+    // this.canvas.style.width = `${width}px`;
+    // this.canvas.style.height = `${height}px`;
   }
 }
 

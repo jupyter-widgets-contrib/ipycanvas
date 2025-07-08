@@ -5,23 +5,9 @@ import pyjs
 import numpy as np
 from numbers import Number
 from pathlib import Path
+from IPython.display import display
 
 
-
-def _exec_js_file(filename):
-    try:
-        with open(filename, "r") as f:
-            js_code = f.read()
-        
-        pyjs.js.Function(js_code)()
-    except Exception as e:
-        raise RuntimeError(f"Error executing JavaScript file {filename}: {e}") from e
-
-def _extend_js():
-    THIS_DIR = Path(__file__).parent
-    _exec_js_file(THIS_DIR/ "js" / "extend_context_2d.js")
-_extend_js()
-del _extend_js
 
 
 @contextmanager
@@ -62,6 +48,9 @@ class OffscreenCanvas(OffscreenCanvasCore):
             raise RuntimeError("Canvas is not displayed yet")
         self._ctx = self._canvas.getContext("2d")
     
+    async def display(self):
+        display(self)
+        await self.async_initialize()
 
     
     def _ensure_size(self, index, size):
@@ -74,7 +63,6 @@ class OffscreenCanvas(OffscreenCanvasCore):
             self._js_buffers[index] = pyjs.buffer_to_js_typed_array(new_buffer, view=True)
 
     def _points_to_buffer(self,index, points):
-        """Convert a list of points to a float buffer."""
         points = np.require(points, requirements='C', dtype=np.float32)
         n_points = int(points.shape[0])
         n_points2 = 2 * n_points
@@ -113,7 +101,7 @@ class OffscreenCanvas(OffscreenCanvasCore):
         self._ctx.fillArc(x, y, radius, start_angle, end_angle, counter_clockwise)
     def fill_circle(self, x, y, radius):
         self._ctx.fillCircle(x, y, radius)
-    def stroke_arc(self):
+    def stroke_arc(self, x, y, radius, start_angle, end_angle, counter_clockwise=False):
         self._ctx.strokeArc(x, y, radius, start_angle, end_angle, counter_clockwise)
     def stroke_circle(self, x, y, radius):
         self._ctx.strokeCircle(x, y, radius)

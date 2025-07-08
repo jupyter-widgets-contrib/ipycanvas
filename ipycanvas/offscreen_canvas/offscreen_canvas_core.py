@@ -8,6 +8,31 @@ import string
 import numpy as np
 import pyjs
 import asyncio
+from pathlib import Path
+import pyjs
+
+
+def _exec_js_file(filename):
+    try:
+        with open(filename, "r") as f:
+            js_code = f.read()
+        
+        pyjs.js.Function(js_code)()
+    except Exception as e:
+        raise RuntimeError(f"Error executing JavaScript file {filename}: {e}") from e
+
+
+def _init_js():
+    THIS_DIR = Path(__file__).parent
+    _exec_js_file(THIS_DIR/ "js" / "init.js")
+_init_js()
+del _init_js
+
+
+# javascript object that contains (helper-) functions
+# that are implemented \
+_ipycanvas_js = pyjs.js.globalThis["_ipycanvas"]
+
 
 
 def _rand_name():
@@ -27,12 +52,12 @@ class OffscreenCanvasCore(DOMWidget):
     _view_module = Unicode(module_name).tag(sync=True)
     _view_module_version = Unicode(module_version).tag(sync=True)
 
-    width = Int(300).tag(sync=True)
-    height = Int(150).tag(sync=True)
+    _width = Int(300).tag(sync=True)
+    _height = Int(150).tag(sync=True)
     _name = Unicode('_canvas_0').tag(sync=True)
 
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, width=300, height=150, *args, **kwargs):
 
         self._canvas = None  # will be set when the canvas is displayed
 
@@ -44,88 +69,51 @@ class OffscreenCanvasCore(DOMWidget):
         self._check_if_ready = pyjs.js.Function(f"""return "{self._canvas_name}" in globalThis""") 
 
    
-
-
         self.arr_mouse_state = np.array([0, 0, 0, 0], dtype=np.uint32)  # [is_inside, is_down, x, y]
 
-        
-        self._js_reciver = pyjs.js.globalThis.Function("arr","""return {
-            arr_mouse_state : arr,
-            on_mouse_events: function(event, x, y) {
 
-                if (event === "mouseenter") {
-                    this.arr_mouse_state[0] = 1;  // is_inside
-                    this.arr_mouse_state[1] = 0;  // is_down
-
-                    if (this.on_mouse_enter) {
-                        this.on_mouse_enter(x, y);
-                    }
-
-                } else if (event === "mouseleave") {
-                    this.arr_mouse_state[0] = 0;  // is_inside
-                    this.arr_mouse_state[1] = 0;  // is_down
-
-                    if (this.on_mouse_leave) {
-                        this.on_mouse_leave(x, y);
-                    }
-
-                } else if (event === "mousedown") {
-                    this.arr_mouse_state[1] = 1;  // is_down
-                    if (this.on_mouse_down) {
-                        this.on_mouse_down(x, y);
-                    }
-
-                } else if (event === "mouseup") {
-                    this.arr_mouse_state[1] = 0;  // is_down
-                    if (this.on_mouse_up) {
-                        this.on_mouse_up(x, y);
-                    }
-                }
-                else if (event === "mousemove") {
-                    if (this.on_mouse_move) {
-                        this.on_mouse_move(x, y);
-                    }
-                }
-                // always update the mouse position
-                this.arr_mouse_state[2] = x;  // x position
-                this.arr_mouse_state[3] = y;  // y position
-            },
-        }""")(pyjs.buffer_to_js_typed_array(self.arr_mouse_state, view=True))
-
+        # in the frontend javascript code ** in the main-ui-thread** we will call a function
+        # on a global object **in the worker thread**. (via comlink)
+        # this global object is called "reciver" and is created in the worker thread.
+        # This is used to pass events from the main-ui-thread to the worker thread.
+        self._js_reciver = _ipycanvas_js.reciver_factory(pyjs.buffer_to_js_typed_array(self.arr_mouse_state, view=True))
         pyjs.js.globalThis[self._reciver_name] =  self._js_reciver
 
-        super().__init__(_name=_name, *args, **kwargs)
+        super().__init__(_name=_name, _width=width, _height=height, *args, **kwargs)
 
 
     def __del__(self):
         super().__del__()
+        self._js_reciver.cleanup()
+        pyjs.js.Function("reciver_name","""delete globalThis[reciver_name];""")(self._reciver_name)
 
-        """Cleanup the canvas when the object is deleted."""
-        pyjs.js.Function("reciver","reciver_name","""
-            if(recive._cleanup_mouse_enter) {
-                reciver._cleanup_mouse_enter.delete();
-            }
-            if(reciver._cleanup_mouse_leave) {
-                reciver._cleanup_mouse_leave.delete();
-            }
-            if(reciver._cleanup_mouse_down) {
-                reciver._cleanup_mouse_down.delete();
-            }
-            if(reciver._cleanup_mouse_up) {
-                reciver._cleanup_mouse_up.delete();
-            }
-            if(reciver._cleanup_mouse_move) {
-                reciver._cleanup_mouse_move.delete();
-            }
-            delete globalThis[reciver_name];
-        """)(self._js_reciver, self._reciver_name)
-
+    # getter setter for width and height
+    @property
+    def width(self):
+        if self._canvas is None:
+            return self._width
+        return self._canvas.width
+    
+    @width.setter
+    def width(self, value):
+        assert self._canvas is not None, "Canvas is not displayed yet."
+        self._canvas.width = value
+        self._width = value
+    
+    @property
+    def height(self):
+        if self._canvas is None:
+            return self._height
+        return self._canvas.height
+    
+    @height.setter
+    def height(self, value):
+        assert self._canvas is not None, "Canvas is not displayed yet."
+        self._canvas.height = value
+        self._height = value
 
 
     def _on_mouse_event(self, event_name, callback):
-        """Helper function to set mouse event callbacks."""
-
-
         if isinstance(callback, pyjs.JsValue):
             self._js_reciver[f"on_{event_name}"] = callback
         else:
