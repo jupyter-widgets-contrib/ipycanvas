@@ -38,12 +38,17 @@ import { MODULE_NAME, MODULE_VERSION } from './version';
 
 // VIEW
 class OffscreenCanvasView extends DOMWidgetView {
-  canvas: HTMLCanvasElement;
+  el: HTMLCanvasElement;
 
+  // @ts-ignore: 2611
+  get tagName(): string {
+    return 'canvas';
+  }
+  
   render(): void {
-    this.canvas = document.createElement('canvas');
-    this.el.appendChild(this.canvas);
-
+    // this.canvas = document.createElement('canvas');
+    // this.el.appendChild(this.canvas);
+    
 
     const _canvas_name = () => `_canvas_${this.model.get('_name')}`;
     const _reciver_name = () => `_canvas_reciver_${this.model.get('_name')}`;
@@ -51,7 +56,7 @@ class OffscreenCanvasView extends DOMWidgetView {
     this.setCanvasSize();
 
     // magic here!
-    const offscreen: OffscreenCanvas = this.canvas.transferControlToOffscreen();
+    const offscreen: OffscreenCanvas = this.el.transferControlToOffscreen();
     (globalThis as any).storeAsGlobal(offscreen, _canvas_name());
     
 
@@ -59,7 +64,7 @@ class OffscreenCanvasView extends DOMWidgetView {
 
     async function sendMouseEvent(event : MouseEvent): Promise<void> {
 
-        const rect = that.canvas.getBoundingClientRect();
+        const rect = that.el.getBoundingClientRect();
         try{
             await (globalThis as any).callGlobalReciver(_reciver_name(), "on_mouse_events",
                 event.type,
@@ -70,21 +75,21 @@ class OffscreenCanvasView extends DOMWidgetView {
         // we want to remove all event listeners if the reciver is not defined
         catch (e) {
             console.error("Error while sending mouse event, removing listeners:", e);
-            (that as any).canvas.removeEventListener("mousedown", sendMouseEvent);
-            (that as any).canvas.removeEventListener("mouseup",   sendMouseEvent);
-            (that as any).canvas.removeEventListener("mousemove", sendMouseEvent);        
-            (that as any).canvas.removeEventListener("mouseenter", sendMouseEvent);
-            (that as any).canvas.removeEventListener("mouseleave", sendMouseEvent);
+            (that as any).el.removeEventListener("mousedown", sendMouseEvent);
+            (that as any).el.removeEventListener("mouseup",   sendMouseEvent);
+            (that as any).el.removeEventListener("mousemove", sendMouseEvent);        
+            (that as any).el.removeEventListener("mouseenter", sendMouseEvent);
+            (that as any).el.removeEventListener("mouseleave", sendMouseEvent);
         }
 
     };
 
     
-    this.canvas.addEventListener("mousedown", sendMouseEvent);
-    this.canvas.addEventListener("mouseup",   sendMouseEvent);
-    this.canvas.addEventListener("mousemove", sendMouseEvent);
-    this.canvas.addEventListener("mouseenter", sendMouseEvent);
-    this.canvas.addEventListener("mouseleave", sendMouseEvent);
+    this.el.addEventListener("mousedown", sendMouseEvent);
+    this.el.addEventListener("mouseup",   sendMouseEvent);
+    this.el.addEventListener("mousemove", sendMouseEvent);
+    this.el.addEventListener("mouseenter", sendMouseEvent);
+    this.el.addEventListener("mouseleave", sendMouseEvent);
 
 
 
@@ -98,8 +103,8 @@ class OffscreenCanvasView extends DOMWidgetView {
     const width = this.model.get('_width');
     const height = this.model.get('_height');
     //log (`Updating canvas size to ${width}x${height}`);
-    this.canvas.width = width;
-    this.canvas.height = height;
+    this.el.width = width;
+    this.el.height = height;
     // this.canvas.style.width = `${width}px`;
     // this.canvas.style.height = `${height}px`;
   }
