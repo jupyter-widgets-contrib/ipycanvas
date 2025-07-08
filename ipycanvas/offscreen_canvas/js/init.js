@@ -120,10 +120,6 @@ OffscreenCanvasRenderingContext2D.prototype.strokeCircles = function ( x, y, rad
 
 
 
-
-
-
-
 function largest_value(buffers, size) {
     let largest = 0;
     for (let i = 0; i < size; i++) {
@@ -179,6 +175,73 @@ class ColorBatchAccessor {
     }
 }
 
-// store class in global scope
-globalThis.ScalarBatchAccessor = ScalarBatchAccessor;
-globalThis.ColorBatchAccessor = ColorBatchAccessor;
+//  mouse event handler factory
+//  arr_mouse_state: [is_inside, is_down, x, y]
+function reciver_factory(arr) {
+    return {
+        arr_mouse_state : arr,
+        on_mouse_events: function(event, x, y) {
+
+            if (event === "mouseenter") {
+                this.arr_mouse_state[0] = 1;  // is_inside
+                this.arr_mouse_state[1] = 0;  // is_down
+
+                if (this.on_mouse_enter) {
+                    this.on_mouse_enter(x, y);
+                }
+
+            } else if (event === "mouseleave") {
+                this.arr_mouse_state[0] = 0;  // is_inside
+                this.arr_mouse_state[1] = 0;  // is_down
+
+                if (this.on_mouse_leave) {
+                    this.on_mouse_leave(x, y);
+                }
+
+            } else if (event === "mousedown") {
+                this.arr_mouse_state[1] = 1;  // is_down
+                if (this.on_mouse_down) {
+                    this.on_mouse_down(x, y);
+                }
+
+            } else if (event === "mouseup") {
+                this.arr_mouse_state[1] = 0;  // is_down
+                if (this.on_mouse_up) {
+                    this.on_mouse_up(x, y);
+                }
+            }
+            else if (event === "mousemove") {
+                if (this.on_mouse_move) {
+                    this.on_mouse_move(x, y);
+                }
+            }
+            // always update the mouse position
+            this.arr_mouse_state[2] = x;  // x position
+            this.arr_mouse_state[3] = y;  // y position
+        },
+        // python functions that are accessible from
+        // javacript need to be deleted
+        cleanup : function() {
+            if(reciver._cleanup_mouse_enter) {
+                reciver._cleanup_mouse_enter.delete();
+            }
+            if(reciver._cleanup_mouse_leave) {
+                reciver._cleanup_mouse_leave.delete();
+            }
+            if(reciver._cleanup_mouse_down) {
+                reciver._cleanup_mouse_down.delete();
+            }
+            if(reciver._cleanup_mouse_up) {
+                reciver._cleanup_mouse_up.delete();
+            }
+            if(reciver._cleanup_mouse_move) {
+                reciver._cleanup_mouse_move.delete();
+            }
+        }
+    }
+}
+
+
+globalThis["_ipycanvas"] = {
+    reciver_factory: reciver_factory
+};
