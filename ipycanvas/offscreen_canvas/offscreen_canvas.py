@@ -201,7 +201,22 @@ class OffscreenCanvas(OffscreenCanvasCore):
         for offset, color in color_stops:
             gradient.addColorStop(offset, color)
         return gradient
+    
+    def create_radial_gradient(self, x0, y0, r0, x1, y1, r1, color_stops):
+        """Create a radial gradient."""
+        gradient = self._ctx.createRadialGradient(x0, y0, r0, x1, y1, r1)
+        for offset, color in color_stops:
+            gradient.addColorStop(offset, color)
+        return gradient
 
+    def create_pattern(self, image, repetition='repeat'):
+        if isinstance(image, OffscreenCanvasCore):
+            # if the image is an OffscreenCanvasCore, we need to convert it to a js image
+            image = image._canvas
+        
+        """Create a pattern."""
+        pattern = self._ctx.createPattern(image, repetition)
+        return pattern
 
 
 
