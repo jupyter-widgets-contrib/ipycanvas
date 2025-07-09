@@ -6,9 +6,9 @@ import numpy as np
 from numbers import Number
 from pathlib import Path
 from IPython.display import display
-
-
-
+from ipywidgets import Image as IpywidgetImage
+import io
+import PIL
 
 @contextmanager
 def hold_canvas(canvas):
@@ -213,12 +213,66 @@ class OffscreenCanvas(OffscreenCanvasCore):
         if isinstance(image, OffscreenCanvasCore):
             # if the image is an OffscreenCanvasCore, we need to convert it to a js image
             image = image._canvas
+        else:
+            raise NotImplementedError("create_pattern only supports OffscreenCanvas images at the moment")
         
         """Create a pattern."""
         pattern = self._ctx.createPattern(image, repetition)
         return pattern
+    
+    def draw_image(self, image, dx, dy, dw=None, dh=None):
+        """Draw an image on the canvas."""
+        if isinstance(image, OffscreenCanvasCore):
+            # if the image is an OffscreenCanvasCore, we need to convert it to a js image
+            drawable_image = image._canvas
 
 
+
+
+        elif isinstance(image, IpywidgetImage):
+            if dw is not None and dh is not None:
+                raise NotImplementedError("ipywidget.Image does not support width and height parameters in draw_image")
+
+            # convert to stream an open with pillow
+            data_stream = io.BytesIO(image.value)
+            pil_img = PIL.Image.open(data_stream)
+
+            # convert to RGBA if not already in that mode
+            if pil_img.mode != 'RGBA':
+                pil_img = pil_img.convert('RGBA'
+            )
+
+            # convert to numpy
+            img_rgba = np.array(pil_img) 
+
+            # create a js array view (this will be of the type Uint8)
+            js_arr = pyjs.buffer_to_js_typed_array(img_rgba.ravel(), view=True)
+            # convert to Uint8ClampedArray without copying the data
+            js_arr = pyjs.js.Uint8ClampedArray.new(js_arr.buffer, js_arr.byteOffset, js_arr.length)
+
+            # create settings to ensure the pixel format is correct
+            settings = pyjs.js_object()
+            settings.pixelFormat = "rgba-unorm8"
+
+            # create the ImageData object
+            image = pyjs.js.ImageData.new(js_arr, pil_img.width, pil_img.height, settings)
+
+            # create an OffscreenCanvas and draw the image data on it
+            offscreen_canvas = pyjs.js.OffscreenCanvas.new( pil_img.width, pil_img.height)
+            ctx = offscreen_canvas.getContext('2d')
+
+            # put the image data on the offscreen canvas
+            ctx.putImageData(image,0,0)
+            drawable_image = offscreen_canvas
+          
+        else:
+            raise NotImplementedError("draw_image only supports OffscreenCanvas and ipywidget.Image as images at the moment")
+
+        if dw is not None and dh is not None:
+            self._ctx.drawImage(drawable_image, dx, dy, dw, dh)
+        else:
+            self._ctx.drawImage(drawable_image, dx, dy)    
+    
 
     # BATCH API
 
