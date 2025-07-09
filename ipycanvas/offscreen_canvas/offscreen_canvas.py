@@ -273,6 +273,48 @@ class OffscreenCanvas(OffscreenCanvasCore):
         else:
             self._ctx.drawImage(drawable_image, dx, dy)    
     
+    def put_image_data(self, image_data, x=0,y=0):
+        n_dim = image_data.ndim
+        width = image_data.shape[0]
+        height = image_data.shape[1]
+        if n_dim == 2:
+            # grayscale image
+            # convert to RGBA
+            image_data = np.stack((image_data,)*3, axis=-1)
+            image_data = np.concatenate((image_data, np.full(image_data.shape[:2] + (1,), 255)), axis=-1)
+
+            
+        elif n_dim == 3 and image_data.shape[-1] == 1:
+            # single channel image (grayscale)
+            # convert to RGBA
+            image_data = np.concatenate((image_data, np.full(image_data.shape[:2] + (1,), 255)), axis=-1)
+
+        elif n_dim == 3: 
+            # RGB image
+            if image_data.shape[-1] == 3:
+                # add alpha channel
+                image_data = np.concatenate((image_data, np.full(image_data.shape[:2] + (1,), 255)), axis=-1)
+            elif image_data.shape[-1] == 4:
+                # already RGBA
+                pass
+            else:
+                raise ValueError("Image data must be 2D or 3D with 3 or 4 channels")
+
+        image_data = np.require(image_data, requirements='C', dtype=np.uint8)
+
+        # create a js array view (this will be of the type Uint8)
+        js_arr = pyjs.buffer_to_js_typed_array(image_data.ravel(), view=True)
+        # convert to Uint8ClampedArray without copying the data
+        js_arr = pyjs.js.Uint8ClampedArray.new(js_arr.buffer, js_arr.byteOffset, js_arr.length)
+
+        # create settings to ensure the pixel format is correct
+        settings = pyjs.js_object()
+        settings.pixelFormat = "rgba-unorm8"
+
+        image = pyjs.js.ImageData.new(js_arr, width, height, settings)
+
+        # put_image_data on the offscreen canvas
+        self._ctx.putImageData(image, x, y)
 
     # BATCH API
 
@@ -323,6 +365,8 @@ class OffscreenCanvas(OffscreenCanvasCore):
 
 
 
+
+
     def fill_styled_circles(self, x, y, radius, color, alpha=1):
         self._buffers[5][0:5] = [
             self._fill_buffer_with_scalars(0, x),
@@ -343,6 +387,22 @@ class OffscreenCanvas(OffscreenCanvasCore):
         ]   
         self._ctx.strokeStyledCircles(*self._js_buffers[:6])
     
+    def fill_circles(self, x, y, radius):
+        self._buffers[3][0:3] = [
+            self._fill_buffer_with_scalars(0, x),
+            self._fill_buffer_with_scalars(1, y),
+            self._fill_buffer_with_scalars(2, radius),
+        ]
+        self._ctx.fillCircles(*self._js_buffers[:4])
+    
+    def stroke_circles(self, x, y, radius):
+        self._buffers[3][0:3] = [
+            self._fill_buffer_with_scalars(0, x),
+            self._fill_buffer_with_scalars(1, y),
+            self._fill_buffer_with_scalars(2, radius),
+        ]
+        self._ctx.strokeCircles(*self._js_buffers[:4])
+        
 
 
 

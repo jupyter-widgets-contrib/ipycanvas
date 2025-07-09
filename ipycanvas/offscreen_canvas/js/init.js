@@ -73,7 +73,8 @@ OffscreenCanvasRenderingContext2D.prototype._styledCircles = function ( x, y, ra
     }
     else {
         for (let i = 0; i < n_items; i++) {
-            this.strokeStyle = cc.get(i);
+            const style = cc.get(i);
+            this.strokeStyle = style;
             this.beginPath();
             this.arc(xx.get(i), yy.get(i), rr.get(i), 0, 2 * Math.PI);
             this.stroke();
@@ -158,19 +159,14 @@ class ColorBatchAccessor {
         alphaArray,
         alphaArrayLength
     ) {
-        if (colorArrayLength === 1 && alphaArrayLength === 1) {
-            this._rgba = `rgba(${colorArray[0]}, ${colorArray[1]}, ${colorArray[2]}, ${alphaArray[0]})`;
-            this.get = this._get_0;
-        }
-        else {
-            this._colorArray = colorArray;
-            this._alphaArray = alphaArray;
-            this.get = this._get_i;
-        }
+        this.colorArrayLength = colorArrayLength;
+        this.alphaArrayLength = alphaArrayLength;
+        this._colorArray = colorArray;
+        this._alphaArray = alphaArray;
     }
-    _get_i(index) {
-        const colorIndex = index * 3;
-        const alphaIndex = index < this._alphaArray.length ? index : 0;
+    get(index) {
+        const colorIndex = index < this.colorArrayLength ? index * 3 : 0;
+        const alphaIndex = index < this.alphaArrayLength ? index : 0;
         return `rgba(${this._colorArray[colorIndex]}, ${this._colorArray[colorIndex + 1]}, ${this._colorArray[colorIndex + 2]}, ${this._alphaArray[alphaIndex]})`;
     }
 }
