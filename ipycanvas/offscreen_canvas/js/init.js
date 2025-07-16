@@ -131,6 +131,63 @@ OffscreenCanvasRenderingContext2D.prototype.strokeCircles = function ( x, y, rad
 
 
 
+// batch api for rects
+OffscreenCanvasRenderingContext2D.prototype._rects = function (x, y, width, height, sizes, fill) {
+    const xx = new ScalarBatchAccessor(x, sizes[0]);
+    const yy = new ScalarBatchAccessor(y, sizes[1]);
+    const ww = new ScalarBatchAccessor(width, sizes[2]);
+    const hh = new ScalarBatchAccessor(height, sizes[3]);
+
+    // get the the longest array size
+    const n_items = largest_value(sizes, 4);
+
+    for (let i = 0; i < n_items; i++) {
+        if (fill) {
+            this.fillRect(xx.get(i), yy.get(i), ww.get(i), hh.get(i));
+        } else {
+            this.strokeRect(xx.get(i), yy.get(i), ww.get(i), hh.get(i));
+        }
+    }
+};
+
+OffscreenCanvasRenderingContext2D.prototype.fillRects = function (x, y, width, height, sizes) {
+    this._rects(x, y, width, height, sizes, true);
+};
+OffscreenCanvasRenderingContext2D.prototype.strokeRects = function (x, y, width, height, sizes) {
+    this._rects(x, y, width, height, sizes, false);
+};
+
+// styled rects
+OffscreenCanvasRenderingContext2D.prototype._styledRects = function (x, y, width, height, color, alpha, sizes, fill) {
+    const xx = new ScalarBatchAccessor(x, sizes[0]);
+    const yy = new ScalarBatchAccessor(y, sizes[1]);
+    const ww = new ScalarBatchAccessor(width, sizes[2]);
+    const hh = new ScalarBatchAccessor(height, sizes[3]);
+    const cc = new ColorBatchAccessor(color, sizes[4], alpha, sizes[5]);
+    // get the the longest array size
+    const n_items = largest_value(sizes, 6);
+    for (let i = 0; i < n_items; i++) {
+        if (fill) {
+            this.fillStyle = cc.get(i);
+            this.fillRect(xx.get(i), yy.get(i), ww.get(i), hh.get(i));
+        } else {
+            this.strokeStyle = cc.get(i);
+            this.strokeRect(xx.get(i), yy.get(i), ww.get(i), hh.get(i));
+        }
+    }
+};
+
+OffscreenCanvasRenderingContext2D.prototype.fillStyledRects = function (x, y, width, height, color, alpha, sizes) {
+    this._styledRects(x, y, width, height, color, alpha, sizes, true);
+};
+OffscreenCanvasRenderingContext2D.prototype.strokeStyledRects = function (x, y, width, height, color, alpha, sizes) {
+    this._styledRects(x, y, width, height, color, alpha, sizes, false);
+};
+
+
+
+
+
 
 function largest_value(buffers, size) {
     let largest = 0;

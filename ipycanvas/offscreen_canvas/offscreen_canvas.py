@@ -326,22 +326,24 @@ class OffscreenCanvas(OffscreenCanvasCore):
     # Canvas.stroke_circles()
 
 
+
+
     # # batch methods
     # Canvas.fill_rects()
     # Canvas.stroke_rects()
     # Canvas.fill_styled_rects()
     # Canvas.stroke_styled_rects()
 
-
     # Canvas.fill_arcs()
     # Canvas.stroke_arcs()
-
     # Canvas.fill_styled_arcs()
     # Canvas.stroke_styled_arcs()
+
     # Canvas.fill_polygons()
     # Canvas.stroke_polygons()
     # Canvas.fill_styled_polygons()
     # Canvas.stroke_styled_polygons()
+
     # Canvas.stroke_lines()
     # Canvas.stroke_styled_line_segments()
     # Canvas.stroke_line_segments()
@@ -404,6 +406,46 @@ class OffscreenCanvas(OffscreenCanvasCore):
             self._fill_buffer_with_scalars(2, radius),
         ]
         self._ctx.strokeCircles(*self._js_buffers[:4])
+    
+    def fill_rects(self, x, y, width, height):
+        self._buffers[4][0:4] = [
+            self._fill_buffer_with_scalars(0, x),
+            self._fill_buffer_with_scalars(1, y),
+            self._fill_buffer_with_scalars(2, width),
+            self._fill_buffer_with_scalars(3, height),
+        ]
+        self._ctx.fillRects(*self._js_buffers[:5])
+    
+    def stroke_rects(self, x, y, width, height):
+        self._buffers[4][0:4] = [
+            self._fill_buffer_with_scalars(0, x),
+            self._fill_buffer_with_scalars(1, y),
+            self._fill_buffer_with_scalars(2, width),
+            self._fill_buffer_with_scalars(3, height),
+        ]
+        self._ctx.strokeRects(*self._js_buffers[:5])
+    
+    def fill_styled_rects(self, x, y, width, height, color, alpha=1):
+        self._buffers[6][0:6] = [
+            self._fill_buffer_with_scalars(0, x),
+            self._fill_buffer_with_scalars(1, y),
+            self._fill_buffer_with_scalars(2, width),
+            self._fill_buffer_with_scalars(3, height),
+            self._fill_buffer_with_colors(4, color),
+            self._fill_buffer_with_scalars(5, alpha),
+        ]
+        self._ctx.fillStyledRects(*self._js_buffers[:7])
+    
+    def stroke_styled_rects(self, x, y, width, height, color, alpha=1):
+        self._buffers[6][0:6] = [
+            self._fill_buffer_with_scalars(0, x),
+            self._fill_buffer_with_scalars(1, y),
+            self._fill_buffer_with_scalars(2, width),
+            self._fill_buffer_with_scalars(3, height),
+            self._fill_buffer_with_colors(4, color),
+            self._fill_buffer_with_scalars(5, alpha),
+        ]
+        self._ctx.strokeStyledRects(*self._js_buffers[:7])
         
 
 
