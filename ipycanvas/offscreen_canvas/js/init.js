@@ -184,6 +184,119 @@ OffscreenCanvasRenderingContext2D.prototype.strokeStyledRects = function (x, y, 
     this._styledRects(x, y, width, height, color, alpha, sizes, false);
 };
 
+// arc batch api
+OffscreenCanvasRenderingContext2D.prototype._arcs = function (x, y, radius, startAngle, endAngle, sizes, counterClockwise, fill) {
+    const xx = new ScalarBatchAccessor(x, sizes[0]);
+    const yy = new ScalarBatchAccessor(y, sizes[1]);
+    const rr = new ScalarBatchAccessor(radius, sizes[2]);
+    const sa = new ScalarBatchAccessor(startAngle, sizes[3]);
+    const ea = new ScalarBatchAccessor(endAngle, sizes[4]);
+
+    const n_items = largest_value(sizes, 5);
+
+    console.log(`n_items: ${n_items}, sizes: ${sizes}`);
+    for (let i = 0; i < n_items; i++) {
+        this.beginPath();
+        
+        console.log(`arc: x=${xx.get(i)}, y=${yy.get(i)}, r=${rr.get(i)}, sa=${sa.get(i)}, ea=${ea.get(i)}, cc=${counterClockwise}`);
+
+
+        this.arc(xx.get(i), yy.get(i), rr.get(i), sa.get(i),
+                 ea.get(i), counterClockwise);
+        if (fill) {
+            this.fill();
+        } else {
+            this.stroke();
+        }
+    }
+};
+OffscreenCanvasRenderingContext2D.prototype.fillArcs = function (x, y, radius, startAngle, endAngle, sizes, counterClockwise) {
+    this._arcs(x, y, radius, startAngle, endAngle, sizes,  counterClockwise, true);
+};
+OffscreenCanvasRenderingContext2D.prototype.strokeArcs = function (x, y, radius  , startAngle, endAngle, sizes, counterClockwise) {
+    this._arcs(x, y, radius, startAngle, endAngle, sizes, counterClockwise, false);
+};  
+
+// arc batch api with styled colors
+OffscreenCanvasRenderingContext2D.prototype._styledArcs = function (x, y, radius, startAngle, endAngle, color, alpha, sizes, counterClockwise, fill) {
+    const xx = new ScalarBatchAccessor(x, sizes[0]);
+    const yy = new ScalarBatchAccessor(y, sizes[1]);
+    const rr = new ScalarBatchAccessor(radius, sizes[2]);
+    const sa = new ScalarBatchAccessor(startAngle, sizes[3]);
+    const ea = new ScalarBatchAccessor(endAngle, sizes[4]);
+    const cc = new ColorBatchAccessor(color, sizes[5], alpha, sizes[6]);
+    // get the the longest array size
+    const n_items = largest_value(sizes, 7);
+    for (let i = 0; i < n_items; i++) {
+        this.beginPath();
+        this.arc(xx.get(i), yy.get(i), rr.get(i), sa.get(i),
+                 ea.get(i), counterClockwise);
+        if (fill) {
+            this.fillStyle = cc.get(i);
+            this.fill();
+        } else {
+            this.strokeStyle = cc.get(i);
+            this.stroke();
+        }
+    }
+};
+
+OffscreenCanvasRenderingContext2D.prototype.fillStyledArcs = function (x, y, radius, startAngle, endAngle, color, alpha, sizes, counterClockwise) {
+    this._styledArcs(x, y, radius, startAngle, endAngle, color, alpha, sizes, counterClockwise, true);
+};
+OffscreenCanvasRenderingContext2D.prototype.strokeStyledArcs = function (x, y, radius, startAngle, endAngle, color, alpha, sizes,counterClockwise) {
+    this._styledArcs(x, y, radius, startAngle, endAngle, color, alpha, sizes, counterClockwise, false);
+};
+
+
+    
+// polygon batch api
+OffscreenCanvasRenderingContext2D.prototype._polygons = function (
+    n_items,
+    points,
+    points_per_item,
+    sizes,
+    fill
+) {
+    console.log(`n_items: ${n_items}, sizes: ${sizes}`);
+    const pp = new ScalarBatchAccessor(points, sizes[0]);
+    const ppi = new ScalarBatchAccessor(points_per_item, sizes[1]);
+
+    var acc = 0;
+    for( let i = 0; i < n_items; i++) {
+        const n_points = ppi.get(i);
+        this.beginPath();
+        this.moveTo(pp.get(acc), pp.get(acc + 1));
+        for (let j = 1; j < n_points; j++) {
+            this.lineTo(pp.get(acc + j * 2), pp.get(acc + j * 2 + 1));
+        }
+        this.closePath();
+        if (fill) {
+            this.fill();
+        } else {
+            this.stroke();
+        }
+        acc += n_points * 2;
+    }
+};
+
+OffscreenCanvasRenderingContext2D.prototype.fillPolygons = function (
+    n_items,
+    points,
+    points_per_item,
+    sizes
+) {
+    this._polygons(n_items, points, points_per_item, sizes, true);
+};  
+
+OffscreenCanvasRenderingContext2D.prototype.strokePolygons = function (
+    n_items,
+    points,
+    points_per_item,
+    sizes
+) {
+    this._polygons(n_items, points, points_per_item, sizes, false);
+};
 
 
 
