@@ -116,7 +116,9 @@ class OffscreenCanvas(OffscreenCanvasCore):
         n_points = self._points_to_buffer(0, points)
         self._ctx.strokePolygon(n_points ,self._js_buffers[0])
 
-        
+    def fill_and_stroke_polygon(self, points):
+        n_points = self._points_to_buffer(0, points)
+        self._ctx.fillAndStrokePolygon(n_points, self._js_buffers[0])
 
     def stroke_line(self, x1, y1, x2, y2):
         self._ctx.strokeLine(x1, y1, x2, y2)

@@ -51,7 +51,7 @@ class OffscreenCanvasView extends DOMWidgetView {
     
 
     const _canvas_name = () => `_canvas_${this.model.get('_name')}`;
-    const _reciver_name = () => `_canvas_reciver_${this.model.get('_name')}`;
+    const _receiver_name = () => `_canvas_receiver_${this.model.get('_name')}`;
 
     this.setCanvasSize();
 
@@ -66,13 +66,13 @@ class OffscreenCanvasView extends DOMWidgetView {
 
         const rect = that.el.getBoundingClientRect();
         try{
-            await (globalThis as any).callGlobalReciver(_reciver_name(), "on_mouse_events",
+            await (globalThis as any).callGlobalReceiver(_receiver_name(), "on_mouse_events",
                 event.type,
                 event.clientX - rect.left,
                 event.clientY - rect.top,
             );
         } 
-        // we want to remove all event listeners if the reciver is not defined
+        // we want to remove all event listeners if the receiver is not defined
         catch (e) {
             console.error("Error while sending mouse event, removing listeners:", e);
             (that as any).el.removeEventListener("mousedown", sendMouseEvent);
@@ -102,11 +102,8 @@ class OffscreenCanvasView extends DOMWidgetView {
   setCanvasSize(): void {
     const width = this.model.get('_width');
     const height = this.model.get('_height');
-    //log (`Updating canvas size to ${width}x${height}`);
     this.el.width = width;
     this.el.height = height;
-    // this.canvas.style.width = `${width}px`;
-    // this.canvas.style.height = `${height}px`;
   }
 }
 

@@ -52,6 +52,17 @@ OffscreenCanvasRenderingContext2D.prototype.strokePolygon = function (n_points, 
     this.stroke();
 };
 
+OffscreenCanvasRenderingContext2D.prototype.fillAndStrokePolygon = function (n_points, points) {
+    this.beginPath();
+    this.moveTo(points[0], points[1]);
+    for (let i = 1; i < n_points; i++) {
+        this.lineTo(points[i * 2], points[i * 2 + 1]);
+    }
+    this.closePath();
+    this.fill();
+    this.stroke();
+};
+
 
 OffscreenCanvasRenderingContext2D.prototype._styledCircles = function ( x, y, radius, color, alpha, sizes, fill) {
     const xx = new ScalarBatchAccessor(x, sizes[0]);
@@ -173,7 +184,7 @@ class ColorBatchAccessor {
 
 //  mouse event handler factory
 //  arr_mouse_state: [is_inside, is_down, x, y]
-function reciver_factory(arr) {
+function receiver_factory(arr) {
     return {
         arr_mouse_state : arr,
         on_mouse_events: function(event, x, y) {
@@ -218,20 +229,20 @@ function reciver_factory(arr) {
         // python functions that are accessible from
         // javacript need to be deleted
         cleanup : function() {
-            if(reciver._cleanup_mouse_enter) {
-                reciver._cleanup_mouse_enter.delete();
+            if(receiver._cleanup_mouse_enter) {
+                receiver._cleanup_mouse_enter.delete();
             }
-            if(reciver._cleanup_mouse_leave) {
-                reciver._cleanup_mouse_leave.delete();
+            if(receiver._cleanup_mouse_leave) {
+                receiver._cleanup_mouse_leave.delete();
             }
-            if(reciver._cleanup_mouse_down) {
-                reciver._cleanup_mouse_down.delete();
+            if(receiver._cleanup_mouse_down) {
+                receiver._cleanup_mouse_down.delete();
             }
-            if(reciver._cleanup_mouse_up) {
-                reciver._cleanup_mouse_up.delete();
+            if(receiver._cleanup_mouse_up) {
+                receiver._cleanup_mouse_up.delete();
             }
-            if(reciver._cleanup_mouse_move) {
-                reciver._cleanup_mouse_move.delete();
+            if(receiver._cleanup_mouse_move) {
+                receiver._cleanup_mouse_move.delete();
             }
         }
     }
@@ -239,5 +250,5 @@ function reciver_factory(arr) {
 
 
 globalThis["_ipycanvas"] = {
-    reciver_factory: reciver_factory
+    receiver_factory: receiver_factory
 };
