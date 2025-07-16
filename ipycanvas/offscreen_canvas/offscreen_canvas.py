@@ -320,21 +320,6 @@ class OffscreenCanvas(OffscreenCanvasCore):
 
     # BATCH API
 
-    # Canvas.fill_styled_circles()
-    # Canvas.stroke_styled_circles()
-    # Canvas.fill_circles()
-    # Canvas.stroke_circles()
-
-
-
-
-    # # batch methods
-
-    # Canvas.fill_polygons()
-    # Canvas.stroke_polygons()
-    # Canvas.fill_styled_polygons()
-    # Canvas.stroke_styled_polygons()
-
     # Canvas.stroke_lines()
     # Canvas.stroke_styled_line_segments()
     # Canvas.stroke_line_segments()
@@ -548,8 +533,24 @@ class OffscreenCanvas(OffscreenCanvasCore):
         ]
         self._ctx.strokeStyledPolygons(num_items, *self._js_buffers[:5])
 
-
-
+    # stroke_line_segments
+    def stroke_line_segments(self, points, points_per_segment=None):
+        flat_points, points_per_item, num_items = self._prepare_multipoint(points, points_per_segment)
+        self._buffers[2][0:2] = [
+            self._fill_buffer_with_scalars(0, flat_points),
+            self._fill_buffer_with_scalars(1, points_per_item)
+        ]
+        self._ctx.strokeLineSegments(num_items, *self._js_buffers[:3])
+    
+    def stroke_styled_line_segments(self, points, color, alpha=1, points_per_segment=None):
+        flat_points, points_per_item, num_items = self._prepare_multipoint(points, points_per_segment)
+        self._buffers[4][0:4] = [
+            self._fill_buffer_with_scalars(0, flat_points),
+            self._fill_buffer_with_scalars(1, points_per_item),
+            self._fill_buffer_with_colors(2, color),
+            self._fill_buffer_with_scalars(3, alpha),
+        ]
+        self._ctx.strokeStyledLineSegments(num_items, *self._js_buffers[:5])
 
 
 
