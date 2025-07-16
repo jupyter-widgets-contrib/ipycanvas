@@ -298,7 +298,59 @@ OffscreenCanvasRenderingContext2D.prototype.strokePolygons = function (
     this._polygons(n_items, points, points_per_item, sizes, false);
 };
 
+// styled polygon batch api
+OffscreenCanvasRenderingContext2D.prototype._styledPolygons = function (
+    n_items,
+    points,
+    points_per_item,
+    color,  
+    alpha,
+    sizes,
+    fill
+) {
+    const pp = new ScalarBatchAccessor(points, sizes[0]);
+    const ppi = new ScalarBatchAccessor(points_per_item, sizes[1]);
+    const cc = new ColorBatchAccessor(color, sizes[2], alpha, sizes[3]);
+    var acc = 0;
+    for( let i = 0; i < n_items; i++) {
+        const n_points = ppi.get(i);
+        this.beginPath();
+        this.moveTo(pp.get(acc), pp.get(acc + 1));
+        for (let j = 1; j < n_points; j++) {
+            this.lineTo(pp.get(acc + j * 2), pp.get(acc + j * 2 + 1));
+        }
+        this.closePath();
+        if (fill) {
+            this.fillStyle = cc.get(i);
+            this.fill();    
+        } else {
+            this.strokeStyle = cc.get(i);
+            this.stroke();
+        }
+        acc += n_points * 2;
+    }
+};
 
+OffscreenCanvasRenderingContext2D.prototype.fillStyledPolygons = function (
+    n_items,
+    points,
+    points_per_item,
+    color,
+    alpha,
+    sizes
+) {
+    this._styledPolygons(n_items, points, points_per_item, color, alpha, sizes, true);
+};
+OffscreenCanvasRenderingContext2D.prototype.strokeStyledPolygons = function (
+    n_items,
+    points,
+    points_per_item,
+    color,
+    alpha,      
+    sizes
+) {
+    this._styledPolygons(n_items, points, points_per_item, color, alpha, sizes, false);
+};
 
 
 

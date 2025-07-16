@@ -515,36 +515,36 @@ class OffscreenCanvas(OffscreenCanvasCore):
     def fill_polygons(self, points, points_per_polygon=None):
         flat_points, points_per_item, num_items = self._prepare_multipoint(points, points_per_polygon)
         self._buffers[2][0:2] = [
-            self._fill_buffer_with_scalars(0, flat_points.shape[0]),
-            self._fill_buffer_with_scalars(1, points_per_item.shape[0]),
+            self._fill_buffer_with_scalars(0, flat_points),
+            self._fill_buffer_with_scalars(1, points_per_item),
         ]
         self._ctx.fillPolygons(num_items, *self._js_buffers[:3])
     
     def stroke_polygons(self, points, points_per_polygon=None):
         flat_points, points_per_item, num_items = self._prepare_multipoint(points, points_per_polygon)
         self._buffers[2][0:2] = [
-            self._fill_buffer_with_scalars(0, flat_points.shape[0]),
-            self._fill_buffer_with_scalars(1, points_per_item.shape[0])
+            self._fill_buffer_with_scalars(0, flat_points),
+            self._fill_buffer_with_scalars(1, points_per_item)
         ]
         self._ctx.strokePolygons(num_items, *self._js_buffers[:3])
 
     def fill_styled_polygons(self, points, color, alpha=1, points_per_polygon=None): 
         flat_points, points_per_item, num_items = self._prepare_multipoint(points, points_per_polygon)
         self._buffers[4][0:4] = [
-            self._fill_buffer_with_scalars(1, flat_points.shape[0]),
-            self._fill_buffer_with_scalars(2, points_per_item.shape[0]),
-            self._fill_buffer_with_colors(3,  color),
-            self._fill_buffer_with_scalars(4, alpha),
+            self._fill_buffer_with_scalars(0, flat_points),
+            self._fill_buffer_with_scalars(1, points_per_item),
+            self._fill_buffer_with_colors(2,  color),
+            self._fill_buffer_with_scalars(3, alpha),
         ]
         self._ctx.fillStyledPolygons(num_items, *self._js_buffers[:5])
     
     def stroke_styled_polygons(self, points, color, alpha=1, points_per_polygon=None):
         flat_points, points_per_item, num_items = self._prepare_multipoint(points, points_per_polygon)
         self._buffers[4][0:4] = [
-            self._fill_buffer_with_scalars(1, flat_points.shape[0]),
-            self._fill_buffer_with_scalars(2, points_per_item.shape[0]),
-            self._fill_buffer_with_colors(3,  color),
-            self._fill_buffer_with_scalars(4, alpha),
+            self._fill_buffer_with_scalars(0, flat_points.shape[0]),
+            self._fill_buffer_with_scalars(1, points_per_item.shape[0]),
+            self._fill_buffer_with_colors(2,  color),
+            self._fill_buffer_with_scalars(3, alpha),
         ]
         self._ctx.strokeStyledPolygons(num_items, *self._js_buffers[:5])
 
