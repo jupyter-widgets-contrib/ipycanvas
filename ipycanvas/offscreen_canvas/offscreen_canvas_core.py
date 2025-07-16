@@ -62,7 +62,7 @@ class OffscreenCanvasCore(DOMWidget):
         self._canvas = None  # will be set when the canvas is displayed
 
         _name = _rand_name()
-        self._reciver_name = f"_canvas_reciver_{_name}"
+        self._receiver_name = f"_canvas_receiver_{_name}"
         self._canvas_name = f"_canvas_{_name}"
 
         # helper js function to check if the canvas is ready
@@ -74,18 +74,18 @@ class OffscreenCanvasCore(DOMWidget):
 
         # in the frontend javascript code ** in the main-ui-thread** we will call a function
         # on a global object **in the worker thread**. (via comlink)
-        # this global object is called "reciver" and is created in the worker thread.
+        # this global object is called "receiver" and is created in the worker thread.
         # This is used to pass events from the main-ui-thread to the worker thread.
-        self._js_reciver = _ipycanvas_js.reciver_factory(pyjs.buffer_to_js_typed_array(self.arr_mouse_state, view=True))
-        pyjs.js.globalThis[self._reciver_name] =  self._js_reciver
+        self._js_receiver = _ipycanvas_js.receiver_factory(pyjs.buffer_to_js_typed_array(self.arr_mouse_state, view=True))
+        pyjs.js.globalThis[self._receiver_name] =  self._js_receiver
 
         super().__init__(_name=_name, _width=width, _height=height, *args, **kwargs)
 
 
     def __del__(self):
         super().__del__()
-        self._js_reciver.cleanup()
-        pyjs.js.Function("reciver_name","""delete globalThis[reciver_name];""")(self._reciver_name)
+        self._js_receiver.cleanup()
+        pyjs.js.Function("receiver_name","""delete globalThis[receiver_name];""")(self._receiver_name)
 
     # getter setter for width and height
     @property
@@ -115,16 +115,16 @@ class OffscreenCanvasCore(DOMWidget):
 
     def _on_mouse_event(self, event_name, callback):
         if isinstance(callback, pyjs.JsValue):
-            self._js_reciver[f"on_{event_name}"] = callback
+            self._js_receiver[f"on_{event_name}"] = callback
         else:
             js_callback, cleanup = pyjs.create_callable(callback)
-            self._js_reciver[f"on_{event_name}"] = js_callback
-            setattr(self._js_reciver, f"_cleanup_{event_name}", cleanup)
+            self._js_receiver[f"on_{event_name}"] = js_callback
+            setattr(self._js_receiver, f"_cleanup_{event_name}", cleanup)
     
     def on_mouse_enter(self, callback):
         self._on_mouse_event("mouse_enter", callback)
     
-    def on_mouse_leave(self, callback):
+    def on_mouse_out(self, callback):
         self._on_mouse_event("mouse_leave", callback)
 
     def on_mouse_down(self, callback):
