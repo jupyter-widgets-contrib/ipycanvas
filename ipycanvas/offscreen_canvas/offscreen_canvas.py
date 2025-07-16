@@ -29,7 +29,7 @@ class OffscreenCanvas(OffscreenCanvasCore):
         super().__init__(*args, **kwargs)
 
         initial_buffer_size = 10
-        n_buffers = 7 # max number of args / buffers we need at the same time
+        n_buffers = 8 # max number of args / buffers we need at the same time
         self._buffers = [ np.zeros(initial_buffer_size, dtype=np.float32) for _ in range(n_buffers)]
         self._js_buffers = [
             pyjs.buffer_to_js_typed_array(fbuffer, view=True) for fbuffer in self._buffers
@@ -97,12 +97,12 @@ class OffscreenCanvas(OffscreenCanvasCore):
         self._ctx.strokeRect(x, y, width, height)
     def clear_rect(self):
         self._ctx.clearRect(x, y, width, height)
-    def fill_arc(self, x, y, radius, start_angle, end_angle, counter_clockwise=False):
-        self._ctx.fillArc(x, y, radius, start_angle, end_angle, counter_clockwise)
+    def fill_arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
+        self._ctx.fillArc(x, y, radius, start_angle, end_angle, anticlockwise)
     def fill_circle(self, x, y, radius):
         self._ctx.fillCircle(x, y, radius)
-    def stroke_arc(self, x, y, radius, start_angle, end_angle, counter_clockwise=False):
-        self._ctx.strokeArc(x, y, radius, start_angle, end_angle, counter_clockwise)
+    def stroke_arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
+        self._ctx.strokeArc(x, y, radius, start_angle, end_angle, anticlockwise)
     def stroke_circle(self, x, y, radius):
         self._ctx.strokeCircle(x, y, radius)
 
@@ -136,10 +136,10 @@ class OffscreenCanvas(OffscreenCanvasCore):
         self._ctx.lineTo(x, y)
     def rect(self, x, y, width, height):
         self._ctx.rect(x, y, width, height)
-    def arc(self, x, y, radius, start_angle, end_angle, counter_clockwise=False):
-        self._ctx.arc(x, y, radius, start_angle, end_angle, counter_clockwise)  
-    def ellipse(self, x, y, radius_x, radius_y, rotation=0, start_angle=0, end_angle=2 * 3.14159, counter_clockwise=False):
-        self._ctx.ellipse(x, y, radius_x, radius_y, rotation, start_angle, end_angle, counter_clockwise)
+    def arc(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
+        self._ctx.arc(x, y, radius, start_angle, end_angle, anticlockwise)  
+    def ellipse(self, x, y, radius_x, radius_y, rotation=0, start_angle=0, end_angle=2 * 3.14159, anticlockwise=False):
+        self._ctx.ellipse(x, y, radius_x, radius_y, rotation, start_angle, end_angle, anticlockwise)
     def arc_to(self, x1, y1, x2, y2, radius):
         self._ctx.arcTo(x1, y1, x2, y2, radius)
     def quadratic_curve_to(self, cp_x, cp_y, to_x, to_y):
@@ -329,15 +329,6 @@ class OffscreenCanvas(OffscreenCanvasCore):
 
 
     # # batch methods
-    # Canvas.fill_rects()
-    # Canvas.stroke_rects()
-    # Canvas.fill_styled_rects()
-    # Canvas.stroke_styled_rects()
-
-    # Canvas.fill_arcs()
-    # Canvas.stroke_arcs()
-    # Canvas.fill_styled_arcs()
-    # Canvas.stroke_styled_arcs()
 
     # Canvas.fill_polygons()
     # Canvas.stroke_polygons()
@@ -446,9 +437,116 @@ class OffscreenCanvas(OffscreenCanvasCore):
             self._fill_buffer_with_scalars(5, alpha),
         ]
         self._ctx.strokeStyledRects(*self._js_buffers[:7])
-        
+    
+    # Canvas.fill_arcs()
+    # Canvas.stroke_arcs()
+    # Canvas.fill_styled_arcs()
+    # Canvas.stroke_styled_arcs()
 
+    def fill_arcs(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
+        self._buffers[5][0:5] = [
+            self._fill_buffer_with_scalars(0, x),
+            self._fill_buffer_with_scalars(1, y),
+            self._fill_buffer_with_scalars(2, radius),
+            self._fill_buffer_with_scalars(3, start_angle),
+            self._fill_buffer_with_scalars(4, end_angle),
+        ]
+        self._ctx.fillArcs(*self._js_buffers[:6], anticlockwise)
+    
+    def stroke_arcs(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
+        self._buffers[5][0:5] = [
+            self._fill_buffer_with_scalars(0, x),
+            self._fill_buffer_with_scalars(1, y),
+            self._fill_buffer_with_scalars(2, radius),
+            self._fill_buffer_with_scalars(3, start_angle),
+            self._fill_buffer_with_scalars(4, end_angle),
+        ]
+        self._ctx.strokeArcs(*self._js_buffers[:6], anticlockwise)
+    
+    def fill_styled_arcs(self, x, y, radius, start_angle, end_angle, color, alpha=1, anticlockwise=False):
+        self._buffers[7][0:7] = [
+            self._fill_buffer_with_scalars(0, x),
+            self._fill_buffer_with_scalars(1, y),
+            self._fill_buffer_with_scalars(2, radius),
+            self._fill_buffer_with_scalars(3, start_angle),
+            self._fill_buffer_with_scalars(4, end_angle),
+            self._fill_buffer_with_colors(5, color),
+            self._fill_buffer_with_scalars(6, alpha),
+        ]
+        self._ctx.fillStyledArcs(*self._js_buffers[:8], anticlockwise)
+    
+    def stroke_styled_arcs(self, x, y, radius, start_angle, end_angle, color, alpha=1, anticlockwise=False):
+        self._buffers[7][0:7] = [
+            self._fill_buffer_with_scalars(0, x),
+            self._fill_buffer_with_scalars(1, y),
+            self._fill_buffer_with_scalars(2, radius),
+            self._fill_buffer_with_scalars(3, start_angle),
+            self._fill_buffer_with_scalars(4, end_angle),
+            self._fill_buffer_with_colors(5, color),
+            self._fill_buffer_with_scalars(6, alpha),
+        ]
+        self._ctx.strokeStyledArcs(*self._js_buffers[:8], anticlockwise)
 
+    # for polygons / line segments with potentially different number of points per polygon / line segment
+    def _prepare_multipoint(self, points, points_per_item=None):
+        if isinstance(points, list):
+            if points_per_item is not None:
+                raise RuntimeError("when points are a list, points_per_item must be None")
+            
+            points_per_item = []
+            np_polygons = []
+            for i, polygon_points in enumerate(points):
+                polygon_points = np.require(polygon_points, requirements=["C"])
+                if polygon_points.shape[1] != 2:
+                    raise RuntimeError(
+                        f"item {i} in points have wrong shape: `{polygon_points.shape}` but must be of type (n,2)"
+                    )
+                points_per_item.append(polygon_points.shape[0])
+                np_polygons.append(polygon_points.ravel())
+
+            num_polygons = len(points)
+            flat_points = np.concatenate(np_polygons)
+            points_per_item = np.array(points_per_item)
+
+            return flat_points, points_per_item, num_polygons
+        else:
+            raise RuntimeError("points must be a list of numpy arrays or a numpy array with shape (n,2)")
+
+    def fill_polygons(self, points, points_per_polygon=None):
+        flat_points, points_per_item, num_items = self._prepare_multipoint(points, points_per_polygon)
+        self._buffers[2][0:2] = [
+            self._fill_buffer_with_scalars(0, flat_points.shape[0]),
+            self._fill_buffer_with_scalars(1, points_per_item.shape[0]),
+        ]
+        self._ctx.fillPolygons(num_items, *self._js_buffers[:3])
+    
+    def stroke_polygons(self, points, points_per_polygon=None):
+        flat_points, points_per_item, num_items = self._prepare_multipoint(points, points_per_polygon)
+        self._buffers[2][0:2] = [
+            self._fill_buffer_with_scalars(0, flat_points.shape[0]),
+            self._fill_buffer_with_scalars(1, points_per_item.shape[0])
+        ]
+        self._ctx.strokePolygons(num_items, *self._js_buffers[:3])
+
+    def fill_styled_polygons(self, points, color, alpha=1, points_per_polygon=None): 
+        flat_points, points_per_item, num_items = self._prepare_multipoint(points, points_per_polygon)
+        self._buffers[4][0:4] = [
+            self._fill_buffer_with_scalars(1, flat_points.shape[0]),
+            self._fill_buffer_with_scalars(2, points_per_item.shape[0]),
+            self._fill_buffer_with_colors(3,  color),
+            self._fill_buffer_with_scalars(4, alpha),
+        ]
+        self._ctx.fillStyledPolygons(num_items, *self._js_buffers[:5])
+    
+    def stroke_styled_polygons(self, points, color, alpha=1, points_per_polygon=None):
+        flat_points, points_per_item, num_items = self._prepare_multipoint(points, points_per_polygon)
+        self._buffers[4][0:4] = [
+            self._fill_buffer_with_scalars(1, flat_points.shape[0]),
+            self._fill_buffer_with_scalars(2, points_per_item.shape[0]),
+            self._fill_buffer_with_colors(3,  color),
+            self._fill_buffer_with_scalars(4, alpha),
+        ]
+        self._ctx.strokeStyledPolygons(num_items, *self._js_buffers[:5])
 
 
 
