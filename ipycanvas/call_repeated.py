@@ -1,4 +1,3 @@
-import pyjs
 import time
 import sys
 
@@ -35,6 +34,7 @@ if sys.platform.startswith("emscripten"):
         # return a lambda which can be used to cancel the loop
         return lambda: pyjs.cancel_main_loop()
 else:
+    import asyncio
     async def _call_repeated(func, fps):
 
         try:
