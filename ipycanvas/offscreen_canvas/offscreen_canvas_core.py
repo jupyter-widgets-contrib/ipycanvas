@@ -79,6 +79,10 @@ class OffscreenCanvasCore(DOMWidget):
         self._js_receiver = _ipycanvas_js.receiver_factory(pyjs.buffer_to_js_typed_array(self.arr_mouse_state, view=True))
         pyjs.js.globalThis[self._receiver_name] =  self._js_receiver
 
+        # for the offscreen canvas we allow only **one** callback per event
+        # this is different to the normal canvas, where we allow multiple callbacks.
+        # we throw an error if the user tries to set multiple callbacks for the same event.
+ 
         super().__init__(_name=_name, _width=width, _height=height, *args, **kwargs)
 
 
@@ -113,28 +117,82 @@ class OffscreenCanvasCore(DOMWidget):
         self._height = value
 
 
-    def _on_mouse_event(self, event_name, callback):
+    def _on_event(self, event_name, callback):
+        if self._js_receiver.has_property(f"on_{event_name}"):
+            raise RuntimeError(f"Event '{event_name}' already has a callback set. Only one callback is allowed per event for the OffscreenCanvasCore.")
+
+
         if isinstance(callback, pyjs.JsValue):
             self._js_receiver[f"on_{event_name}"] = callback
         else:
             js_callback, cleanup = pyjs.create_callable(callback)
             self._js_receiver[f"on_{event_name}"] = js_callback
-            setattr(self._js_receiver, f"_cleanup_{event_name}", cleanup)
-    
+            cleanup_js_fname = f"_cleanup_{event_name}"
+            setattr(self._js_receiver, cleanup_js_fname, cleanup)
+            self._js_receiver.add_to_cleanup(cleanup_js_fname)
+
+
     def on_mouse_enter(self, callback):
-        self._on_mouse_event("mouse_enter", callback)
+        self._on_event("mouse_enter", callback)
     
     def on_mouse_out(self, callback):
-        self._on_mouse_event("mouse_leave", callback)
+        self._on_event("mouse_leave", callback)
 
     def on_mouse_down(self, callback):
-        self._on_mouse_event("mouse_down", callback)
+        self._on_event("mouse_down", callback)
     
     def on_mouse_up(self, callback):
-        self._on_mouse_event("mouse_up", callback)
+        self._on_event("mouse_up", callback)
     
     def on_mouse_move(self, callback):
-        self._on_mouse_event("mouse_move", callback)
+        self._on_event("mouse_move", callback)
+
+    def on_key_down(self, callback):
+        self._on_event("key_down", callback)
+
+    def on_mouse_wheel(self, callback):
+        self._on_event("mouse_wheel", callback)
+
+    def on_key_up(self, callback):
+        self._on_event("key_up", callback)
+
+    def on_key_press(self, callback):
+        self._on_event("key_press", callback)
+    
+    # touch events:
+    # since ordinary canvas does not pass the id to the callbacks, we need
+    # to make this the default behavior.
+    def on_touch_start(self, callback, pass_id=False):
+        if not pass_id:
+            def wrapped(x, y, id=None):
+                callback(x, y)
+            self._on_event("touch_start", wrapped)
+        else:
+            self._on_event("touch_start", callback)
+    def on_touch_end(self, callback, pass_id=False):
+        if not pass_id:
+            def wrapped(x, y, id=None):
+                callback(x, y)
+            self._on_event("touch_end", wrapped)
+        else:
+            self._on_event("touch_end", callback)
+
+    def on_touch_move(self, callback, pass_id=False):
+        if not pass_id:
+            def wrapped(x, y, id=None):
+                callback(x, y)
+            self._on_event("touch_move", wrapped)
+        else:
+            self._on_event("touch_move", callback)
+
+    def on_touch_cancel(self, callback, pass_id=False):
+        if not pass_id:
+            def wrapped(x, y, id=None):
+                callback(x, y)
+            self._on_event("touch_cancel", wrapped)
+        else:
+            self._on_event("touch_cancel", callback)
+    
 
 
     def initialize(self):

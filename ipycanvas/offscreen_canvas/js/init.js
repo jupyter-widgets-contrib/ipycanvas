@@ -419,7 +419,6 @@ class ScalarBatchAccessor {
   }
 }
 
-
 class ColorBatchAccessor {
     constructor(
         colorArray,
@@ -444,6 +443,48 @@ class ColorBatchAccessor {
 function receiver_factory(arr) {
     return {
         arr_mouse_state : arr,
+        on_wheel_event: function(deltaY) {
+            if (this.on_mouse_wheel) {
+                this.on_mouse_wheel(deltaY);
+            }
+        },
+        on_keyboard_events: function(event, key, ctrl, shift, meta){
+            if( event == "keydown" ) {
+                if( this.on_key_down ) {
+                    this.on_key_down(key, ctrl, shift, meta);
+                }
+            }
+            else if( event == "keyup" ) {
+                if( this.on_key_up ) {
+                    this.on_key_up(key, ctrl, shift, meta);
+                }
+            }
+            else if( event == "keypress" ) {
+                if( this.on_key_press ) {
+                    this.on_key_press(key, ctrl, shift, meta);
+                }
+            }
+        },
+        on_touch_events: function(event, x,y, id) {
+            // original ipycanvas does not give *id* to the callbacks... :-/
+            if (event === "touchstart") {
+                if (this.on_touch_start) {
+                    this.on_touch_start(x, y, id);
+                }
+            } else if (event === "touchend") {
+                if (this.on_touch_end) {
+                    this.on_touch_end(x, y, id);
+                }
+            } else if (event === "touchmove") {
+                if (this.on_touch_move) {
+                    this.on_touch_move(x, y, id);
+                }
+            } else if (event === "touchcancel") {
+                if (this.on_touch_cancel) {
+                    this.on_touch_cancel(x, y, id);
+                }
+            }
+        },
         on_mouse_events: function(event, x, y) {
 
             if (event === "mouseenter") {
@@ -485,22 +526,20 @@ function receiver_factory(arr) {
         },
         // python functions that are accessible from
         // javacript need to be deleted
+        cleanup_list : [],
         cleanup : function() {
-            if(receiver._cleanup_mouse_enter) {
-                receiver._cleanup_mouse_enter.delete();
+            // list contains names on receiver where we need to call .delete()
+            for (let i = 0; i < this.cleanup_list.length; i++) {
+                const name = this.cleanup_list[i];
+                const item = receiver[name];
+                item.delete();
             }
-            if(receiver._cleanup_mouse_leave) {
-                receiver._cleanup_mouse_leave.delete();
-            }
-            if(receiver._cleanup_mouse_down) {
-                receiver._cleanup_mouse_down.delete();
-            }
-            if(receiver._cleanup_mouse_up) {
-                receiver._cleanup_mouse_up.delete();
-            }
-            if(receiver._cleanup_mouse_move) {
-                receiver._cleanup_mouse_move.delete();
-            }
+        },
+        add_to_cleanup : function(name) {
+            this.cleanup_list.push(name);
+        },
+        has_property: function(name) {
+            return this.hasOwnProperty(name) && this[name] !== null;
         }
     }
 }

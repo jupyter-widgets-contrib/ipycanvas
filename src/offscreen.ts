@@ -49,12 +49,11 @@ class OffscreenCanvasView extends DOMWidgetView {
     // this.canvas = document.createElement('canvas');
     // this.el.appendChild(this.canvas);
     
-
     const _canvas_name = () => `_canvas_${this.model.get('_name')}`;
     const _receiver_name = () => `_canvas_receiver_${this.model.get('_name')}`;
 
     this.setCanvasSize();
-
+    this.el.setAttribute('tabindex', '0');
     // magic here!
     const offscreen: OffscreenCanvas = this.el.transferControlToOffscreen();
     (globalThis as any).storeAsGlobal(offscreen, _canvas_name());
@@ -62,7 +61,27 @@ class OffscreenCanvasView extends DOMWidgetView {
 
     const that = this;
 
+    // helper function to remove all listeners
+    const removeAllListeners = () => {
+        that.el.removeEventListener("mousedown", sendMouseEvent);
+        that.el.removeEventListener("mouseup",   sendMouseEvent);
+        that.el.removeEventListener("mousemove", sendMouseEvent);
+        that.el.removeEventListener("mouseenter", sendMouseEvent);
+        that.el.removeEventListener("mouseleave", sendMouseEvent);  
+        that.el.removeEventListener("touchstart", sendTouchEvent);
+        that.el.removeEventListener("touchend",   sendTouchEvent);
+        that.el.removeEventListener("touchmove",  sendTouchEvent);
+        that.el.removeEventListener("touchcancel", sendTouchEvent);
+        that.el.removeEventListener("keydown", sendKeyboardEvent);
+        that.el.removeEventListener("keyup", sendKeyboardEvent);
+        that.el.removeEventListener("keypress", sendKeyboardEvent);
+    };
+
+
     async function sendMouseEvent(event : MouseEvent): Promise<void> {
+        if (event.type === "mousedown" ){
+          that.el.focus();
+        }
 
         const rect = that.el.getBoundingClientRect();
         try{
@@ -75,23 +94,78 @@ class OffscreenCanvasView extends DOMWidgetView {
         // we want to remove all event listeners if the receiver is not defined
         catch (e) {
             console.error("Error while sending mouse event, removing listeners:", e);
-            (that as any).el.removeEventListener("mousedown", sendMouseEvent);
-            (that as any).el.removeEventListener("mouseup",   sendMouseEvent);
-            (that as any).el.removeEventListener("mousemove", sendMouseEvent);        
-            (that as any).el.removeEventListener("mouseenter", sendMouseEvent);
-            (that as any).el.removeEventListener("mouseleave", sendMouseEvent);
+            removeAllListeners();
         }
-
     };
 
-    
+    async function sendTouchEvent(event: TouchEvent): Promise<void> {
+        const rect = that.el.getBoundingClientRect();
+        try {
+            for (let i = 0; i < event.changedTouches.length; i++) {
+                const touch = event.changedTouches[i];
+                await (globalThis as any).callGlobalReceiver(_receiver_name(), "on_touch_events",
+                    event.type,
+                    touch.clientX - rect.left,
+                    touch.clientY - rect.top,
+                    touch.identifier
+                );
+            }
+        }
+        // we want to remove all event listeners if the receiver is not defined
+        catch (e) {
+            console.error("Error while sending touch event, removing listeners:", e);
+            removeAllListeners();
+        }
+    };
+
+    // keyboard events
+    async function sendKeyboardEvent(event: KeyboardEvent): Promise<void> {
+        event.preventDefault();
+        event.stopPropagation();
+        try {
+            await (globalThis as any).callGlobalReceiver(_receiver_name(), "on_keyboard_events",
+                event.type,
+                event.key,
+                event.ctrlKey,
+                event.shiftKey,
+                event.metaKey
+            );
+        }
+        // we want to remove all event listeners if the receiver is not defined
+        catch (e) {
+            console.error("Error while sending keyboard event, removing listeners:", e);
+            removeAllListeners();
+        }
+    };
+
+    // mouse events
     this.el.addEventListener("mousedown", sendMouseEvent);
     this.el.addEventListener("mouseup",   sendMouseEvent);
     this.el.addEventListener("mousemove", sendMouseEvent);
     this.el.addEventListener("mouseenter", sendMouseEvent);
     this.el.addEventListener("mouseleave", sendMouseEvent);
 
+    // wheel events
+    this.el.addEventListener("wheel", async (event: WheelEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const deltaY = event.deltaY;
+        await (globalThis as any).callGlobalReceiver(_receiver_name(), "on_wheel_event",
+            deltaY
+        );
+    });
 
+
+    // touch events
+    this.el.addEventListener("touchstart", sendTouchEvent);
+    this.el.addEventListener("touchend",   sendTouchEvent);
+    this.el.addEventListener("touchmove",  sendTouchEvent);
+    this.el.addEventListener("touchcancel", sendTouchEvent);
+
+    // keyboard events
+    this.el.addEventListener("keydown", sendKeyboardEvent);
+    this.el.addEventListener("keyup", sendKeyboardEvent);
+    this.el.addEventListener("keypress", sendKeyboardEvent);
 
 
   }
