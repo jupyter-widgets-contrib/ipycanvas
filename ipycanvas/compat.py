@@ -6,7 +6,17 @@ from IPython.display import display
 # this is very usefull for testing compatibility with offscreen canvas
 IPYCANVAS_DISABLE_OFFSCREEN_CANVAS =  bool(int(os.environ.get('IPYCANVAS_DISABLE_OFFSCREEN_CANVAS', '0')))
 
-if sys.platform.startswith("emscripten") and not IPYCANVAS_DISABLE_OFFSCREEN_CANVAS:
+import sys
+is_emscripten = sys.platform.startswith("emscripten")
+
+# has pyjs
+has_pyjs = True
+try:
+    import pyjs
+except ImportError:
+    has_pyjs = False
+
+if (is_emscripten and has_pyjs) and not IPYCANVAS_DISABLE_OFFSCREEN_CANVAS:
     from .offscreen_canvas.offscreen_canvas import OffscreenCanvas as Canvas
 else:
     from .canvas import Canvas as CanvasBase
@@ -36,8 +46,6 @@ else:
                 ```
 
                 For more information, see the `async_initialize` method.
-
-
 
             """
         
