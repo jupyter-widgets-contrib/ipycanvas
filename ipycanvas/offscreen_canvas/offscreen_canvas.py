@@ -14,13 +14,6 @@ import PIL
 def hold_canvas(canvas):
     yield None
 
-
-
-
-
-
-
-
 class OffscreenCanvas(OffscreenCanvasCore):
     
 

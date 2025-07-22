@@ -180,8 +180,6 @@ class OffscreenCanvasView extends DOMWidgetView {
   }
 
   // note that we cannot update the canvas here size once its transferred to the offscreen context
-  // (the canvas **can** be resized after beeing transferred, but only **on** the transfered object,
-  // ie in the worker)
   setCanvasSize(): void {
     const width = this.model.get('_width');
     const height = this.model.get('_height');
