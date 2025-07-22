@@ -9,7 +9,7 @@
 ### New features
 
 - Added grayscale image support in put_image_data and exposed image_smoothing_enabled attribute [#353](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/353) ([@AnyaPorter](https://github.com/AnyaPorter))
-- Add stroke path to Path2D interface per html canvas spec  [#350](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/350) ([@cleemesser](https://github.com/cleemesser))
+- Add stroke path to Path2D interface per html canvas spec [#350](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/350) ([@cleemesser](https://github.com/cleemesser))
 - Added mouse wheel events support [#321](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/321) ([@VladislavZavadskyy](https://github.com/VladislavZavadskyy))
 
 ### Bug fixes
@@ -34,23 +34,25 @@
 
 ### Maintenance
 
-* Hatch migration by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/298
-* Exclude map file from distribution by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/299
-* Update yarn.lock by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/300
-* Update links by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/335
-* Update galata bot for using Lab 4 by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/337
-* Build against JupyterLab 4 by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/336
-* Build docs against the latest jupyterlite-xeus-python by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/338
+- Hatch migration by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/298
+- Exclude map file from distribution by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/299
+- Update yarn.lock by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/300
+- Update links by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/335
+- Update galata bot for using Lab 4 by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/337
+- Build against JupyterLab 4 by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/336
+- Build docs against the latest jupyterlite-xeus-python by @martinRenou in https://github.com/jupyter-widgets-contrib/ipycanvas/pull/338
 
 **Full Changelog**: https://github.com/jupyter-widgets-contrib/ipycanvas/compare/0.13.1...0.13.2
 
 ## 0.13.1
 
 ### What's Changed
-* Update the requested frontend version to ^0.13.0 by @jasongrout-db in https://github.com/martinRenou/ipycanvas/pull/291
+
+- Update the requested frontend version to ^0.13.0 by @jasongrout-db in https://github.com/martinRenou/ipycanvas/pull/291
 
 ### New Contributors
-* @jasongrout-db made their first contribution in https://github.com/martinRenou/ipycanvas/pull/291
+
+- @jasongrout-db made their first contribution in https://github.com/martinRenou/ipycanvas/pull/291
 
 **Full Changelog**: https://github.com/martinRenou/ipycanvas/compare/0.13.0...0.13.1
 
@@ -58,20 +60,20 @@
 
 ### Bug fix
 
-* Give each canvas an explicit reference to the canvas manager it uses. Fixes a compatibility issue with Databricks Notebook and Google Colab. by @jasongrout in https://github.com/martinRenou/ipycanvas/pull/290
+- Give each canvas an explicit reference to the canvas manager it uses. Fixes a compatibility issue with Databricks Notebook and Google Colab. by @jasongrout in https://github.com/martinRenou/ipycanvas/pull/290
 
 ### Maintenance
 
-* Modernize js output. by @jasongrout in https://github.com/martinRenou/ipycanvas/pull/289
+- Modernize js output. by @jasongrout in https://github.com/martinRenou/ipycanvas/pull/289
 
 ### Documentation
 
-* Make touch example work by @haesleinhuepf in https://github.com/martinRenou/ipycanvas/pull/281
+- Make touch example work by @haesleinhuepf in https://github.com/martinRenou/ipycanvas/pull/281
 
 ### New Contributors
 
-* @jasongrout made their first contribution in https://github.com/martinRenou/ipycanvas/pull/289
-* @haesleinhuepf made their first contribution in https://github.com/martinRenou/ipycanvas/pull/281
+- @jasongrout made their first contribution in https://github.com/martinRenou/ipycanvas/pull/289
+- @haesleinhuepf made their first contribution in https://github.com/martinRenou/ipycanvas/pull/281
 
 **Full Changelog**: https://github.com/martinRenou/ipycanvas/compare/0.12.1...0.13.0
 
@@ -80,26 +82,31 @@
 ### What's Changed
 
 #### Bug fixes
-* Fix drawing rgba image by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/284
+
+- Fix drawing rgba image by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/284
 
 #### Improvements
-* ipywidgets 8 support by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/288
+
+- ipywidgets 8 support by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/288
 
 #### Documentation
-* Blacken docs by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/269
-* Adding ipyevents to environment.yaml by @AyrtonB in https://github.com/martinRenou/ipycanvas/pull/172
-* Use xeus-python in docs by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/275
-* Improve docs by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/278
-* Fix JupyterLite badge in the README by @jtpio in https://github.com/martinRenou/ipycanvas/pull/279
+
+- Blacken docs by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/269
+- Adding ipyevents to environment.yaml by @AyrtonB in https://github.com/martinRenou/ipycanvas/pull/172
+- Use xeus-python in docs by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/275
+- Improve docs by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/278
+- Fix JupyterLite badge in the README by @jtpio in https://github.com/martinRenou/ipycanvas/pull/279
 
 #### Maintenance
-* Pin nodejs 16 for node-canvas issues by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/285
-* Bump moment from 2.29.3 to 2.29.4 by @dependabot in https://github.com/martinRenou/ipycanvas/pull/286
-* Bump moment from 2.29.3 to 2.29.4 in /ui-tests by @dependabot in https://github.com/martinRenou/ipycanvas/pull/287
+
+- Pin nodejs 16 for node-canvas issues by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/285
+- Bump moment from 2.29.3 to 2.29.4 by @dependabot in https://github.com/martinRenou/ipycanvas/pull/286
+- Bump moment from 2.29.3 to 2.29.4 in /ui-tests by @dependabot in https://github.com/martinRenou/ipycanvas/pull/287
 
 ### New Contributors
-* @AyrtonB made their first contribution in https://github.com/martinRenou/ipycanvas/pull/172
-* @jtpio made their first contribution in https://github.com/martinRenou/ipycanvas/pull/279
+
+- @AyrtonB made their first contribution in https://github.com/martinRenou/ipycanvas/pull/172
+- @jtpio made their first contribution in https://github.com/martinRenou/ipycanvas/pull/279
 
 **Full Changelog**: https://github.com/martinRenou/ipycanvas/compare/0.12.0...0.12.1
 
@@ -107,34 +114,36 @@
 
 ### What's Changed
 
-* Fix sync issues between canvases by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/263
-* Remove deprecated `size` property @martinRenou in https://github.com/martinRenou/ipycanvas/pull/263
-* Improve put_image_data performances by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/251
+- Fix sync issues between canvases by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/263
+- Remove deprecated `size` property @martinRenou in https://github.com/martinRenou/ipycanvas/pull/263
+- Improve put_image_data performances by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/251
 
 ### Maintenance
 
-* Add galata update bot by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/264
-* Add ui tests by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/266
-* Add a test for multicanvas by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/267
-* Update yarn dependencies by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/268
+- Add galata update bot by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/264
+- Add ui tests by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/266
+- Add a test for multicanvas by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/267
+- Update yarn dependencies by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/268
 
 **Full Changelog**: https://github.com/martinRenou/ipycanvas/compare/0.11.0...0.12.0
 
 ## Release 0.11.0
 
 ### What's Changed
-* Fix docs typo by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/241
-* Fix CI by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/248
-* Fix MultiCanvas events by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/247
-* Add keyboard events by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/249
-* Add filter property by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/244
-* Fix CI and remove Python 3.6 by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/250
-* Add jupyterlite-sphinx in the docs by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/256
-* README: Grammar fix @0xflotus in https://github.com/martinRenou/ipycanvas/pull/257
-* Update docs by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/258
+
+- Fix docs typo by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/241
+- Fix CI by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/248
+- Fix MultiCanvas events by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/247
+- Add keyboard events by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/249
+- Add filter property by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/244
+- Fix CI and remove Python 3.6 by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/250
+- Add jupyterlite-sphinx in the docs by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/256
+- README: Grammar fix @0xflotus in https://github.com/martinRenou/ipycanvas/pull/257
+- Update docs by @martinRenou in https://github.com/martinRenou/ipycanvas/pull/258
 
 ### New Contributors
-* @0xflotus made their first contribution in https://github.com/martinRenou/ipycanvas/pull/257
+
+- @0xflotus made their first contribution in https://github.com/martinRenou/ipycanvas/pull/257
 
 **Full Changelog**: https://github.com/martinRenou/ipycanvas/compare/0.10.2...0.11.0
 
@@ -142,8 +151,7 @@
 
 ## Release 0.10.0
 
-Improvements
--------------------
+## Improvements
 
 - Add `fill_styled_*` and `stroke_styled_*` methods by @DerThorsten #225 #227
 
@@ -151,35 +159,30 @@ Improvements
 
 ## Release 0.9.0
 
-Improvements
----------------------
+## Improvements
 
 - Add support for JupyterLite! By making the orjson dependency optional
 
 ## Release 0.8.2
 
-Bug fixes
-------------
+## Bug fixes
 
 - Fix JupyterLab 2 support
 - Replace npm with yarn
 
 ## Release 0.8.1
 
-New features:
-------------------
+## New features:
 
 - JupyterLab 3 support #165
 
-Bug fixes:
-------------
+## Bug fixes:
 
 - Fix issue with circle radius in RoughCanvas #162
 
 ## Release 0.8.0
 
-New features:
-------------------
+## New features:
 
 - Add support for color gradients #142
 - Add support for patterns #143
@@ -188,8 +191,7 @@ New features:
 
 ## Release 0.7.0
 
-Improvements:
---------------------
+## Improvements:
 
 - Reduce messages size #129
 - Improve communication speed by using binary buffers only #132
@@ -198,6 +200,7 @@ Improvements:
 ## Release 0.6.0
 
 Improvements
+
 - Added `ellipse` method for adding an ellipse to the current path
 - Added `Path2D` class for drawing SVG paths
 - Added `stroke_line` method for directly drawing a line without using a path
@@ -206,8 +209,7 @@ Improvements
 
 ## Release 0.5.1
 
-Big fixes
------------
+## Big fixes
 
 - Fix mouse events for the MutliCanvas
 
@@ -239,16 +241,18 @@ Big fixes
 ## Release 0.4.4
 
 ## Improvements
+
 - Add JupyterLab 2 support #78
 - Documentation improvements #74 #72
 
 ## Release 0.4.3
 
 Changes:
- - Deprecate the `size` attribute in favor of `width` and `height` #69
- - Layout improvements #68
- - Fix `MutliCanvas`'s `sync_image_data` attribute, and dynamically react to this attribute #70
- - Documentation improvements
+
+- Deprecate the `size` attribute in favor of `width` and `height` #69
+- Layout improvements #68
+- Fix `MutliCanvas`'s `sync_image_data` attribute, and dynamically react to this attribute #70
+- Documentation improvements
 
 ## Release 0.4.2
 

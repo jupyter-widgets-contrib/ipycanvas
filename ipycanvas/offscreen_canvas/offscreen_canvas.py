@@ -28,6 +28,13 @@ class OffscreenCanvas(OffscreenCanvasCore):
     def __init__(self, *args, **kwargs): 
         super().__init__(*args, **kwargs)
 
+        # create buffers for the batch API:
+        # All buffers are of type float32 since for batch calls we only use floats.
+        # We preallocate buffers and create js views for them.
+        # In each batch call we check if the buffer is large enough and resize it if necessary.
+        # we then fill the buffers with the data, and fill the last buffer with the sizes of
+        # the other buffers.
+        # the number of buffers can be fixed since we only use a fixed number of arguments in the batch calls.
         initial_buffer_size = 10
         n_buffers = 8 # max number of args / buffers we need at the same time
         self._buffers = [ np.zeros(initial_buffer_size, dtype=np.float32) for _ in range(n_buffers)]
@@ -36,61 +43,104 @@ class OffscreenCanvas(OffscreenCanvasCore):
         ]
 
     def initialize(self):
+        """ After the canvas has been displayed, we need to call this method to initialize the canvas.
+
+            After the canvas has been displayed, we need to call this method to initialize the canvas.
+            This method can only be used when the display method has been called in a **different cell**.
+
+            # Cell1:
+            ```python
+            from ipycanvas.compat import Canvas
+            from IPython.display import display
+            canvas = Canvas(width=800, height=600)
+            display(canvas)
+            ```
+
+            # Cell2:
+            ```python
+            canvas.initialize()
+            ```
+
+            For more information, see the `async_initialize` method.
+
+        """
         super().initialize()
         if  self._canvas is None:
             raise RuntimeError("Canvas is not displayed yet")
         self._ctx = self._canvas.getContext("2d")
 
     async def async_initialize(self):
-        """Initialize the canvas asynchronously."""
+        """
+        
+                If we want to use the canvas in the same cell where it 
+                was created **and displayed** we need to call this async function.
+                While this sounds a bit counterintuitive, it is necessary because the
+                offscreen canvas is created as regular canvas in the main-thread,
+                and transfered to and recieved by the worker-thread. This transfering mechanism (in particular the
+                receiving part) would be blocked by the cell execution.
+                To get a chance to  receive the canvas in the worker-thread (ie where
+                the kernel is running), we need to do run some asyc code (with some sleeping in between)
+                Note that for an ordinary canvas, `async_initialize` is a no-op.
+
+            from ipycanvas.compat import Canvas
+            from IPython.display import display
+            canvas = Canvas(width=800, height=600)
+            display(canvas)
+            await canvas.async_initialize()
+
+            # canvas is now ready to use
+            canvas.fill_style = 'red'
+
+
+        """
+        
         await super().async_initialize()
         if  self._canvas is None:
             raise RuntimeError("Canvas is not displayed yet")
         self._ctx = self._canvas.getContext("2d")
     
     async def display(self):
+        """ shorthand for displaying the canvas and then initializing it.
+            See `async_initialize` for more information.
+        """
         display(self)
         await self.async_initialize()
 
-    
-    def _ensure_size(self, index, size):
-        buffer_size = len(self._buffers[index])
-        if size > buffer_size:
-            # resize the buffer
-            new_size = max(size, buffer_size * 2)
-            new_buffer = np.zeros(new_size, dtype=np.float32)
-            self._buffers[index] =  new_buffer
-            self._js_buffers[index] = pyjs.buffer_to_js_typed_array(new_buffer, view=True)
-
-    def _points_to_buffer(self,index, points):
-        points = np.require(points, requirements='C', dtype=np.float32)
-        n_points = int(points.shape[0])
-        n_points2 = 2 * n_points
-        self._ensure_size(index, n_points2)
-        self._buffers[index][:n_points2] = points.flatten()
-        return n_points
-
-    
-
-
+  
     # ipycanvas api
     def clear(self):
         self._ctx.clearRect(0, 0, self._canvas.width, self._canvas.height)
     
+    # for compatibility with the regular canvas
     def sleep(self, seconds):
         """in the non-lite version this sleeps in the fronend / canvas, but not in the kernel.
         THis make little sense  in the offscreen canvas version, since the canvas **is** the frontend.
         """
         pass
 
+    def create_linear_gradient(self, x0, y0, x1, y1, color_stops):
+        gradient = self._ctx.createLinearGradient(x0, y0, x1, y1)
+        for offset, color in color_stops:
+            gradient.addColorStop(offset, color)
+        return gradient
+    
+    def create_radial_gradient(self, x0, y0, r0, x1, y1, r1, color_stops):
+        """Create a radial gradient."""
+        gradient = self._ctx.createRadialGradient(x0, y0, r0, x1, y1, r1)
+        for offset, color in color_stops:
+            gradient.addColorStop(offset, color)
+        return gradient
 
+    def create_pattern(self, image, repetition='repeat'):
+        if isinstance(image, OffscreenCanvasCore):
+            # if the image is an OffscreenCanvasCore, we need to convert it to a js image
+            image = image._canvas
+        else:
+            raise NotImplementedError("create_pattern only supports OffscreenCanvas images at the moment")
+        
+        pattern = self._ctx.createPattern(image, repetition)
+        return pattern
 
-    def create_linear_gradient(self):
-        raise NotImplementedError("create_linear_gradient is not implemented in the offscreen canvas version yet")
-    def create_radial_gradient(self):
-        raise NotImplementedError("create_radial_gradient is not implemented in the offscreen canvas version yet")        
-    def create_pattern(self):
-        raise NotImplementedError("create_pattern is not implemented in the offscreen canvas version yet")
     def fill_rect(self, x, y, width, height):
         self._ctx.fillRect(x, y, width, height)
     def stroke_rect(self, x, y, width, height):
@@ -106,18 +156,16 @@ class OffscreenCanvas(OffscreenCanvasCore):
     def stroke_circle(self, x, y, radius):
         self._ctx.strokeCircle(x, y, radius)
 
-
-
     def fill_polygon(self, points):
-        n_points = self._points_to_buffer(0, points)
+        n_points = self._fill_buffer_with_points(0, points)
         self._ctx.fillPolygon(n_points, self._js_buffers[0] )
 
     def stroke_polygon(self, points):
-        n_points = self._points_to_buffer(0, points)
+        n_points = self._fill_buffer_with_points(0, points)
         self._ctx.strokePolygon(n_points ,self._js_buffers[0])
 
     def fill_and_stroke_polygon(self, points):
-        n_points = self._points_to_buffer(0, points)
+        n_points = self._fill_buffer_with_points(0, points)
         self._ctx.fillAndStrokePolygon(n_points, self._js_buffers[0])
 
     def stroke_line(self, x1, y1, x2, y2):
@@ -195,41 +243,12 @@ class OffscreenCanvas(OffscreenCanvasCore):
     def flush(self):
         """Flush the canvas. In the offscreen canvas version this does nothing."""
         pass
-
-
-    def create_linear_gradient(self, x0, y0, x1, y1, color_stops):
-        """Create a linear gradient."""
-        gradient = self._ctx.createLinearGradient(x0, y0, x1, y1)
-        for offset, color in color_stops:
-            gradient.addColorStop(offset, color)
-        return gradient
-    
-    def create_radial_gradient(self, x0, y0, r0, x1, y1, r1, color_stops):
-        """Create a radial gradient."""
-        gradient = self._ctx.createRadialGradient(x0, y0, r0, x1, y1, r1)
-        for offset, color in color_stops:
-            gradient.addColorStop(offset, color)
-        return gradient
-
-    def create_pattern(self, image, repetition='repeat'):
-        if isinstance(image, OffscreenCanvasCore):
-            # if the image is an OffscreenCanvasCore, we need to convert it to a js image
-            image = image._canvas
-        else:
-            raise NotImplementedError("create_pattern only supports OffscreenCanvas images at the moment")
-        
-        """Create a pattern."""
-        pattern = self._ctx.createPattern(image, repetition)
-        return pattern
     
     def draw_image(self, image, dx, dy, dw=None, dh=None):
         """Draw an image on the canvas."""
         if isinstance(image, OffscreenCanvasCore):
             # if the image is an OffscreenCanvasCore, we need to convert it to a js image
             drawable_image = image._canvas
-
-
-
 
         elif isinstance(image, IpywidgetImage):
             if dw is not None and dh is not None:
@@ -318,12 +337,29 @@ class OffscreenCanvas(OffscreenCanvasCore):
         # put_image_data on the offscreen canvas
         self._ctx.putImageData(image, x, y)
 
-    # BATCH API
 
-    # Canvas.stroke_lines()
-    # Canvas.stroke_styled_line_segments()
-    # Canvas.stroke_line_segments()
 
+    # ensure that the buffer at index hast at least the given size.
+    def _ensure_size(self, index, size):
+        buffer_size = len(self._buffers[index])
+        if size > buffer_size:
+            # resize the buffer
+            new_size = max(size, buffer_size * 2)
+            new_buffer = np.zeros(new_size, dtype=np.float32)
+            self._buffers[index] =  new_buffer
+            self._js_buffers[index] = pyjs.buffer_to_js_typed_array(new_buffer, view=True)
+
+    # helper to add a list / array of points to a buffer 
+    # (for instance when drawing a polygon from a list of points)
+    def _fill_buffer_with_points(self,index, points):
+        points = np.require(points, requirements='C', dtype=np.float32)
+        n_points = int(points.shape[0])
+        n_points2 = 2 * n_points
+        self._ensure_size(index, n_points2)
+        self._buffers[index][:n_points2] = points.flatten()
+        return n_points
+
+    # helper to fill a buffer with a scalar value
     def _fill_buffer_with_scalars(self, index, value):
         # is number ? 
         if isinstance(value, Number):
@@ -336,15 +372,12 @@ class OffscreenCanvas(OffscreenCanvasCore):
             self._ensure_size(index, n_values)
             self._buffers[index][:n_values] = value
             return n_values
-    
+    # helper to fill a buffer with a color value
     def _fill_buffer_with_colors(self, index, color):
         arr = np.require(color, requirements='C', dtype=np.float32).flatten()
         self._ensure_size(index, len(arr))
         self._buffers[index][:len(arr)] = arr
         return len(arr) / 3
-
-
-
 
 
     def fill_styled_circles(self, x, y, radius, color, alpha=1):
@@ -423,11 +456,6 @@ class OffscreenCanvas(OffscreenCanvasCore):
         ]
         self._ctx.strokeStyledRects(*self._js_buffers[:7])
     
-    # Canvas.fill_arcs()
-    # Canvas.stroke_arcs()
-    # Canvas.fill_styled_arcs()
-    # Canvas.stroke_styled_arcs()
-
     def fill_arcs(self, x, y, radius, start_angle, end_angle, anticlockwise=False):
         self._buffers[5][0:5] = [
             self._fill_buffer_with_scalars(0, x),
@@ -553,7 +581,7 @@ class OffscreenCanvas(OffscreenCanvasCore):
         self._ctx.strokeStyledLineSegments(num_items, *self._js_buffers[:5])
 
 
-
+# helper function to create a property that maps to a js property
 def _make_prop(js_name):
     @property
     def prop(self):
@@ -563,8 +591,8 @@ def _make_prop(js_name):
         setattr(self._ctx, js_name, value)
 
     return prop
-
-
+    
+# helper function st. we can have pythonic properties (ie `fill_style` instead of `fillStyle`)
 def _extend_canvas():
 
     # add properties to the Canvas class
@@ -596,6 +624,3 @@ def _extend_canvas():
 
 _extend_canvas()
 del _extend_canvas
-
-
-
