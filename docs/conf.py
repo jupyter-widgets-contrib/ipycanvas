@@ -6,7 +6,7 @@ jupyterlite_silence = False
 
 jupyterlite_contents = [
    "*.ipynb",
-    "images/*.png",
+    "sprites/*.png",
 ]
 
 master_doc = "index"
