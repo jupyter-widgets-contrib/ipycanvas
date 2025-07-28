@@ -24,9 +24,6 @@ else:
     class Canvas(CanvasBase):
         """Compatibility layer for offscreen canvas and regular canvas."""
         
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-           
         def initialize():
             """
                 After the canvas has been displayed, we need to call this method to initialize the canvas.
