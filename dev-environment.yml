@@ -7,7 +7,7 @@ dependencies:
     - yarn=3
     - jupyter-packaging
     - notebook
-    - jupyterlab=4
+    - jupyterlab=4.2.5
     - ipywidgets>=7.6,<9
     - setuptools
     - wheel
