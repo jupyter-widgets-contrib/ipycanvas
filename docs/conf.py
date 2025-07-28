@@ -4,6 +4,11 @@ extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "jupyterlite_sphinx"]
 jupyterlite_dir = "."
 jupyterlite_silence = False
 
+jupyterlite_contents = [
+   "*.ipynb",
+    "images/*.png",
+]
+
 master_doc = "index"
 source_suffix = ".rst"
 
@@ -30,3 +35,8 @@ html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 
 autodoc_member_order = "bysource"
+
+
+# copy sprites/images to the static folder
+import os
+import shutil 
