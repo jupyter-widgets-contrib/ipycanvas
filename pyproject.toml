@@ -61,6 +61,22 @@ exclude = [
     ".github",
 ]
 
+# since there is *one* javascript file in the python 
+# package for the offscreen canvas, we need to include it.
+# Therefore we need to specify everything we want to include
+include = [
+    # all python files in the package
+    "ipycanvas/**/*.py",
+    # all static files in the nbextension
+    "ipycanvas/nbextension/static/**/*",
+    # all static files in the labextension
+    "ipycanvas/labextension/**/*",
+    
+    # the one javascript file for the offscreen canvas
+    "ipycanvas/offscreen_canvas/js/init.js",
+]
+
+
 [tool.hatch.build.hooks.jupyter-builder]
 ensured-targets = [
     "ipycanvas/nbextension/static/index.js",
