@@ -35,8 +35,3 @@ html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 
 autodoc_member_order = "bysource"
-
-
-# copy sprites/images to the static folder
-import os
-import shutil 
