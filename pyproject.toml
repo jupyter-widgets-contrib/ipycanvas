@@ -63,7 +63,7 @@ exclude = [
 
 [tool.hatch.build.hooks.jupyter-builder]
 ensured-targets = [
-    "ipycanvas/offscreen_canvas/js/init2.js",
+    "ipycanvas/offscreen_canvas/js/init.js",
     "ipycanvas/nbextension/static/index.js",
     "ipycanvas/labextension/package.json",
 ]
