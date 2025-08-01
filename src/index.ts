@@ -3,3 +3,4 @@
 
 export * from './version';
 export * from './widget';
+export * from './offscreen';
