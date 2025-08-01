@@ -19,7 +19,14 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-name: cad
+          create-args: >-
+            python=3.9
+            jupyterlab=4.0.12
+            yarn=3
 
       - uses: actions/create-github-app-token@v1
         id: app-token
