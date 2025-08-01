@@ -1,23 +1,20 @@
-name: "Step 2: Publish Release"
+name: 'Step 2: Publish Release'
 on:
   workflow_dispatch:
     inputs:
       branch:
-        description: "The target branch"
+        description: 'The target branch'
         required: false
       release_url:
-        description: "The URL of the draft GitHub release"
+        description: 'The URL of the draft GitHub release'
         required: false
       steps_to_skip:
-        description: "Comma separated list of steps to skip"
+        description: 'Comma separated list of steps to skip'
         required: false
 
 jobs:
   publish_release:
     runs-on: ubuntu-latest
-    environment: release
-    permissions:
-      id-token: write
     steps:
       - name: Install Conda environment with Micromamba
         uses: mamba-org/setup-micromamba@v1
@@ -28,17 +25,12 @@ jobs:
             jupyterlab=4.0.12
             yarn=3
 
-      - uses: actions/create-github-app-token@v1
-        id: app-token
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
       - name: Populate Release
         id: populate-release
         uses: jupyter-server/jupyter_releaser/.github/actions/populate-release@v2
         with:
-          token: ${{ steps.app-token.outputs.token }}
+          token: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+          target: ${{ github.event.inputs.target }}
           branch: ${{ github.event.inputs.branch }}
           release_url: ${{ github.event.inputs.release_url }}
           steps_to_skip: ${{ github.event.inputs.steps_to_skip }}
@@ -46,19 +38,23 @@ jobs:
       - name: Finalize Release
         id: finalize-release
         env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+          PYPI_TOKEN_MAP: ${{ secrets.PYPI_TOKEN_MAP }}
+          TWINE_USERNAME: __token__
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        uses: jupyter-server/jupyter_releaser/.github/actions/finalize-release@v2
+        uses: jupyter-server/jupyter-releaser/.github/actions/finalize-release@v2
         with:
-          token: ${{ steps.app-token.outputs.token }}
+          token: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+          target: ${{ github.event.inputs.target }}
           release_url: ${{ steps.populate-release.outputs.release_url }}
 
-      - name: "** Next Step **"
+      - name: '** Next Step **'
         if: ${{ success() }}
         run: |
           echo "Verify the final release"
           echo ${{ steps.finalize-release.outputs.release_url }}
 
-      - name: "** Failure Message **"
+      - name: '** Failure Message **'
         if: ${{ failure() }}
         run: |
           echo "Failed to Publish the Draft Release Url:"
