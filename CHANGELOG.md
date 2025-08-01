@@ -2,6 +2,35 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.14.0
+
+([Full Changelog](https://github.com/jupyter-widgets-contrib/ipycanvas/compare/v0.13.3...727d33c0478600e8797a0c13b07510e3eef549b3))
+
+### Enhancements made
+
+- Add offscreen-canvas support for the jupyterlite-xeus case [#365](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/365) ([@DerThorsten](https://github.com/DerThorsten))
+
+### Maintenance and upkeep improvements
+
+- Fix ui-tests [#366](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/366) ([@martinRenou](https://github.com/martinRenou))
+
+### Documentation improvements
+
+- Update jupyterlite-xeus in docs [#367](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/367) ([@martinRenou](https://github.com/martinRenou))
+
+### Other merged PRs
+
+- Update docs build [#362](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/362) ([@martinRenou](https://github.com/martinRenou))
+- Update docs to use latest ipywidgets + jupyterlite-xeus [#359](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/359) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter-widgets-contrib/ipycanvas/graphs/contributors?from=2024-09-06&to=2025-08-01&type=c))
+
+[@DerThorsten](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3ADerThorsten+updated%3A2024-09-06..2025-08-01&type=Issues) | [@github-actions](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3Agithub-actions+updated%3A2024-09-06..2025-08-01&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3AmartinRenou+updated%3A2024-09-06..2025-08-01&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.13.3
 
 ([Full Changelog](https://github.com/jupyter-widgets-contrib/ipycanvas/compare/0.13.2...8540dc19f2fff16aa64c0a2d1aa34536b7f43e37))
@@ -27,8 +56,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter-widgets-contrib/ipycanvas/graphs/contributors?from=2024-04-25&to=2024-09-06&type=c))
 
 [@AnyaPorter](https://github.com/AnyaPorter) | [@cleemesser](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3Acleemesser+updated%3A2024-04-25..2024-09-06&type=Issues) | [@github-actions](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3Agithub-actions+updated%3A2024-04-25..2024-09-06&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3AmartinRenou+updated%3A2024-04-25..2024-09-06&type=Issues) | [@VladislavZavadskyy](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3AVladislavZavadskyy+updated%3A2024-04-25..2024-09-06&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## Release 0.13.2
 
