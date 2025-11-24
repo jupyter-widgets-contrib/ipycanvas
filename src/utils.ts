@@ -139,6 +139,7 @@ export async function toBytes(
 export async function fromBytes(
   array: Uint8ClampedArray
 ): Promise<HTMLImageElement> {
+  // @ts-ignore oh come on
   const blob = new Blob([array]);
 
   return new Promise<HTMLImageElement>((resolve, reject) => {
