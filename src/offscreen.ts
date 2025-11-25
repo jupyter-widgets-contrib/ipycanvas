@@ -52,7 +52,11 @@ class OffscreenCanvasView extends DOMWidgetView {
     const _canvas_name = () => `_canvas_${this.model.get('_name')}`;
     const _receiver_name = () => `_canvas_receiver_${this.model.get('_name')}`;
 
-    this.setCanvasSize();
+    const width = this.model.get('_width');
+    const height = this.model.get('_height');
+    this.el.width = width;
+    this.el.height = height;
+    
     this.el.setAttribute('tabindex', '0');
     // magic here!
     const offscreen: OffscreenCanvas = this.el.transferControlToOffscreen();
@@ -181,13 +185,6 @@ class OffscreenCanvasView extends DOMWidgetView {
     this.el.addEventListener('keypress', sendKeyboardEvent);
   }
 
-  // note that we cannot update the canvas here size once its transferred to the offscreen context
-  setCanvasSize(): void {
-    const width = this.model.get('_width');
-    const height = this.model.get('_height');
-    this.el.width = width;
-    this.el.height = height;
-  }
 }
 
 export { OffscreenCanvasModel, OffscreenCanvasView };
