@@ -82,13 +82,15 @@ class OffscreenCanvasView extends DOMWidgetView {
       }
 
       const rect = that.el.getBoundingClientRect();
+      const scaleX = that.el.width / rect.width;
+      const scaleY = that.el.height / rect.height;
       try {
         await (globalThis as any).callGlobalReceiver(
           _receiver_name(),
           'on_mouse_events',
           event.type,
-          event.clientX - rect.left,
-          event.clientY - rect.top
+          (event.clientX - rect.left) * scaleX,
+          (event.clientY - rect.top) * scaleY
         );
       } catch (e) {
         // we want to remove all event listeners if the receiver is not defined
@@ -98,10 +100,10 @@ class OffscreenCanvasView extends DOMWidgetView {
         );
         removeAllListeners();
       }
-    }
-
     async function sendTouchEvent(event: TouchEvent): Promise<void> {
       const rect = that.el.getBoundingClientRect();
+      const scaleX = that.el.width / rect.width;
+      const scaleY = that.el.height / rect.height;
       try {
         for (let i = 0; i < event.changedTouches.length; i++) {
           const touch = event.changedTouches[i];
@@ -109,8 +111,8 @@ class OffscreenCanvasView extends DOMWidgetView {
             _receiver_name(),
             'on_touch_events',
             event.type,
-            touch.clientX - rect.left,
-            touch.clientY - rect.top,
+            (touch.clientX - rect.left) * scaleX,
+            (touch.clientY - rect.top) * scaleY,
             touch.identifier
           );
         }
