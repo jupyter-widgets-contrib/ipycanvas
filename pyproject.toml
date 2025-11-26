@@ -35,7 +35,7 @@ dependencies = [
     "numpy",
     "pillow>=6.0",
 ]
-version = "0.14.1"
+version = "0.14.2"
 
 [project.license]
 file = "LICENSE.txt"
@@ -86,7 +86,7 @@ field = [
 ]
 
 [tool.tbump.version]
-current = "0.14.1"
+current = "0.14.2"
 regex = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)((?P<channel>a|b|rc|.dev)(?P<release>\\d+))?"
 
 [tool.tbump.git]

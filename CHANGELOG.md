@@ -2,6 +2,24 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.14.2
+
+([Full Changelog](https://github.com/jupyter-widgets-contrib/ipycanvas/compare/v0.14.1...61841aed8972ff661fcc663ff0950aac750ac48d))
+
+### Merged PRs
+
+- fix offscreen coordinates [#377](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/377) ([@DerThorsten](https://github.com/DerThorsten))
+- Fix package.json version entry [#376](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/376) ([@martinRenou](https://github.com/martinRenou))
+- Update notebook-link config [#375](https://github.com/jupyter-widgets-contrib/ipycanvas/pull/375) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter-widgets-contrib/ipycanvas/graphs/contributors?from=2025-08-01&to=2025-11-26&type=c))
+
+[@DerThorsten](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3ADerThorsten+updated%3A2025-08-01..2025-11-26&type=Issues) | [@github-actions](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3Agithub-actions+updated%3A2025-08-01..2025-11-26&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3AmartinRenou+updated%3A2025-08-01..2025-11-26&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.14.0
 
 ([Full Changelog](https://github.com/jupyter-widgets-contrib/ipycanvas/compare/v0.13.3...727d33c0478600e8797a0c13b07510e3eef549b3))
@@ -28,8 +46,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter-widgets-contrib/ipycanvas/graphs/contributors?from=2024-09-06&to=2025-08-01&type=c))
 
 [@DerThorsten](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3ADerThorsten+updated%3A2024-09-06..2025-08-01&type=Issues) | [@github-actions](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3Agithub-actions+updated%3A2024-09-06..2025-08-01&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyter-widgets-contrib%2Fipycanvas+involves%3AmartinRenou+updated%3A2024-09-06..2025-08-01&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.13.3
 
