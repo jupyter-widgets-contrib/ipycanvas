@@ -102,6 +102,10 @@ class OffscreenCanvasView extends DOMWidgetView {
       }
     }
     async function sendTouchEvent(event: TouchEvent): Promise<void> {
+
+      e.preventDefault(); 
+      e.stopPropagation();
+      
       const rect = that.el.getBoundingClientRect();
       const scaleX = that.el.width / rect.width;
       const scaleY = that.el.height / rect.height;
@@ -176,13 +180,8 @@ class OffscreenCanvasView extends DOMWidgetView {
     this.el.addEventListener('touchstart', e => sendTouchEvent(e), opts);
     this.el.addEventListener('touchend', e => sendTouchEvent(e), opts);
     this.el.addEventListener('touchcancel', e => sendTouchEvent(e), opts);
-    
-    this.el.addEventListener('touchmove', e => {
-      e.preventDefault();      // IMPORTANT
-      e.stopImmediatePropagation();
-      sendTouchEvent(e);
-    }, opts);
-    
+    this.el.addEventListener('touchmove', e => sendTouchEvent(e), opts);
+
     // keyboard events
     this.el.addEventListener('keydown', sendKeyboardEvent);
     this.el.addEventListener('keyup', sendKeyboardEvent);
