@@ -103,8 +103,8 @@ class OffscreenCanvasView extends DOMWidgetView {
     }
     async function sendTouchEvent(event: TouchEvent): Promise<void> {
 
-      e.preventDefault(); 
-      e.stopPropagation();
+      event.preventDefault(); 
+      event.stopImmediatePropagation();
       
       const rect = that.el.getBoundingClientRect();
       const scaleX = that.el.width / rect.width;
