@@ -179,6 +179,7 @@ class OffscreenCanvasView extends DOMWidgetView {
     
     this.el.addEventListener('touchmove', e => {
       e.preventDefault();      // IMPORTANT
+      e.stopImmediatePropagation();
       sendTouchEvent(e);
     }, opts);
     
