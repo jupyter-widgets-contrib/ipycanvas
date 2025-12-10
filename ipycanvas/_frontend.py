@@ -8,7 +8,7 @@
 Information about the frontend package of the widgets.
 """
 
-from _version import __version__
+from ._version import __version__
 
 major, minor = __version__.split('.')
 
