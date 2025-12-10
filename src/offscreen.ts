@@ -171,11 +171,17 @@ class OffscreenCanvasView extends DOMWidgetView {
     });
 
     // touch events
-    this.el.addEventListener('touchstart', sendTouchEvent);
-    this.el.addEventListener('touchend', sendTouchEvent);
-    this.el.addEventListener('touchmove', sendTouchEvent);
-    this.el.addEventListener('touchcancel', sendTouchEvent);
+    const opts = { passive: false };
 
+    this.el.addEventListener('touchstart', e => sendTouchEvent(e), opts);
+    this.el.addEventListener('touchend', e => sendTouchEvent(e), opts);
+    this.el.addEventListener('touchcancel', e => sendTouchEvent(e), opts);
+    
+    this.el.addEventListener('touchmove', e => {
+      e.preventDefault();      // IMPORTANT
+      sendTouchEvent(e);
+    }, opts);
+    
     // keyboard events
     this.el.addEventListener('keydown', sendKeyboardEvent);
     this.el.addEventListener('keyup', sendKeyboardEvent);
