@@ -1,6 +1,9 @@
 [build-system]
 requires = [
+    "hatch",
     "hatchling",
+    "hatch-nodejs-version",
+    "hatch-build-scripts",
     "jupyterlab>=3,<5",
 ]
 build-backend = "hatchling.build"
@@ -16,6 +19,7 @@ keywords = [
     "IPython",
     "Jupyter",
     "Widgets",
+    "Canvas",
 ]
 classifiers = [
     "Framework :: Jupyter",
@@ -24,18 +28,21 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
     "ipywidgets>=7.6.0,<9",
     "numpy",
     "pillow>=6.0",
 ]
-version = "0.14.2"
+dynamic = [
+    "version",
+]
 
 [project.license]
 file = "LICENSE.txt"
@@ -45,10 +52,14 @@ file = "LICENSE.txt"
 [project.urls]
 Homepage = "https://github.com/jupyter-widgets-contrib/ipycanvas"
 
+[tool.hatch.version]
+source = "nodejs"
+
 [tool.hatch.build]
 artifacts = [
     "ipycanvas/nbextension/static/index.*",
     "ipycanvas/labextension",
+    "ipycanvas/_version.py",
 ]
 
 [tool.hatch.build.targets.wheel.shared-data]
@@ -59,6 +70,7 @@ artifacts = [
 [tool.hatch.build.targets.sdist]
 exclude = [
     ".github",
+    "ipycanvas/_version.py",
 ]
 
 [tool.hatch.build.hooks.jupyter-builder]
@@ -72,50 +84,17 @@ dependencies = [
 ]
 build-function = "hatch_jupyter_builder.npm_builder"
 
+[[tool.hatch.build.hooks.build-scripts.scripts]]
+work_dir = "."
+commands = ['python scripts/write_version.py']
+# _version.py is already mentioned in top-level build artifact
+artifacts = []
+
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
 path = "."
 build_cmd = "build:extensions"
 npm = [
     "yarn",
-]
-
-[tool.tbump]
-field = [
-    { name = "channel", default = "" },
-    { name = "release", default = "" },
-]
-
-[tool.tbump.version]
-current = "0.14.2"
-regex = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)((?P<channel>a|b|rc|.dev)(?P<release>\\d+))?"
-
-[tool.tbump.git]
-message_template = "Bump to {new_version}"
-tag_template = "v{new_version}"
-
-[[tool.tbump.file]]
-src = "pyproject.toml"
-version_template = "version = \"{major}.{minor}.{patch}{channel}{release}\""
-
-[[tool.tbump.file]]
-src = "ipycanvas/_version.py"
-
-[[tool.tbump.file]]
-src = "package.json"
-version_template = "\"version\": \"{major}.{minor}.{patch}{channel}{release}\""
-
-[tool.jupyter-releaser.hooks]
-before-bump-version = [
-    "python -m pip install hatch jupyterlab~=4.0",
-]
-before-build-npm = [
-    "python -m pip install jupyterlab~=4.0",
-    "jlpm",
-    "jlpm clean",
-    "jlpm build",
-]
-before-build-python = [
-    "jlpm clean",
 ]
 
 [tool.check-wheel-contents]

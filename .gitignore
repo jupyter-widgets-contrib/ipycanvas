@@ -170,3 +170,5 @@ python_data.data
 # UI tests
 ui-tests/tests/notebooks/smoke_texture0.png
 ui-tests/tests/notebooks/smoke_texture1.png
+
+ipycanvas/_version.py
