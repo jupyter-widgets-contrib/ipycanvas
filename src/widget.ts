@@ -1377,22 +1377,27 @@ export class CanvasView extends DOMWidgetView {
     });
     this.el.addEventListener('wheel', {
       handleEvent: this.onMouseWheel.bind(this)
-    });
+    }, { passive: false });
+
     this.el.addEventListener('touchstart', {
       handleEvent: this.onTouchStart.bind(this)
-    });
+    }, { passive: false });
+
     this.el.addEventListener('touchend', {
       handleEvent: this.onTouchEnd.bind(this)
-    });
+    }, { passive: false });
+
     this.el.addEventListener('touchmove', {
       handleEvent: this.onTouchMove.bind(this)
-    });
+    }, { passive: false });
+
     this.el.addEventListener('touchcancel', {
       handleEvent: this.onTouchCancel.bind(this)
-    });
+    }, { passive: false });
+
     this.el.addEventListener('keydown', {
       handleEvent: this.onKeyDown.bind(this)
-    });
+    }, { passive: false });
 
     this.el.setAttribute('tabindex', '0');
 
@@ -1441,6 +1446,8 @@ export class CanvasView extends DOMWidgetView {
   }
 
   private onTouchStart(event: TouchEvent) {
+    event.preventDefault(); 
+    event.stopImmediatePropagation();
     const touches: Touch[] = Array.from(event.touches);
     this.model.send(
       {
@@ -1452,6 +1459,8 @@ export class CanvasView extends DOMWidgetView {
   }
 
   private onTouchEnd(event: TouchEvent) {
+    event.preventDefault(); 
+    event.stopImmediatePropagation();
     const touches: Touch[] = Array.from(event.touches);
     this.model.send(
       {
@@ -1463,6 +1472,8 @@ export class CanvasView extends DOMWidgetView {
   }
 
   private onTouchMove(event: TouchEvent) {
+    event.preventDefault(); 
+    event.stopImmediatePropagation();
     const touches: Touch[] = Array.from(event.touches);
     this.model.send(
       {
@@ -1474,6 +1485,8 @@ export class CanvasView extends DOMWidgetView {
   }
 
   private onTouchCancel(event: TouchEvent) {
+    event.preventDefault(); 
+    event.stopImmediatePropagation();
     const touches: Touch[] = Array.from(event.touches);
     this.model.send(
       {
