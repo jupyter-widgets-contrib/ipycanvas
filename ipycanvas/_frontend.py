@@ -8,5 +8,9 @@
 Information about the frontend package of the widgets.
 """
 
+from ._version import __version__
+
+major, minor, patch = __version__.split('.')
+
 module_name = "ipycanvas"
-module_version = "^0.14"
+module_version = f"^{major}.{minor}"
