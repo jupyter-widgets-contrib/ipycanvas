@@ -13,4 +13,4 @@ from ._version import __version__
 major, minor, *_ = __version__.split('.')
 
 module_name = "ipycanvas"
-module_version = f"^{major}.{minor}"
+module_version = f"^{major}.{minor}.0-0"
