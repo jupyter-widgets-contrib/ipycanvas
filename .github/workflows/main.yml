@@ -20,18 +20,17 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.10']
+        python-version: ['3.14']
 
     steps:
     - name: Checkout
       uses: actions/checkout@v4
 
     - name: Install Conda environment with Micromamba
-      uses: mamba-org/setup-micromamba@v1
+      uses: mamba-org/setup-micromamba@v2
       with:
         environment-name: ipycanvas-dev
         environment-file: dev-environment.yml
-        channels: conda-forge
         create-args: >-
           python=${{ matrix.python-version }}
 
@@ -49,11 +48,10 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Install Conda environment with Micromamba
-      uses: mamba-org/setup-micromamba@v1
+      uses: mamba-org/setup-micromamba@v2
       with:
         environment-name: ipycanvas-dev
         environment-file: dev-environment.yml
-        channels: conda-forge
         create-args: >-
           python=${{ matrix.python-version }}
 
@@ -89,11 +87,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Conda environment with Micromamba
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-name: ipycanvas-dev
           environment-file: dev-environment.yml
-          channels: conda-forge
           create-args: >-
             python=${{ matrix.python-version }}
 
