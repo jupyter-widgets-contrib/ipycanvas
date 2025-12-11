@@ -1,6 +1,6 @@
 name: ipycanvas-dev
 channels:
-    - conda-forge
+    - https://prefix.dev/conda-forge
 dependencies:
     - pip
     - python-build

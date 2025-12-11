@@ -31,7 +31,6 @@ jobs:
       with:
         environment-name: ipycanvas-dev
         environment-file: dev-environment.yml
-        channels: conda-forge
         create-args: >-
           python=${{ matrix.python-version }}
 
@@ -53,7 +52,6 @@ jobs:
       with:
         environment-name: ipycanvas-dev
         environment-file: dev-environment.yml
-        channels: conda-forge
         create-args: >-
           python=${{ matrix.python-version }}
 
@@ -93,7 +91,6 @@ jobs:
         with:
           environment-name: ipycanvas-dev
           environment-file: dev-environment.yml
-          channels: conda-forge
           create-args: >-
             python=${{ matrix.python-version }}
 
