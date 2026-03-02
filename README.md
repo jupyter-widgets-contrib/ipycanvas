@@ -2,7 +2,7 @@
 <h1 align="center">ipycanvas</h1>
 <h2 align="center"> Interactive Canvas in Jupyter </h1>
 
-[![ipycanvas](https://img.shields.io/badge/notebook-link-e2d610?logo=jupyter&logoColor=white)](https://notebook.link/github/jupyter-widgets-contrib/ipycanvas/tree/main/lab/)
+[![notebook link](https://img.shields.io/badge/notebook-link-e2d610?logo=jupyter&logoColor=white)](https://notebook.link/github/jupyter-widgets-contrib/ipycanvas/tree/main/lab/)
 [![Documentation](http://readthedocs.org/projects/ipycanvas/badge/?version=latest)](https://ipycanvas.readthedocs.io/en/latest/?badge=latest)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter-widgets-contrib/ipycanvas/stable?urlpath=lab%2Ftree%2Fexamples)
 [![JupyterLite](https://jupyterlite.rtfd.io/en/latest/_static/badge-launch.svg)](https://ipycanvas.readthedocs.io/en/latest/lite/lab)
@@ -14,9 +14,9 @@ It allows you to draw simple primitives directly from Python like text, lines, p
 
 ## Try it online!
 
-You can try it online by clicking on this badge:
+Try it online with notebook.link by clicking on this badge:
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter-widgets-contrib/ipycanvas/stable?urlpath=lab%2Ftree%2Fexamples)
+[![notebook link](https://img.shields.io/badge/notebook-link-e2d610?logo=jupyter&logoColor=white)](https://notebook.link/github/jupyter-widgets-contrib/ipycanvas/tree/main/lab/).
 
 ## Documentation
 
