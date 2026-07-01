@@ -6,3 +6,5 @@ dependencies:
   - xeus-python
   - ipycanvas
   - ipyevents
+  - orjson
+  - branca
