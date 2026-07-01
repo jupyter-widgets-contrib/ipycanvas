@@ -12,7 +12,7 @@ Try it online
 You can try ipycanvas, without the need of installing anything on your computer, using `Notebook.link <https://notebook.link>`_ by clicking on this badge:
 
 .. image:: https://img.shields.io/badge/notebook-link-e2d610?logo=jupyter&logoColor=white
-   :target: https://notebook.link/github/jupyter-widgets-contrib/ipycanvas/tree/main/lab/
+   :target: https://notebook.link/github/jupyter-widgets-contrib/ipycanvas/tree/main/lab/?path=examples%2F01.index.ipynb
 
 Or you can run try it here:
 
